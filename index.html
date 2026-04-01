@@ -123,7 +123,27 @@
     .inv-btn { flex: 1; padding: 9px; font-size: 13px; font-weight: 600; font-family: inherit; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: var(--text); transition: all 0.15s; }
     .inv-btn.receive { border-color: var(--accent); color: var(--accent); }
     .inv-btn.used    { border-color: var(--green); color: var(--green); }
+    .inv-btn.remove  { border-color: #7c3aed; color: #a78bfa; background: rgba(139,92,246,0.08); }
     .inv-btn:hover   { opacity: 0.8; }
+    /* Orders section */
+    .orders-section  { margin-top: 20px; }
+    .orders-header   { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .orders-header-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .orders-new-btn  { padding: 7px 14px; font-size: 12px; font-weight: 700; font-family: inherit; background: rgba(59,130,246,0.12); border: 1px solid var(--accent); color: var(--accent); border-radius: 8px; cursor: pointer; }
+    .order-item      { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+    .order-item-top  { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .order-item-name { font-size: 13px; font-weight: 600; }
+    .order-item-meta { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+    .order-status    { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+    .order-status.pending  { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+    .order-status.received { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+    .order-form      { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+    .order-form select, .order-form input[type="number"], .order-form input[type="text"] { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 14px; font-family: inherit; outline: none; margin-bottom: 8px; appearance: none; -webkit-appearance: none; }
+    .order-form select:focus, .order-form input:focus { border-color: var(--accent); }
+    .order-form select option { background: #27272a; }
+    .order-form-btns { display: flex; gap: 8px; }
+    .order-form-btns button { flex: 1; padding: 9px; font-size: 13px; font-weight: 700; font-family: inherit; border-radius: 8px; cursor: pointer; border: none; background: var(--accent); color: #fff; }
+    .order-form-btns .cancel-btn { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
     .inv-inline { margin-top: 10px; display: flex; gap: 8px; align-items: center; }
     .inv-inline input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 15px; font-family: inherit; outline: none; }
     .inv-inline input:focus { border-color: var(--accent); }
@@ -485,6 +505,26 @@
   <div id="demoInvNote" class="demo-inv-note hidden">⚠ Demo data — log in as staff to see live inventory</div>
   <div id="invLoading" class="loading-msg hidden">Loading inventory...</div>
   <div id="invList"></div>
+
+  <!-- Orders Section -->
+  <div class="orders-section" id="ordersSection">
+    <hr class="divider" />
+    <div class="orders-header">
+      <span class="orders-header-title">📦 Orders</span>
+      <button class="orders-new-btn" id="newOrderBtn" onclick="toggleNewOrderForm()">+ New Order</button>
+    </div>
+    <div id="newOrderForm" class="order-form hidden">
+      <select id="orderItemSel"><option value="">Select inventory item…</option></select>
+      <input type="number" id="orderQty" placeholder="Quantity" min="1" step="1" />
+      <input type="text" id="orderSupplier" placeholder="Supplier (optional)" />
+      <div class="order-form-btns">
+        <button onclick="submitNewOrder()">Place Order</button>
+        <button class="cancel-btn" onclick="toggleNewOrderForm()">Cancel</button>
+      </div>
+    </div>
+    <div id="ordersLoading" class="loading-msg hidden">Loading orders…</div>
+    <div id="ordersList"></div>
+  </div>
 </div>
 
 <div class="inv-toast" id="invToast"></div>
@@ -804,7 +844,7 @@ function onMilesChange() {
     if (isAuth()) {
       el('feeAmt').textContent = '$'+mobileFee;
     } else {
-      el('feeAmt').textContent = 'your mobile fee';
+      el('feeAmt').textContent = 'your mobile service fee';
     }
     el('feeBadge').classList.remove('hidden');
   }
@@ -912,6 +952,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
 
   function initInventory() {
     if (!invLoaded) loadInventory();
+    loadOrders();
   }
 
   function loadInventory() {
@@ -981,6 +1022,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
         '<div class="inv-actions">' +
           '<button class="inv-btn receive" onclick="showReceive(\'' + id + '\')">+ Receive</button>' +
           '<button class="inv-btn used" onclick="markUsed(\'' + id + '\',\'' + safeName + '\')">Mark Used</button>' +
+          '<button class="inv-btn remove" onclick="removeItem(\'' + id + '\',\'' + safeName + '\')">− Remove</button>' +
         '</div>' +
         '<div class="inv-inline hidden" id="receive-' + id + '">' +
           '<input type="number" min="1" step="1" placeholder="Qty" id="rqty-' + id + '" onkeydown="if(event.key===\'Enter\') confirmReceive(\'' + id + '\')" />' +
@@ -1008,7 +1050,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       if (data.error) { showToast('Error: ' + (data.error.message || 'check token')); return; }
       hideReceive(id);
       showToast('Received ' + qty + ' unit' + (qty > 1 ? 's' : '') + ' ✓');
-      invLoaded = false; allInvRecords = []; loadInventory();
+      invLoaded = false; allInvRecords = []; loadInventory(); loadOrders();
     }).catch(function() { showToast('Error — check connection'); });
   }
 
@@ -1024,6 +1066,134 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       if (data.error) { showToast('Error: ' + (data.error.message || 'check token')); return; }
       showToast(name + ' marked used ✓');
       invLoaded = false; allInvRecords = []; loadInventory();
+    }).catch(function() { showToast('Error — check connection'); });
+  }
+
+  function removeItem(id, name) {
+    if (!confirm('Remove 1 unit of "' + name + '"?\n\nThis will log a removal (not a sale).')) return;
+    atFetch(AT_BASE + '/tblFoAyBRZ0KLuYQl', {
+      method: 'POST',
+      body: JSON.stringify({ fields: {
+        'Item': [id],
+        'QTY': 1,
+        'date sold': new Date().toISOString().split('T')[0]
+      }})
+    }).then(function(data) {
+      if (data.error) { showToast('Error: ' + (data.error.message || 'check token')); return; }
+      showToast(name + ' — 1 removed ✓');
+      invLoaded = false; allInvRecords = []; loadInventory();
+    }).catch(function() { showToast('Error — check connection'); });
+  }
+
+  // ── Orders ─────────────────────────────────────────────
+  var ordersLoaded = false;
+  var DEMO_ORDERS = [
+    { id:'o1', fields:{ 'fldF0TJARgHugOh83':'Order: iPhone 16 Pro Max Screen', 'fldbKVKkNgZtShHwh':3, 'fldVq43gyw9HVLYNI':'Mobilink', 'fldeHBNhXCrqAJrjp':'2026-03-28T10:00:00.000Z', 'fldwGKyfgOuue1eyE':true } },
+    { id:'o2', fields:{ 'fldF0TJARgHugOh83':'Order: iPhone 15 Pro Battery', 'fldbKVKkNgZtShHwh':5, 'fldVq43gyw9HVLYNI':'iFixit', 'fldeHBNhXCrqAJrjp':null, 'fldwGKyfgOuue1eyE':false } },
+    { id:'o3', fields:{ 'fldF0TJARgHugOh83':'Order: Samsung S24 Screen', 'fldbKVKkNgZtShHwh':2, 'fldVq43gyw9HVLYNI':'Mobilink', 'fldeHBNhXCrqAJrjp':null, 'fldwGKyfgOuue1eyE':false } },
+  ];
+
+  function loadOrders() {
+    if (!isAuth()) {
+      renderOrders(DEMO_ORDERS);
+      return;
+    }
+    el('ordersLoading').classList.remove('hidden');
+    el('ordersList').innerHTML = '';
+    atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50')
+      .then(function(data) {
+        el('ordersLoading').classList.add('hidden');
+        if (data.error) {
+          el('ordersList').innerHTML = '<div class="loading-msg">Error: ' + (data.error.message || 'Check token') + '</div>';
+          return;
+        }
+        ordersLoaded = true;
+        renderOrders(data.records || []);
+      }).catch(function() {
+        el('ordersLoading').classList.add('hidden');
+        el('ordersList').innerHTML = '<div class="loading-msg">Network error — check connection.</div>';
+      });
+  }
+
+  function renderOrders(records) {
+    if (!records.length) {
+      el('ordersList').innerHTML = '<div class="loading-msg" style="padding:16px 0;">No orders yet.</div>';
+      return;
+    }
+    // Sort: pending (no received) first, then by date desc
+    records.sort(function(a, b) {
+      var ar = a.fields['fldwGKyfgOuue1eyE'] ? 1 : 0;
+      var br = b.fields['fldwGKyfgOuue1eyE'] ? 1 : 0;
+      return ar - br;
+    });
+    var auth = isAuth();
+    el('ordersList').innerHTML = records.map(function(r) {
+      var name    = r.fields['fldF0TJARgHugOh83'] || '—';
+      var qty     = r.fields['fldbKVKkNgZtShHwh'] != null ? r.fields['fldbKVKkNgZtShHwh'] : '?';
+      var supp    = r.fields['fldVq43gyw9HVLYNI'] || '';
+      var dateRaw = r.fields['fldeHBNhXCrqAJrjp'];
+      var dateStr = dateRaw ? new Date(dateRaw).toLocaleDateString() : '';
+      var isRec   = !!r.fields['fldwGKyfgOuue1eyE'];
+      var metaParts = ['Qty: ' + qty];
+      if (supp) metaParts.push(supp);
+      if (dateStr) metaParts.push((isRec ? 'Received ' : 'Ordered ') + dateStr);
+      return '<div class="order-item">' +
+        '<div class="order-item-top">' +
+          '<div>' +
+            '<div class="order-item-name">' + name + '</div>' +
+            '<div class="order-item-meta">' + metaParts.join(' · ') + '</div>' +
+          '</div>' +
+          '<span class="order-status ' + (isRec ? 'received' : 'pending') + '">' + (isRec ? '✓ Received' : '⏳ Pending') + '</span>' +
+        '</div>' +
+        (auth && !isRec ? '<div style="margin-top:10px;"><button class="inv-btn receive" style="max-width:160px;flex:none;" onclick="markOrderReceived(\'' + r.id + '\')">Mark Received</button></div>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  function toggleNewOrderForm() {
+    if (!isAuth()) { showToast('Log in as staff to place orders'); return; }
+    var form = el('newOrderForm');
+    var opening = form.classList.contains('hidden');
+    form.classList.toggle('hidden');
+    el('newOrderBtn').textContent = opening ? '✕ Cancel' : '+ New Order';
+    if (opening) {
+      var sel = el('orderItemSel');
+      sel.innerHTML = '<option value="">Select inventory item…</option>' +
+        allInvRecords.map(function(r) {
+          return '<option value="' + r.id + '">' + (r.fields['fldWzYeFcqm0qnxD8'] || '—') + '</option>';
+        }).join('');
+    }
+  }
+
+  function submitNewOrder() {
+    var itemId = el('orderItemSel').value;
+    var qty    = parseInt(el('orderQty').value);
+    var supp   = (el('orderSupplier').value || '').trim();
+    if (!itemId) { showToast('Select an inventory item'); return; }
+    if (!qty || qty < 1) { showToast('Enter a valid quantity'); return; }
+    var itemRec  = allInvRecords.find(function(r) { return r.id === itemId; });
+    var itemName = itemRec ? (itemRec.fields['fldWzYeFcqm0qnxD8'] || 'Item') : 'Item';
+    var fields   = { 'Name': 'Order: ' + itemName, 'Item': [itemId], 'QTY': qty };
+    if (supp) fields['supplier'] = supp;
+    atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: fields }) })
+      .then(function(data) {
+        if (data.error) { showToast('Error: ' + (data.error.message || 'check token')); return; }
+        showToast('Order placed ✓');
+        el('orderQty').value = '';
+        el('orderSupplier').value = '';
+        toggleNewOrderForm();
+        loadOrders();
+      }).catch(function() { showToast('Error — check connection'); });
+  }
+
+  function markOrderReceived(orderId) {
+    atFetch(AT_BASE + '/' + AT_ORDERS + '/' + orderId, {
+      method: 'PATCH',
+      body: JSON.stringify({ fields: { 'received': true, 'date recieved': new Date().toISOString() } })
+    }).then(function(data) {
+      if (data.error) { showToast('Error: ' + (data.error.message || 'check token')); return; }
+      showToast('Order marked received ✓');
+      loadOrders();
     }).catch(function() { showToast('Error — check connection'); });
   }
 
@@ -1135,8 +1305,9 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
         el('authOverlay').classList.add('hidden');
         updateAuthBtn();
         invLoaded = false; allInvRecords = [];
+        ordersLoaded = false;
         loadInventoryPage(null, true);
-        if (!el('tabInventory').classList.contains('hidden')) loadInventory();
+        if (!el('tabInventory').classList.contains('hidden')) { loadInventory(); loadOrders(); }
         tryRenderQuote();
       }
     }).catch(function() {
@@ -1158,10 +1329,10 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       btn.className = 'demo-badge';
       el('sentrixLink').style.display = 'none';
       el('supplierDemo').style.display = '';
-      if (el('mobileSub')) el('mobileSub').textContent = 'your mobile fee';
+      if (el('mobileSub')) el('mobileSub').textContent = 'your mobile service fee';
       if (el('secondSub')) el('secondSub').textContent = 'Cheaper repair gets discount';
       // Hide actual fee amount if visible
-      if (el('feeAmt') && mobileFee > 0) el('feeAmt').textContent = 'your mobile fee';
+      if (el('feeAmt') && mobileFee > 0) el('feeAmt').textContent = 'your mobile service fee';
     }
   }
 
@@ -1195,7 +1366,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   // Override initInventory to show demo when not authenticated
   var _realInitInventory = initInventory;
   initInventory = function() {
-    if (!isAuth()) { renderDemoInventory(); return; }
+    if (!isAuth()) { renderDemoInventory(); loadOrders(); return; }
     _realInitInventory();
   };
 
@@ -1222,6 +1393,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   // Show demo inventory immediately if on inventory tab and not authed
   if (!isAuth() && !el('tabInventory').classList.contains('hidden')) {
     renderDemoInventory();
+    loadOrders();
   }
 
 </script>
