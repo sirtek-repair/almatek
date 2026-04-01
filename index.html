@@ -835,8 +835,11 @@ function tryRenderQuote() {
           if (fb) { stockLine.textContent = fb[0]; stockLine.style.color = fb[1]; stockLine.classList.remove('hidden'); stockShown = true; }
         }
       }
-    } catch(e) { /* stock lookup failed — still show quote */ }
-    if (!stockShown) stockLine.classList.add('hidden');
+      if (!stockShown && stockLine) stockLine.classList.add('hidden');
+    } catch(e) {
+      const sl = el('quoteStockLine');
+      if (sl) sl.classList.add('hidden');
+    }
   }
 
   el('quoteCard').classList.remove('hidden');
