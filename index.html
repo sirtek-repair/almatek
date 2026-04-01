@@ -677,8 +677,8 @@ function setMode1(m) {
 
 function onModel1Change() {
   model1 = el('modelSelect1').value; tier1='';
+  hideQuote(); // hide first so updateTierButtons can re-show via tryRenderQuote
   updateTierButtons1();
-  hideQuote();
   showStockBadge(1, model1, tier1);
 }
 
@@ -689,10 +689,20 @@ function updateTierButtons1() {
   el('tier1Prem').disabled = !p.premium;
   el('tier1Std').classList.remove('active');
   el('tier1Prem').classList.remove('active');
-  // Auto-select if only one tier
-  if (!p.standard && p.premium) { tier1='premium'; el('tier1Prem').classList.add('active'); el('tierHint1').textContent='Only premium available for this model'; tryRenderQuote(); }
-  else if (p.standard && !p.premium) { tier1='standard'; el('tier1Std').classList.add('active'); el('tierHint1').textContent='Only standard available for this model'; tryRenderQuote(); }
-  else { el('tierHint1').textContent=''; }
+  if (!p.standard && p.premium) {
+    tier1='premium'; el('tier1Prem').classList.add('active');
+    el('tierHint1').textContent='Only premium available for this model';
+  } else if (p.standard && !p.premium) {
+    tier1='standard'; el('tier1Std').classList.add('active');
+    el('tierHint1').textContent='Only standard available for this model';
+  } else if (p.standard && p.premium) {
+    // Default to standard when both available
+    tier1='standard'; el('tier1Std').classList.add('active');
+    el('tierHint1').textContent='';
+  } else {
+    el('tierHint1').textContent='';
+  }
+  if (tier1) tryRenderQuote();
 }
 
 function setTier1(t) {
@@ -732,9 +742,19 @@ function updateTierButtons2() {
   el('tier2Prem').disabled = !p.premium;
   el('tier2Std').classList.remove('active');
   el('tier2Prem').classList.remove('active');
-  if (!p.standard && p.premium) { tier2='premium'; el('tier2Prem').classList.add('active'); el('tierHint2').textContent='Only premium available for this model'; renderDeal(); }
-  else if (p.standard && !p.premium) { tier2='standard'; el('tier2Std').classList.add('active'); el('tierHint2').textContent='Only standard available for this model'; renderDeal(); }
-  else { el('tierHint2').textContent=''; }
+  if (!p.standard && p.premium) {
+    tier2='premium'; el('tier2Prem').classList.add('active');
+    el('tierHint2').textContent='Only premium available for this model';
+  } else if (p.standard && !p.premium) {
+    tier2='standard'; el('tier2Std').classList.add('active');
+    el('tierHint2').textContent='Only standard available for this model';
+  } else if (p.standard && p.premium) {
+    tier2='standard'; el('tier2Std').classList.add('active');
+    el('tierHint2').textContent='';
+  } else {
+    el('tierHint2').textContent='';
+  }
+  if (tier2) renderDeal();
 }
 
 function setTier2(t) {
@@ -836,6 +856,9 @@ function onToggleMobile() {
   el('mobileSw').classList.toggle('on', mobileOpen);
   el('mobileToggleRow').classList.toggle('active', mobileOpen);
   el('mobileCard').classList.toggle('hidden', !mobileOpen);
+  if (!isAuth()) {
+    el('mobileSub').textContent = mobileOpen ? 'your mobile fee ☕' : 'your mobile fee';
+  }
   if (!mobileOpen) { mobileFee=0; el('milesInput').value=''; el('feeBadge').classList.add('hidden'); tryRenderQuote(); }
 }
 function onMilesChange() {
@@ -869,6 +892,9 @@ function onToggle2nd() {
   el('secondSw').classList.toggle('on', secondOpen);
   el('secondToggle').classList.toggle('active', secondOpen);
   el('secondCard').classList.toggle('hidden', !secondOpen);
+  if (!isAuth()) {
+    el('secondSub').textContent = secondOpen ? 'Cheaper repair gets a discount ❤️' : 'Cheaper repair gets a discount';
+  }
   if (!secondOpen) el('dealResult').classList.add('hidden');
 }
 function on2ndRepairChange() {
@@ -1338,8 +1364,8 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       btn.className = 'demo-badge';
       el('sentrixLink').style.display = 'none';
       el('supplierDemo').style.display = '';
-      if (el('mobileSub')) el('mobileSub').textContent = 'your mobile service fee';
-      if (el('secondSub')) el('secondSub').textContent = 'Cheaper repair gets discount';
+      if (el('mobileSub')) el('mobileSub').textContent = mobileOpen ? 'your mobile fee ☕' : 'your mobile fee';
+      if (el('secondSub')) el('secondSub').textContent = secondOpen ? 'Cheaper repair gets a discount ❤️' : 'Cheaper repair gets a discount';
       // Hide actual fee amount if visible
       if (mobileFee > 0) {
         el('feeAmt').textContent = '';
