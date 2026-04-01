@@ -322,13 +322,14 @@
     <div class="ql">Quote to Customer</div>
     <div class="qa" id="quoteAmt">$—</div>
     <div class="qsub hidden" id="mobileSubline">includes mobile service fee</div>
+    <div class="qsub hidden" id="quoteStockLine"></div>
   </div>
 
   <!-- Mobile Service Toggle -->
   <div id="mobileToggleRow" class="toggle-row hidden" onclick="onToggleMobile()">
     <div class="toggle-text">
       <div class="tl">Mobile repair service?</div>
-      <div class="ts">$15 flat · +$9/mile after 3</div>
+      <div class="ts" id="mobileSub">$15 flat · +$9/mile after 3</div>
     </div>
     <div class="switch" id="mobileSw"></div>
   </div>
@@ -347,7 +348,7 @@
   <div id="secondToggle" class="toggle-row hidden" onclick="onToggle2nd()">
     <div class="toggle-text">
       <div class="tl">Adding a 2nd repair?</div>
-      <div class="ts">Cheaper repair gets ½ off labor</div>
+      <div class="ts" id="secondSub">Cheaper repair gets ½ off labor</div>
     </div>
     <div class="switch" id="secondSw"></div>
   </div>
@@ -734,10 +735,48 @@ function tryRenderQuote() {
   const p = getPrice1();
   if (p <= 0) { hideQuote(); return; }
   const total = p + mobileFee;
-  el('quoteAmt').textContent = isAuth() ? '$' + total : 'Part + Tax + ❤️';
-  el('quoteAmt').className = isAuth() ? 'qa' : 'qa demo-price';
-  const sub = el('mobileSubline');
-  mobileFee > 0 ? sub.classList.remove('hidden') : sub.classList.add('hidden');
+
+  if (isAuth()) {
+    el('quoteAmt').textContent = '$' + total;
+    el('quoteAmt').className = 'qa';
+    const sub = el('mobileSubline');
+    if (mobileFee > 0) { sub.textContent = 'includes mobile service fee'; sub.classList.remove('hidden'); }
+    else sub.classList.add('hidden');
+    el('quoteStockLine').classList.add('hidden');
+  } else {
+    // Demo mode
+    const mobileStr = mobileFee > 0 ? ' + ☕' : '';
+    el('quoteAmt').textContent = 'Part + Tax + ❤️' + mobileStr;
+    el('quoteAmt').className = 'qa demo-price';
+    el('mobileSubline').classList.add('hidden');
+    // Stock indicator inside quote card (demo mode)
+    const stockLine = el('quoteStockLine');
+    var stockShown = false;
+    if (allInvRecords.length) {
+      var rec = null;
+      if (type1 === 'iphone_screen' && model1 && tier1) {
+        rec = getStockForModel(model1, tier1);
+      }
+      if (rec) {
+        const stockName = selName(rec.fields['fldZEvcZT2JnX5kwh']);
+        const isIn = stockName === 'In Stock';
+        const min = rec.fields['fldB16jlPFHm11tfW'] || 0;
+        const qty = rec.fields['fldvwFFYSxAJlcFpp'] || 0;
+        const isLow = isIn && min > 0 && qty <= min;
+        stockLine.textContent = isLow ? '⚠ Low Stock' : (isIn ? '✓ In Stock' : '✕ Out of Stock');
+        stockLine.style.color = isLow ? '#fbbf24' : (isIn ? 'var(--green)' : '#ef4444');
+        stockLine.classList.remove('hidden');
+        stockShown = true;
+      } else if (type1) {
+        // Fallback for non-iPhone repairs — rotate through statuses by type
+        var fallbacks = { back_glass: ['✓ In Stock','var(--green)'], battery: ['⚠ Low Stock','#fbbf24'], ipad: ['✕ Out of Stock','#ef4444'], android: ['✓ In Stock','var(--green)'], laptop: ['⚠ Low Stock','#fbbf24'] };
+        var fb = fallbacks[type1];
+        if (fb) { stockLine.textContent = fb[0]; stockLine.style.color = fb[1]; stockLine.classList.remove('hidden'); stockShown = true; }
+      }
+    }
+    if (!stockShown) stockLine.classList.add('hidden');
+  }
+
   el('quoteCard').classList.remove('hidden');
   el('mobileToggleRow').classList.remove('hidden');
   el('secondToggle').classList.remove('hidden');
@@ -762,7 +801,11 @@ function onMilesChange() {
   if (miles <= 0) { mobileFee=0; el('feeBadge').classList.add('hidden'); }
   else {
     mobileFee = miles<=3 ? 15 : Math.ceil(15 + (miles-3)*9);
-    el('feeAmt').textContent = '$'+mobileFee;
+    if (isAuth()) {
+      el('feeAmt').textContent = '$'+mobileFee;
+    } else {
+      el('feeAmt').textContent = 'your mobile fee';
+    }
     el('feeBadge').classList.remove('hidden');
   }
   tryRenderQuote();
@@ -813,10 +856,10 @@ function renderDeal() {
   if (p1<=p2) { dealTotal=getDiscount1()+p2; cheaperName=type1==='iphone_screen'?(model1||'iPhone Screen'):NAMES[type1]; }
   else         { dealTotal=p1+getDiscount2(); cheaperName=type2==='iphone_screen'?(model2||'iPhone Screen'):NAMES[type2]; }
   const savings = fullTotal-dealTotal;
-  el('normalTotal').textContent=isAuth() ? '$'+fullTotal : 'Full price 💰';
-  el('dealTotal').textContent=isAuth() ? '$'+dealTotal : 'Deal price 🤝';
+  el('normalTotal').textContent=isAuth() ? '$'+fullTotal : 'Parts + Tax + ❤️';
+  el('dealTotal').textContent=isAuth() ? '$'+dealTotal : 'Parts + ❤️ + ❤️';
   el('dealDesc').textContent=cheaperName+' · ½ off labor';
-  el('savingsPill').textContent=isAuth() ? 'Saving $'+savings : 'Savings inside 👀';
+  el('savingsPill').textContent=isAuth() ? 'Saving $'+savings : 'They save 🤝';
   el('dealResult').classList.remove('hidden');
 }
 function resetSecond() {
@@ -1108,11 +1151,17 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       btn.className = 'staff-badge';
       el('sentrixLink').style.display = '';
       el('supplierDemo').style.display = 'none';
+      if (el('mobileSub')) el('mobileSub').textContent = '$15 flat · +$9/mile after 3';
+      if (el('secondSub')) el('secondSub').textContent = 'Cheaper repair gets ½ off labor';
     } else {
       btn.textContent = '🔒 Demo Mode';
       btn.className = 'demo-badge';
       el('sentrixLink').style.display = 'none';
       el('supplierDemo').style.display = '';
+      if (el('mobileSub')) el('mobileSub').textContent = 'your mobile fee';
+      if (el('secondSub')) el('secondSub').textContent = 'Cheaper repair gets discount';
+      // Hide actual fee amount if visible
+      if (el('feeAmt') && mobileFee > 0) el('feeAmt').textContent = 'your mobile fee';
     }
   }
 
