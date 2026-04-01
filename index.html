@@ -1261,11 +1261,6 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     el(rowId).classList.remove('hidden');
   }
 
-  // Silent background load for quote-side stock display
-  if (authd) {
-    loadInventoryPage(null, true);
-  }
-
   // ── Auth / Demo Mode ─────────────────────────────────────
   var authd = !!authPass; // auto-authenticated if password already saved
 
@@ -1401,6 +1396,11 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   // Pre-load demo records so quote-side stock badges work immediately in demo mode
   if (!isAuth()) {
     allInvRecords = DEMO_RECORDS;
+  }
+
+  // Silent background load for quote-side stock display (staff mode only)
+  if (isAuth()) {
+    loadInventoryPage(null, true);
   }
 
   // Show demo inventory immediately if on inventory tab and not authed
