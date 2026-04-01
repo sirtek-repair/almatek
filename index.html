@@ -793,6 +793,7 @@ function onCost2Change() {
 // ─── Quote rendering ─────────────────────────────────────
 function tryRenderQuote() {
   const p = getPrice1();
+  try { console.log('[TRQ] p='+p, 'type1='+type1, 'mode1='+mode1, 'model1='+model1, 'tier1='+tier1, 'isAuth='+isAuth()); } catch(dbgE) { console.log('[TRQ] debug error:', dbgE.message); }
   if (p <= 0) { hideQuote(); return; }
   const total = p + mobileFee;
 
@@ -805,43 +806,14 @@ function tryRenderQuote() {
     el('quoteStockLine').classList.add('hidden');
   } else {
     // Demo mode
-    const mobileStr = mobileFee > 0 ? ' + ☕' : '';
+    var mobileStr = mobileFee > 0 ? ' + ☕' : '';
     el('quoteAmt').textContent = 'Part + Tax + ❤️' + mobileStr;
     el('quoteAmt').className = 'qa demo-price';
     el('mobileSubline').classList.add('hidden');
-    // Stock indicator inside quote card (demo mode)
-    const stockLine = el('quoteStockLine');
-    var stockShown = false;
-    try {
-      if (allInvRecords.length) {
-        var rec = null;
-        if (type1 === 'iphone_screen' && model1 && tier1) {
-          rec = getStockForModel(model1, tier1);
-        }
-        if (rec) {
-          const stockName = selName(rec.fields['fldZEvcZT2JnX5kwh']);
-          const isIn = stockName === 'In Stock';
-          const min = rec.fields['fldB16jlPFHm11tfW'] || 0;
-          const qty = rec.fields['fldvwFFYSxAJlcFpp'] || 0;
-          const isLow = isIn && min > 0 && qty <= min;
-          stockLine.textContent = isLow ? '⚠ Low Stock' : (isIn ? '✓ In Stock' : '✕ Out of Stock');
-          stockLine.style.color = isLow ? '#fbbf24' : (isIn ? 'var(--green)' : '#ef4444');
-          stockLine.classList.remove('hidden');
-          stockShown = true;
-        } else if (type1) {
-          // Fallback for non-iPhone repairs
-          var fallbacks = { back_glass: ['✓ In Stock','var(--green)'], battery: ['⚠ Low Stock','#fbbf24'], ipad: ['✕ Out of Stock','#ef4444'], android: ['✓ In Stock','var(--green)'], laptop: ['⚠ Low Stock','#fbbf24'] };
-          var fb = fallbacks[type1];
-          if (fb) { stockLine.textContent = fb[0]; stockLine.style.color = fb[1]; stockLine.classList.remove('hidden'); stockShown = true; }
-        }
-      }
-      if (!stockShown && stockLine) stockLine.classList.add('hidden');
-    } catch(e) {
-      const sl = el('quoteStockLine');
-      if (sl) sl.classList.add('hidden');
-    }
+    el('quoteStockLine').classList.add('hidden');
   }
 
+  console.log('[TRQ] showing quoteCard');
   el('quoteCard').classList.remove('hidden');
   el('mobileToggleRow').classList.remove('hidden');
   el('secondToggle').classList.remove('hidden');
