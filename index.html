@@ -174,6 +174,26 @@
     .staff-badge { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); color: var(--green); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-family: inherit; }
     .demo-price { font-style: italic; }
     .demo-inv-note { text-align: center; color: #fbbf24; font-size: 12px; padding: 8px 0 4px; font-weight: 600; letter-spacing: 0.02em; }
+
+    /* ── Orders tab ──────────────────────────────────── */
+    .orders-tab-nav { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .orders-tab-btn { padding: 8px 12px; font-size: 12px; font-weight: 600; font-family: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .orders-tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .orders-view { display: none; }
+    .orders-view.active { display: block; }
+    .orders-items-list { display: flex; flex-direction: column; gap: 10px; }
+    .orders-empty-state { color: var(--muted); text-align: center; padding: 30px 20px; }
+    .order-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .order-item-info { flex: 1; }
+    .order-item-name { font-weight: 600; color: var(--text); font-size: 14px; }
+    .order-item-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .order-item-qty { display: flex; align-items: center; gap: 4px; }
+    .order-item-qty input { width: 50px; padding: 4px 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; font-family: inherit; text-align: center; }
+    .order-item-btn { padding: 8px 12px; background: var(--accent); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: inherit; }
+    .order-item-btn:hover { opacity: 0.9; }
+    .order-item-btn.remove { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+    .order-item-btn.receive { background: var(--green); }
+    .order-partial-notice { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 12px; color: #fbbf24; }
   </style>
 </head>
 <body>
@@ -192,6 +212,7 @@
 
 <div class="tab-bar">
   <button class="tab-btn active" id="tabQuoteBtn" onclick="switchTab('quote')">💰 Quote</button>
+  <button class="tab-btn" id="tabOrdBtn" onclick="switchTab('orders')">📋 Orders</button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
 </div>
 
@@ -525,6 +546,48 @@
     <div id="ordersLoading" class="loading-msg hidden">Loading orders…</div>
     <div id="ordersList"></div>
   </div>
+</div>
+
+<!-- Orders Tab -->
+<div id="tabOrders" class="hidden">
+<div class="container">
+  <div class="orders-tab-nav">
+    <button class="orders-tab-btn active" onclick="switchOrdersView('needorder')">Need to Order</button>
+    <button class="orders-tab-btn" onclick="switchOrdersView('review')">Review</button>
+    <button class="orders-tab-btn" onclick="switchOrdersView('ordered')">Ordered</button>
+    <button class="orders-tab-btn" onclick="switchOrdersView('receive')">Receive</button>
+  </div>
+
+  <!-- Need to Order Section -->
+  <div id="ordersNeedView" class="orders-view">
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input id="ordersSearchInput" type="text" placeholder="Search items..." oninput="filterOrdersItems()" style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;" />
+      <button onclick="clearOrdersSearch()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;font-size:12px;">Clear</button>
+    </div>
+    <div id="ordersNeedList" class="orders-items-list"></div>
+  </div>
+
+  <!-- Review Order Section -->
+  <div id="ordersReviewView" class="orders-view hidden">
+    <div id="ordersReviewList" class="orders-items-list"></div>
+    <div id="ordersReviewActions" style="display:none;padding:12px;background:var(--surface);border-radius:10px;gap:8px;margin-top:12px;flex:1;">
+      <button onclick="submitOrderRequest()" style="flex:1;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:600;font-family:inherit;">Submit Order</button>
+      <button onclick="clearOrderRequest()" class="cancel-btn" style="flex:1;padding:12px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:10px;cursor:pointer;font-weight:600;font-family:inherit;">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Ordered Section -->
+  <div id="ordersOrderedView" class="orders-view hidden">
+    <div id="ordersOrderedList" class="orders-items-list"></div>
+  </div>
+
+  <!-- Receive Section -->
+  <div id="ordersReceiveView" class="orders-view hidden">
+    <div id="ordersReceiveList" class="orders-items-list"></div>
+  </div>
+
+  <div id="ordersNoData" class="orders-empty-state" style="text-align:center;padding:40px 20px;color:var(--muted);">No items to show</div>
+</div>
 </div>
 
 <div class="inv-toast" id="invToast"></div>
@@ -942,11 +1005,16 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   // ── Tab switching ────────────────────────────────────
   function switchTab(tab) {
     const isQuote = tab === 'quote';
+    const isOrders = tab === 'orders';
+    const isInventory = tab === 'inventory';
     el('tabQuote').classList.toggle('hidden', !isQuote);
-    el('tabInventory').classList.toggle('hidden', isQuote);
+    el('tabOrders').classList.toggle('hidden', !isOrders);
+    el('tabInventory').classList.toggle('hidden', !isInventory);
     el('tabQuoteBtn').classList.toggle('active', isQuote);
-    el('tabInvBtn').classList.toggle('active', !isQuote);
-    if (!isQuote) initInventory();
+    el('tabOrdBtn').classList.toggle('active', isOrders);
+    el('tabInvBtn').classList.toggle('active', isInventory);
+    if (isOrders) initOrders();
+    else if (isInventory) initInventory();
   }
 
   // ── Worker + Airtable config ─────────────────────────
@@ -1225,6 +1293,222 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(function() { t.classList.remove('show'); }, 2500);
+  }
+
+  // ── Orders Tab ─────────────────────────────────────────
+  var ordersState = { staging: [], view: 'needorder' };
+
+  function initOrders() {
+    if (!allInvRecords.length) loadInventory();
+    renderOrdersNeedView();
+  }
+
+  function switchOrdersView(view) {
+    ordersState.view = view;
+    var views = document.querySelectorAll('.orders-view');
+    views.forEach(function(v) { v.classList.remove('active'); });
+    var buttons = document.querySelectorAll('.orders-tab-btn');
+    buttons.forEach(function(b) { b.classList.remove('active'); });
+
+    if (view === 'needorder') {
+      el('ordersNeedView').classList.add('active');
+      buttons[0].classList.add('active');
+      renderOrdersNeedView();
+    } else if (view === 'review') {
+      el('ordersReviewView').classList.add('active');
+      buttons[1].classList.add('active');
+      renderOrdersReviewView();
+    } else if (view === 'ordered') {
+      el('ordersOrderedView').classList.add('active');
+      buttons[2].classList.add('active');
+      renderOrdersOrderedView();
+    } else if (view === 'receive') {
+      el('ordersReceiveView').classList.add('active');
+      buttons[3].classList.add('active');
+      renderOrdersReceiveView();
+    }
+  }
+
+  function filterOrdersItems() {
+    renderOrdersNeedView();
+  }
+
+  function clearOrdersSearch() {
+    el('ordersSearchInput').value = '';
+    renderOrdersNeedView();
+  }
+
+  function renderOrdersNeedView() {
+    var search = el('ordersSearchInput').value.toLowerCase();
+    var items = allInvRecords.filter(function(r) {
+      var name = r.fields['Name'] || '';
+      return name.toLowerCase().indexOf(search) >= 0;
+    });
+    var html = '';
+    items.forEach(function(item) {
+      var name = item.fields['Name'] || 'Unnamed';
+      var status = item.fields['Status'] ? (item.fields['Status'][0] || '') : '';
+      var qty = item.fields['Qty'] || 0;
+      var category = item.fields['Category'] || '';
+      html += '<div class="order-item">' +
+        '<div class="order-item-info">' +
+          '<div class="order-item-name">' + name + '</div>' +
+          '<div class="order-item-meta">' + category + (status ? ' • ' + status : '') + '</div>' +
+        '</div>' +
+        '<div class="order-item-qty">' +
+          '<input type="number" id="qty_' + item.id + '" value="1" min="1" />' +
+          '<button class="order-item-btn" onclick="addToOrderRequest(\'' + item.id + '\', \'' + name + '\')">Add</button>' +
+        '</div>' +
+      '</div>';
+    });
+    if (!html) html = '<div class="orders-empty-state">No items found</div>';
+    el('ordersNeedList').innerHTML = html;
+  }
+
+  function addToOrderRequest(itemId, itemName) {
+    var qtyInput = el('qty_' + itemId);
+    var qty = parseInt(qtyInput.value) || 1;
+    var existing = ordersState.staging.find(function(s) { return s.id === itemId; });
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      ordersState.staging.push({ id: itemId, name: itemName, qty: qty, originalQty: qty });
+    }
+    showToast('Added to order ✓');
+    switchOrdersView('review');
+  }
+
+  function renderOrdersReviewView() {
+    var html = '';
+    if (ordersState.staging.length === 0) {
+      html = '<div class="orders-empty-state">No items staged. Add items from "Need to Order"</div>';
+      el('ordersReviewActions').style.display = 'none';
+    } else {
+      ordersState.staging.forEach(function(item, idx) {
+        html += '<div class="order-item">' +
+          '<div class="order-item-info">' +
+            '<div class="order-item-name">' + item.name + '</div>' +
+            '<div class="order-item-meta">Qty: ' + item.qty + '</div>' +
+          '</div>' +
+          '<div class="order-item-qty">' +
+            '<input type="number" id="review_qty_' + idx + '" value="' + item.qty + '" min="1" onchange="updateStagingQty(' + idx + ')" />' +
+            '<button class="order-item-btn remove" onclick="removeFromOrderRequest(' + idx + ')">Remove</button>' +
+          '</div>' +
+        '</div>';
+      });
+      el('ordersReviewActions').style.display = 'flex';
+    }
+    el('ordersReviewList').innerHTML = html;
+  }
+
+  function updateStagingQty(idx) {
+    var input = el('review_qty_' + idx);
+    ordersState.staging[idx].qty = parseInt(input.value) || 1;
+  }
+
+  function removeFromOrderRequest(idx) {
+    ordersState.staging.splice(idx, 1);
+    renderOrdersReviewView();
+  }
+
+  function clearOrderRequest() {
+    ordersState.staging = [];
+    renderOrdersReviewView();
+  }
+
+  function submitOrderRequest() {
+    if (ordersState.staging.length === 0) {
+      showToast('No items to order');
+      return;
+    }
+    var orderData = ordersState.staging.map(function(item) {
+      return { recordId: item.id, name: item.name, qty: item.qty };
+    });
+    atFetch(AT_BASE + '/' + AT_ORDERS, {
+      method: 'POST',
+      body: JSON.stringify({ fields: { items: JSON.stringify(orderData), status: 'Ordered', date: new Date().toISOString() } })
+    }).then(function(data) {
+      if (data.error) { showToast('Error: ' + (data.error.message || 'check token')); return; }
+      ordersState.staging = [];
+      showToast('Order submitted ✓');
+      loadOrders();
+      renderOrdersOrderedView();
+    }).catch(function() { showToast('Error — check connection'); });
+  }
+
+  function renderOrdersOrderedView() {
+    var html = '<div class="orders-empty-state">No pending orders</div>';
+    if (orderRecords && orderRecords.length > 0) {
+      html = '';
+      orderRecords.forEach(function(order) {
+        if (order.fields.received !== true) {
+          var items = order.fields.items ? JSON.parse(order.fields.items) : [];
+          var itemsStr = items.map(function(i) { return i.name + ' (' + i.qty + ')'; }).join(', ');
+          var date = order.fields.date || '';
+          html += '<div class="order-item">' +
+            '<div class="order-item-info">' +
+              '<div class="order-item-name">Order from ' + date.split('T')[0] + '</div>' +
+              '<div class="order-item-meta">' + itemsStr + '</div>' +
+            '</div>' +
+            '<button class="order-item-btn" onclick="switchOrdersView(\'receive\')">Receive</button>' +
+          '</div>';
+        }
+      });
+    }
+    el('ordersOrderedList').innerHTML = html;
+  }
+
+  function renderOrdersReceiveView() {
+    var html = '<div class="orders-empty-state">No orders to receive</div>';
+    if (orderRecords && orderRecords.length > 0) {
+      html = '';
+      orderRecords.forEach(function(order) {
+        if (order.fields.received !== true) {
+          var items = order.fields.items ? JSON.parse(order.fields.items) : [];
+          items.forEach(function(item, idx) {
+            html += '<div class="order-item">' +
+              '<div class="order-item-info">' +
+                '<div class="order-item-name">' + item.name + '</div>' +
+                '<div class="order-item-meta">Ordered: ' + item.qty + ' units</div>' +
+              '</div>' +
+              '<div class="order-item-qty">' +
+                '<input type="number" id="receive_qty_' + order.id + '_' + idx + '" value="' + item.qty + '" min="1" max="' + item.qty + '" />' +
+                '<button class="order-item-btn receive" onclick="receiveOrderItem(\'' + order.id + '\', ' + idx + ', ' + item.originalQty + ', ' + item.qty + ')">Receive</button>' +
+              '</div>' +
+            '</div>';
+          });
+        }
+      });
+    }
+    el('ordersReceiveList').innerHTML = html;
+  }
+
+  function receiveOrderItem(orderId, itemIdx, originalQty, orderedQty) {
+    var qtyInput = el('receive_qty_' + orderId + '_' + itemIdx);
+    var receivedQty = parseInt(qtyInput.value) || orderedQty;
+    var isPartial = receivedQty < orderedQty;
+
+    if (isPartial) {
+      var notice = '<div class="order-partial-notice">⚠ Partial receipt: ' + receivedQty + ' of ' + orderedQty + ' units. Contact supplier for remaining ' + (orderedQty - receivedQty) + ' units.</div>';
+      qtyInput.parentElement.appendChild(createElementFromHTML(notice));
+    }
+
+    atFetch(AT_BASE + '/' + AT_ORDERS + '/' + orderId, {
+      method: 'PATCH',
+      body: JSON.stringify({ fields: { received: true, dateReceived: new Date().toISOString(), receivedQty: receivedQty } })
+    }).then(function(data) {
+      if (data.error) { showToast('Error: ' + (data.error.message || 'check token')); return; }
+      showToast(isPartial ? 'Partial receipt recorded ⚠' : 'Order received ✓');
+      loadOrders();
+      loadInventory();
+      renderOrdersReceiveView();
+    }).catch(function() { showToast('Error — check connection'); });
+  }
+
+  function createElementFromHTML(htmlString) {
+    var div = document.createElement('div');
+    div.innerHTML = htmlString.trim();
+    return div.firstChild;
   }
 
   // ── Stock status on Quote tab ──────────────────────────
