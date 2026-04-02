@@ -1262,7 +1262,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
 
   function showStockBadge(slot, model, tier) {
     var rowId = 'stockRow' + slot, badgeId = 'stockBadge' + slot, detailId = 'stockDetail' + slot;
-    if (!model || !tier || (!atToken && !allInvRecords.length)) { el(rowId).classList.add('hidden'); return; }
+    if (!model || !tier || !allInvRecords.length) { el(rowId).classList.add('hidden'); return; }
     var rec = getStockForModel(model, tier);
     if (!rec) { el(rowId).classList.add('hidden'); return; }
     var stockName = selName(rec.fields['fldZEvcZT2JnX5kwh']);
