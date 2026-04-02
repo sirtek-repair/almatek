@@ -793,7 +793,7 @@ function onCost2Change() {
 // ─── Quote rendering ─────────────────────────────────────
 function tryRenderQuote() {
   const p = getPrice1();
-  try { console.log('[TRQ] p='+p, 'type1='+type1, 'mode1='+mode1, 'model1='+model1, 'tier1='+tier1, 'isAuth='+isAuth()); } catch(dbgE) { console.log('[TRQ] debug error:', dbgE.message); }
+
   if (p <= 0) { hideQuote(); return; }
   const total = p + mobileFee;
 
@@ -803,7 +803,26 @@ function tryRenderQuote() {
     const sub = el('mobileSubline');
     if (mobileFee > 0) { sub.textContent = 'includes mobile service fee'; sub.classList.remove('hidden'); }
     else sub.classList.add('hidden');
-    el('quoteStockLine').classList.add('hidden');
+    // Show stock status for this part
+    var stockLine = el('quoteStockLine');
+    if (type1 === 'iphone_screen' && model1 && tier1 && allInvRecords.length) {
+      var rec = getStockForModel(model1, tier1);
+      if (rec) {
+        var stockName = selName(rec.fields['fldZEvcZT2JnX5kwh']);
+        var qty = rec.fields['fldvwFFYSxAJlcFpp'] != null ? rec.fields['fldvwFFYSxAJlcFpp'] : 0;
+        var min = rec.fields['fldB16jlPFHm11tfW'] != null ? rec.fields['fldB16jlPFHm11tfW'] : 0;
+        var isIn = stockName === 'In Stock';
+        var isLow = isIn && min > 0 && qty <= min;
+        var cls = isLow ? 'low' : (isIn ? 'in' : 'out');
+        var label = isLow ? '⚠ Low — Qty: ' + qty : (isIn ? '✓ In Stock — Qty: ' + qty : '✕ Out of Stock');
+        stockLine.innerHTML = '<span class="stock-badge ' + cls + '">' + label + '</span>';
+        stockLine.classList.remove('hidden');
+      } else {
+        stockLine.classList.add('hidden');
+      }
+    } else {
+      stockLine.classList.add('hidden');
+    }
   } else {
     // Demo mode
     var mobileStr = mobileFee > 0 ? ' + ☕' : '';
@@ -813,7 +832,6 @@ function tryRenderQuote() {
     el('quoteStockLine').classList.add('hidden');
   }
 
-  console.log('[TRQ] showing quoteCard');
   el('quoteCard').classList.remove('hidden');
   el('mobileToggleRow').classList.remove('hidden');
   el('secondToggle').classList.remove('hidden');
