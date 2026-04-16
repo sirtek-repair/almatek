@@ -194,6 +194,26 @@
     .order-item-btn.remove { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
     .order-item-btn.receive { background: var(--green); }
     .order-partial-notice { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 12px; color: #fbbf24; }
+    /* Need-to-order sub-tabs */
+    .need-sub-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+    .need-sub-btn { flex: 1; padding: 7px 8px; font-size: 12px; font-weight: 600; font-family: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; text-align: center; }
+    .need-sub-btn.active { background: rgba(59,130,246,0.15); border-color: var(--accent); color: var(--text); }
+    /* Tier option cards (replacing tier toggle buttons) */
+    .tier-options { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .tier-option { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.15s; }
+    .tier-option:hover { border-color: #52525b; }
+    .tier-option.active { background: rgba(59,130,246,0.15); border-color: var(--accent); }
+    .tier-option.na { opacity: 0.3; pointer-events: none; }
+    .tier-option-header { display: flex; justify-content: space-between; align-items: center; }
+    .tier-option-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .tier-option.active .tier-option-label { color: rgba(147,197,253,0.9); }
+    .tier-option-price { font-size: 20px; font-weight: 700; color: var(--text); }
+    .tier-option .stock-row { margin-top: 8px; padding: 7px 10px; }
+    /* Copy-to-clipboard button flash */
+    .hlink-copied { background: rgba(16,185,129,0.15) !important; border-color: var(--green) !important; color: var(--green) !important; }
+    /* Partial receipt alert */
+    .receive-alert { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4); border-radius: 10px; padding: 12px 14px; margin-top: 10px; font-size: 13px; color: #ef4444; line-height: 1.5; }
+    .receive-alert strong { display: block; font-size: 14px; margin-bottom: 4px; }
   </style>
 </head>
 <body>
@@ -225,6 +245,11 @@
     <p>Staff Use Only</p>
     <div class="header-links" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;">
       <a href="https://www.mobilesentrix.com" target="_blank" class="hlink" id="sentrixLink">Mobile Sentrix ↗</a>
+      <a href="https://brosphoneparts.com/" target="_blank" class="hlink" id="brosLink">Bros Parts ↗</a>
+      <a href="https://parts4cells.com/" target="_blank" class="hlink" id="p4cLink">Parts4Cells ↗</a>
+      <a href="tel:+19177909209" class="hlink" id="kimiLink">Kimi Soho ☎</a>
+      <button class="hlink" id="repairedBtn" onclick="copyLink(this, 'https://repairedcollective.com', 'Repaired Collective')">Repaired Collective</button>
+      <button class="hlink" id="reviewBtn" onclick="copyLink(this, 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D', 'Review link')">⭐ Review Link</button>
       <span class="hlink" id="supplierDemo" style="display:none;">your part supplier</span>
       <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Demo Mode</button>
     </div>
@@ -236,7 +261,8 @@
     <select id="repairType" onchange="onRepairChange()">
       <option value="">— Select a repair —</option>
       <option value="iphone_screen">iPhone Screen</option>
-      <option value="back_glass">Back Glass</option>
+      <option value="back_glass">Back Glass (Set Price)</option>
+      <option value="back_glass_swap">Back Glass / Frame Swap</option>
       <option value="battery">Battery / Small Parts</option>
       <option value="ipad">iPad Screen</option>
       <option value="android">Android Repair</option>
@@ -324,12 +350,22 @@
             <option>iPhone 4</option>
           </optgroup>
         </select>
-        <div class="tier-row">
-          <button class="tier-btn" id="tier1Std" onclick="setTier1('standard')">Standard</button>
-          <button class="tier-btn" id="tier1Prem" onclick="setTier1('premium')">Premium</button>
+        <div class="tier-options hidden" id="tierOptions1">
+          <div class="tier-option" id="tierBox1Prem" onclick="setTier1('premium')">
+            <div class="tier-option-header">
+              <span class="tier-option-label">Premium</span>
+              <span class="tier-option-price" id="tierPrice1Prem">$—</span>
+            </div>
+            <div class="stock-row hidden" id="stockRow1Prem"><span class="stock-badge" id="stockBadge1Prem"></span><span class="stock-detail" id="stockDetail1Prem"></span></div>
+          </div>
+          <div class="tier-option" id="tierBox1Std" onclick="setTier1('standard')">
+            <div class="tier-option-header">
+              <span class="tier-option-label">Standard</span>
+              <span class="tier-option-price" id="tierPrice1Std">$—</span>
+            </div>
+            <div class="stock-row hidden" id="stockRow1Std"><span class="stock-badge" id="stockBadge1Std"></span><span class="stock-detail" id="stockDetail1Std"></span></div>
+          </div>
         </div>
-        <div class="tier-hint" id="tierHint1"></div>
-        <div class="stock-row hidden" id="stockRow1"><span class="stock-badge" id="stockBadge1"></span><span class="stock-detail" id="stockDetail1"></span></div>
       </div>
       <!-- Manual mode -->
       <div id="iphoneManualInputs" class="hidden">
@@ -339,9 +375,9 @@
       </div>
     </div>
 
-    <!-- Back Glass: model buttons -->
+    <!-- Back Glass: set price buttons (outsourced) -->
     <div id="glassSection" class="hidden">
-      <label class="field-label">iPhone Model Group</label>
+      <label class="field-label">iPhone Model Group — Set Price</label>
       <div class="model-grid">
         <button class="model-btn" onclick="onGlassSelect(50, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong>$50</strong></button>
         <button class="model-btn" onclick="onGlassSelect(60, this)">14 · 15<strong>$60</strong></button>
@@ -389,7 +425,7 @@
   <div id="secondToggle" class="toggle-row hidden" onclick="onToggle2nd()">
     <div class="toggle-text">
       <div class="tl">Adding a 2nd repair?</div>
-      <div class="ts" id="secondSub">Cheaper repair gets ½ off labor</div>
+      <div class="ts" id="secondSub">2nd repair gets ½ off</div>
     </div>
     <div class="switch" id="secondSw"></div>
   </div>
@@ -400,7 +436,8 @@
     <select id="repair2Type" onchange="on2ndRepairChange()">
       <option value="">— Select repair —</option>
       <option value="iphone_screen">iPhone Screen</option>
-      <option value="back_glass">Back Glass</option>
+      <option value="back_glass">Back Glass (Set Price)</option>
+      <option value="back_glass_swap">Back Glass / Frame Swap</option>
       <option value="battery">Battery / Small Parts</option>
       <option value="ipad">iPad Screen</option>
       <option value="android">Android Repair</option>
@@ -451,12 +488,22 @@
               <option>iPhone 5S / SE (1st Gen)</option><option>iPhone SE (1st Gen)</option><option>iPhone 5C</option><option>iPhone 5</option><option>iPhone 4S</option><option>iPhone 4</option>
             </optgroup>
           </select>
-          <div class="tier-row">
-            <button class="tier-btn" id="tier2Std" onclick="setTier2('standard')">Standard</button>
-            <button class="tier-btn" id="tier2Prem" onclick="setTier2('premium')">Premium</button>
+          <div class="tier-options hidden" id="tierOptions2">
+            <div class="tier-option" id="tierBox2Prem" onclick="setTier2('premium')">
+              <div class="tier-option-header">
+                <span class="tier-option-label">Premium</span>
+                <span class="tier-option-price" id="tierPrice2Prem">$—</span>
+              </div>
+              <div class="stock-row hidden" id="stockRow2Prem"><span class="stock-badge" id="stockBadge2Prem"></span><span class="stock-detail" id="stockDetail2Prem"></span></div>
+            </div>
+            <div class="tier-option" id="tierBox2Std" onclick="setTier2('standard')">
+              <div class="tier-option-header">
+                <span class="tier-option-label">Standard</span>
+                <span class="tier-option-price" id="tierPrice2Std">$—</span>
+              </div>
+              <div class="stock-row hidden" id="stockRow2Std"><span class="stock-badge" id="stockBadge2Std"></span><span class="stock-detail" id="stockDetail2Std"></span></div>
+            </div>
           </div>
-          <div class="tier-hint" id="tierHint2"></div>
-          <div class="stock-row hidden" id="stockRow2"><span class="stock-badge" id="stockBadge2"></span><span class="stock-detail" id="stockDetail2"></span></div>
         </div>
         <div id="iphoneManualInputs2" class="hidden">
           <label class="field-label" for="partCostIphone2">Part Cost — Mobile Sentrix</label>
@@ -465,9 +512,9 @@
         </div>
       </div>
 
-      <!-- Back Glass 2nd -->
+      <!-- Back Glass 2nd (set price) -->
       <div id="glassSection2" class="hidden">
-        <label class="field-label">iPhone Model Group</label>
+        <label class="field-label">iPhone Model Group — Set Price</label>
         <div class="model-grid">
           <button class="model-btn" onclick="onGlassSelect2(50, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong>$50</strong></button>
           <button class="model-btn" onclick="onGlassSelect2(60, this)">14 · 15<strong>$60</strong></button>
@@ -553,27 +600,22 @@
 <div class="container">
   <div class="orders-tab-nav">
     <button class="orders-tab-btn active" onclick="switchOrdersView('needorder')">Need to Order</button>
-    <button class="orders-tab-btn" onclick="switchOrdersView('review')">Review</button>
     <button class="orders-tab-btn" onclick="switchOrdersView('ordered')">Ordered</button>
     <button class="orders-tab-btn" onclick="switchOrdersView('receive')">Receive</button>
   </div>
 
   <!-- Need to Order Section -->
-  <div id="ordersNeedView" class="orders-view">
+  <div id="ordersNeedView" class="orders-view active">
     <div style="display:flex;gap:8px;margin-bottom:12px;">
       <input id="ordersSearchInput" type="text" placeholder="Search items..." oninput="filterOrdersItems()" style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;" />
       <button onclick="clearOrdersSearch()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;font-size:12px;">Clear</button>
     </div>
-    <div id="ordersNeedList" class="orders-items-list"></div>
-  </div>
-
-  <!-- Review Order Section -->
-  <div id="ordersReviewView" class="orders-view hidden">
-    <div id="ordersReviewList" class="orders-items-list"></div>
-    <div id="ordersReviewActions" style="display:none;padding:12px;background:var(--surface);border-radius:10px;gap:8px;margin-top:12px;flex:1;">
-      <button onclick="submitOrderRequest()" style="flex:1;padding:12px;background:var(--accent);color:white;border:none;border-radius:10px;cursor:pointer;font-weight:600;font-family:inherit;">Submit Order</button>
-      <button onclick="clearOrderRequest()" class="cancel-btn" style="flex:1;padding:12px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:10px;cursor:pointer;font-weight:600;font-family:inherit;">Cancel</button>
+    <div class="need-sub-tabs">
+      <button class="need-sub-btn active" onclick="switchNeedSubTab('combined', this)">All</button>
+      <button class="need-sub-btn" onclick="switchNeedSubTab('low', this)">⚠ Low Stock</button>
+      <button class="need-sub-btn" onclick="switchNeedSubTab('oos', this)">✕ Out of Stock</button>
     </div>
+    <div id="ordersNeedList" class="orders-items-list"></div>
   </div>
 
   <!-- Ordered Section -->
@@ -592,8 +634,8 @@
 
 <div class="inv-toast" id="invToast"></div>
 <script>
-const LABOR = { iphone_screen:80, back_glass:100, battery:65, ipad:85, android:85, laptop:85 };
-const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', battery:'Battery / Small Parts', ipad:'iPad Screen', android:'Android Repair', laptop:'MacBook / Laptop' };
+const LABOR = { iphone_screen:80, back_glass:100, back_glass_swap:100, battery:65, ipad:85, android:85, laptop:85 };
+const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', android:'Android Repair', laptop:'MacBook / Laptop' };
 
 const SCREEN_PRICES = {
   'iPhone Air':        { standard: null,  premium: 327  },
@@ -666,6 +708,10 @@ function getPrice1() {
       return cost1 > 0 ? fullPrice(cost1, 'iphone_screen') : 0;
     }
   }
+  // Back glass (set price) — cost1 is the fixed customer price
+  if (type1 === 'back_glass') {
+    return cost1 > 0 ? cost1 : 0;
+  }
   return cost1 > 0 ? fullPrice(cost1, type1) : 0;
 }
 
@@ -678,23 +724,11 @@ function getPrice2() {
       return cost2 > 0 ? fullPrice(cost2, 'iphone_screen') : 0;
     }
   }
+  // Back glass (set price) — cost2 is the fixed customer price
+  if (type2 === 'back_glass') {
+    return cost2 > 0 ? cost2 : 0;
+  }
   return cost2 > 0 ? fullPrice(cost2, type2) : 0;
-}
-
-// Discounted: half off labor ($80 for iphone_screen = -$40)
-function getDiscount1() {
-  if (type1 === 'iphone_screen') {
-    if (mode1 === 'select') return getPrice1() - 40;
-    return cost1 > 0 ? Math.ceil(cost1 * 1.2 + 40) : 0;
-  }
-  return cost1 > 0 ? Math.ceil(cost1 * 1.2 + LABOR[type1] / 2) : 0;
-}
-function getDiscount2() {
-  if (type2 === 'iphone_screen') {
-    if (mode2 === 'select') return getPrice2() - 40;
-    return cost2 > 0 ? Math.ceil(cost2 * 1.2 + 40) : 0;
-  }
-  return cost2 > 0 ? Math.ceil(cost2 * 1.2 + LABOR[type2] / 2) : 0;
 }
 
 // ─── Repair type change ──────────────────────────────────
@@ -714,9 +748,7 @@ function onRepairChange() {
     setMode1('select');
     el('partCostIphone').value = '';
     el('modelSelect1').value = '';
-    el('tier1Std').classList.remove('active');
-    el('tier1Prem').classList.remove('active');
-    el('tierHint1').textContent = '';
+    el('tierOptions1').classList.add('hidden');
   } else if (type1 === 'back_glass') {
     el('glassSection').classList.remove('hidden');
     clearBtns('#glassSection');
@@ -735,47 +767,51 @@ function setMode1(m) {
   el('iphoneManualInputs').classList.toggle('hidden', m!=='manual');
   cost1=0; model1=''; tier1='';
   el('partCostIphone').value = '';
+  el('tierOptions1').classList.add('hidden');
   hideQuote();
 }
 
 function onModel1Change() {
   model1 = el('modelSelect1').value; tier1='';
-  hideQuote(); // hide first so updateTierButtons can re-show via tryRenderQuote
-  updateTierButtons1();
-  showStockBadge(1, model1, tier1);
+  hideQuote();
+  updateTierDisplay1();
 }
 
-function updateTierButtons1() {
-  if (!model1) { el('tier1Std').disabled=false; el('tier1Prem').disabled=false; el('tierHint1').textContent=''; return; }
+function updateTierDisplay1() {
+  if (!model1) { el('tierOptions1').classList.add('hidden'); return; }
   const p = SCREEN_PRICES[model1] || {};
-  el('tier1Std').disabled = !p.standard;
-  el('tier1Prem').disabled = !p.premium;
-  el('tier1Std').classList.remove('active');
-  el('tier1Prem').classList.remove('active');
-  if (!p.standard && p.premium) {
-    tier1='premium'; el('tier1Prem').classList.add('active');
-    el('tierHint1').textContent='Only premium available for this model';
-  } else if (p.standard && !p.premium) {
-    tier1='standard'; el('tier1Std').classList.add('active');
-    el('tierHint1').textContent='Only standard available for this model';
-  } else if (p.standard && p.premium) {
-    // Default to standard when both available
-    tier1='standard'; el('tier1Std').classList.add('active');
-    el('tierHint1').textContent='';
+  el('tierOptions1').classList.remove('hidden');
+  // Premium card
+  if (p.premium) {
+    el('tierBox1Prem').classList.remove('na');
+    el('tierPrice1Prem').textContent = '$' + p.premium;
   } else {
-    el('tierHint1').textContent='';
+    el('tierBox1Prem').classList.add('na');
+    el('tierPrice1Prem').textContent = 'N/A';
   }
-  if (tier1) tryRenderQuote();
+  // Standard card
+  if (p.standard) {
+    el('tierBox1Std').classList.remove('na');
+    el('tierPrice1Std').textContent = '$' + p.standard;
+  } else {
+    el('tierBox1Std').classList.add('na');
+    el('tierPrice1Std').textContent = 'N/A';
+  }
+  // Show stock for both tiers
+  showStockBadge('1Prem', model1, 'premium');
+  showStockBadge('1Std', model1, 'standard');
+  // Auto-select: premium first, then standard
+  if (p.premium) { setTier1('premium'); }
+  else if (p.standard) { setTier1('standard'); }
 }
 
 function setTier1(t) {
   if (!model1) return;
   const p = SCREEN_PRICES[model1] || {};
   if (!p[t]) return;
-  tier1=t;
-  el('tier1Std').classList.toggle('active', t==='standard');
-  el('tier1Prem').classList.toggle('active', t==='premium');
-  showStockBadge(1, model1, tier1);
+  tier1 = t;
+  el('tierBox1Prem').classList.toggle('active', t === 'premium');
+  el('tierBox1Std').classList.toggle('active', t === 'standard');
   tryRenderQuote();
 }
 
@@ -788,46 +824,51 @@ function setMode2(m) {
   el('iphoneManualInputs2').classList.toggle('hidden', m!=='manual');
   cost2=0; model2=''; tier2='';
   el('partCostIphone2').value = '';
+  el('tierOptions2').classList.add('hidden');
   el('dealResult').classList.add('hidden');
 }
 
 function onModel2Change() {
   model2 = el('modelSelect2').value; tier2='';
-  updateTierButtons2();
   el('dealResult').classList.add('hidden');
-  showStockBadge(2, model2, tier2);
+  updateTierDisplay2();
 }
 
-function updateTierButtons2() {
-  if (!model2) { el('tier2Std').disabled=false; el('tier2Prem').disabled=false; el('tierHint2').textContent=''; return; }
+function updateTierDisplay2() {
+  if (!model2) { el('tierOptions2').classList.add('hidden'); return; }
   const p = SCREEN_PRICES[model2] || {};
-  el('tier2Std').disabled = !p.standard;
-  el('tier2Prem').disabled = !p.premium;
-  el('tier2Std').classList.remove('active');
-  el('tier2Prem').classList.remove('active');
-  if (!p.standard && p.premium) {
-    tier2='premium'; el('tier2Prem').classList.add('active');
-    el('tierHint2').textContent='Only premium available for this model';
-  } else if (p.standard && !p.premium) {
-    tier2='standard'; el('tier2Std').classList.add('active');
-    el('tierHint2').textContent='Only standard available for this model';
-  } else if (p.standard && p.premium) {
-    tier2='standard'; el('tier2Std').classList.add('active');
-    el('tierHint2').textContent='';
+  el('tierOptions2').classList.remove('hidden');
+  // Premium card
+  if (p.premium) {
+    el('tierBox2Prem').classList.remove('na');
+    el('tierPrice2Prem').textContent = '$' + p.premium;
   } else {
-    el('tierHint2').textContent='';
+    el('tierBox2Prem').classList.add('na');
+    el('tierPrice2Prem').textContent = 'N/A';
   }
-  if (tier2) renderDeal();
+  // Standard card
+  if (p.standard) {
+    el('tierBox2Std').classList.remove('na');
+    el('tierPrice2Std').textContent = '$' + p.standard;
+  } else {
+    el('tierBox2Std').classList.add('na');
+    el('tierPrice2Std').textContent = 'N/A';
+  }
+  // Show stock for both tiers
+  showStockBadge('2Prem', model2, 'premium');
+  showStockBadge('2Std', model2, 'standard');
+  // Auto-select: premium first, then standard
+  if (p.premium) { setTier2('premium'); }
+  else if (p.standard) { setTier2('standard'); }
 }
 
 function setTier2(t) {
   if (!model2) return;
   const p = SCREEN_PRICES[model2] || {};
   if (!p[t]) return;
-  tier2=t;
-  el('tier2Std').classList.toggle('active', t==='standard');
-  el('tier2Prem').classList.toggle('active', t==='premium');
-  showStockBadge(2, model2, tier2);
+  tier2 = t;
+  el('tierBox2Prem').classList.toggle('active', t === 'premium');
+  el('tierBox2Std').classList.toggle('active', t === 'standard');
   renderDeal();
 }
 
@@ -949,7 +990,7 @@ function onToggle2nd() {
   el('secondToggle').classList.toggle('active', secondOpen);
   el('secondCard').classList.toggle('hidden', !secondOpen);
   if (!isAuth()) {
-    el('secondSub').textContent = secondOpen ? 'Cheaper repair gets a discount ❤️' : 'Cheaper repair gets a discount';
+    el('secondSub').textContent = secondOpen ? '2nd repair gets a discount ❤️' : '2nd repair gets a discount';
   }
   if (!secondOpen) el('dealResult').classList.add('hidden');
 }
@@ -964,8 +1005,7 @@ function on2ndRepairChange() {
     setMode2('select');
     el('partCostIphone2').value='';
     el('modelSelect2').value='';
-    el('tier2Std').classList.remove('active'); el('tier2Prem').classList.remove('active');
-    el('tierHint2').textContent='';
+    el('tierOptions2').classList.add('hidden');
   } else if (type2==='back_glass') {
     el('glassSection2').classList.remove('hidden');
     clearBtns('#glassSection2');
@@ -978,13 +1018,14 @@ function renderDeal() {
   const p1=getPrice1(), p2=getPrice2();
   if (p1<=0 || p2<=0) return;
   const fullTotal = p1+p2;
-  let dealTotal, cheaperName;
-  if (p1<=p2) { dealTotal=getDiscount1()+p2; cheaperName=type1==='iphone_screen'?(model1||'iPhone Screen'):NAMES[type1]; }
-  else         { dealTotal=p1+getDiscount2(); cheaperName=type2==='iphone_screen'?(model2||'iPhone Screen'):NAMES[type2]; }
-  const savings = fullTotal-dealTotal;
+  // 2nd repair always gets ½ off its regular price
+  const discounted2 = Math.ceil(p2 / 2);
+  const dealTotal = p1 + discounted2;
+  const savings = fullTotal - dealTotal;
+  const repair2Name = type2==='iphone_screen' ? (model2||'iPhone Screen') : NAMES[type2];
   el('normalTotal').textContent=isAuth() ? '$'+fullTotal : 'Parts + Tax + ❤️';
   el('dealTotal').textContent=isAuth() ? '$'+dealTotal : 'Parts + ❤️ + ❤️';
-  el('dealDesc').textContent=isAuth() ? cheaperName+' · ½ off labor' : cheaperName;
+  el('dealDesc').textContent=isAuth() ? repair2Name+' · ½ off' : repair2Name;
   el('savingsPill').textContent=isAuth() ? 'Saving $'+savings : 'They save 🤝';
   el('dealResult').classList.remove('hidden');
 }
@@ -1064,7 +1105,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       } else {
         invLoaded = true;
         if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); }
-        else { showStockBadge(1, model1, tier1); showStockBadge(2, model2, tier2); }
+        else { showStockBadge('1Prem', model1, 'premium'); showStockBadge('1Std', model1, 'standard'); showStockBadge('2Prem', model2, 'premium'); showStockBadge('2Std', model2, 'standard'); }
       }
     }).catch(function() { if (!quiet) el('invLoading').textContent = 'Network error — check connection.'; });
   }
@@ -1296,219 +1337,183 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   }
 
   // ── Orders Tab ─────────────────────────────────────────
-  var ordersState = { staging: [], view: 'needorder' };
+  var ordersState = { view: 'needorder' };
+  var needSubTab = 'combined';
+  var allOrderRecords = [];
 
   function initOrders() {
     if (!allInvRecords.length) loadInventory();
-    renderOrdersNeedView();
+    loadOrdersData();
+    switchOrdersView(ordersState.view || 'needorder');
+  }
+
+  function loadOrdersData() {
+    if (!isAuth()) { allOrderRecords = DEMO_ORDERS; return; }
+    atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50')
+      .then(function(data) {
+        if (data.error) return;
+        allOrderRecords = data.records || [];
+        if (ordersState.view === 'ordered') renderOrdersOrderedView();
+        if (ordersState.view === 'receive') renderOrdersReceiveView();
+      }).catch(function() {});
   }
 
   function switchOrdersView(view) {
     ordersState.view = view;
-    var views = document.querySelectorAll('.orders-view');
-    views.forEach(function(v) { v.classList.remove('active'); });
-    var buttons = document.querySelectorAll('.orders-tab-btn');
-    buttons.forEach(function(b) { b.classList.remove('active'); });
-
+    document.querySelectorAll('.orders-view').forEach(function(v) { v.classList.remove('active'); });
+    document.querySelectorAll('.orders-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    var btns = document.querySelectorAll('.orders-tab-btn');
     if (view === 'needorder') {
-      el('ordersNeedView').classList.add('active');
-      buttons[0].classList.add('active');
+      el('ordersNeedView').classList.add('active'); btns[0].classList.add('active');
       renderOrdersNeedView();
-    } else if (view === 'review') {
-      el('ordersReviewView').classList.add('active');
-      buttons[1].classList.add('active');
-      renderOrdersReviewView();
     } else if (view === 'ordered') {
-      el('ordersOrderedView').classList.add('active');
-      buttons[2].classList.add('active');
-      renderOrdersOrderedView();
+      el('ordersOrderedView').classList.add('active'); btns[1].classList.add('active');
+      if (!allOrderRecords.length) loadOrdersData(); else renderOrdersOrderedView();
     } else if (view === 'receive') {
-      el('ordersReceiveView').classList.add('active');
-      buttons[3].classList.add('active');
-      renderOrdersReceiveView();
+      el('ordersReceiveView').classList.add('active'); btns[2].classList.add('active');
+      if (!allOrderRecords.length) loadOrdersData(); else renderOrdersReceiveView();
     }
   }
 
-  function filterOrdersItems() {
-    renderOrdersNeedView();
-  }
+  function filterOrdersItems() { renderOrdersNeedView(); }
 
-  function clearOrdersSearch() {
-    el('ordersSearchInput').value = '';
+  function clearOrdersSearch() { el('ordersSearchInput').value = ''; renderOrdersNeedView(); }
+
+  function switchNeedSubTab(tab, btn) {
+    needSubTab = tab;
+    document.querySelectorAll('.need-sub-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
     renderOrdersNeedView();
   }
 
   function renderOrdersNeedView() {
-    var search = el('ordersSearchInput').value.toLowerCase();
+    var search = (el('ordersSearchInput').value || '').toLowerCase();
     var items = allInvRecords.filter(function(r) {
-      var name = r.fields['Name'] || '';
-      return name.toLowerCase().indexOf(search) >= 0;
+      var name = (r.fields['fldWzYeFcqm0qnxD8'] || '').toLowerCase();
+      if (search && name.indexOf(search) < 0) return false;
+      var stockName = selName(r.fields['fldZEvcZT2JnX5kwh']);
+      var qty = r.fields['fldvwFFYSxAJlcFpp'] != null ? r.fields['fldvwFFYSxAJlcFpp'] : 0;
+      var min = r.fields['fldB16jlPFHm11tfW'] != null ? r.fields['fldB16jlPFHm11tfW'] : 0;
+      var isIn = stockName === 'In Stock';
+      var isLow = isIn && min > 0 && qty <= min;
+      var isOOS = !isIn;
+      if (needSubTab === 'low') return isLow;
+      if (needSubTab === 'oos') return isOOS;
+      return isLow || isOOS;
     });
     var html = '';
-    items.forEach(function(item) {
-      var name = item.fields['Name'] || 'Unnamed';
-      var status = item.fields['Status'] ? (item.fields['Status'][0] || '') : '';
-      var qty = item.fields['Qty'] || 0;
-      var category = item.fields['Category'] || '';
+    items.forEach(function(r) {
+      var id = r.id;
+      var name = r.fields['fldWzYeFcqm0qnxD8'] || 'Unnamed';
+      var stockName = selName(r.fields['fldZEvcZT2JnX5kwh']);
+      var qty = r.fields['fldvwFFYSxAJlcFpp'] != null ? r.fields['fldvwFFYSxAJlcFpp'] : 0;
+      var min = r.fields['fldB16jlPFHm11tfW'] != null ? r.fields['fldB16jlPFHm11tfW'] : 0;
+      var isIn = stockName === 'In Stock';
+      var isLow = isIn && min > 0 && qty <= min;
+      var suggestedQty = isLow ? Math.max(1, min - qty) : (min > 0 ? min : 1);
+      var safeName = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      var cls = isLow ? 'low' : 'out';
+      var badge = isLow ? '⚠ Low' : '✕ O.O.S.';
       html += '<div class="order-item">' +
         '<div class="order-item-info">' +
-          '<div class="order-item-name">' + name + '</div>' +
-          '<div class="order-item-meta">' + category + (status ? ' • ' + status : '') + '</div>' +
+          '<div class="order-item-name">' + name + ' <span class="stock-badge ' + cls + '" style="font-size:10px;padding:2px 6px;">' + badge + '</span></div>' +
+          '<div class="order-item-meta">Qty: ' + qty + (min > 0 ? ' · Min: ' + min : '') + ' · Suggest: ' + suggestedQty + '</div>' +
         '</div>' +
         '<div class="order-item-qty">' +
-          '<input type="number" id="qty_' + item.id + '" value="1" min="1" />' +
-          '<button class="order-item-btn" onclick="addToOrderRequest(\'' + item.id + '\', \'' + name + '\')">Add</button>' +
+          '<input type="number" id="needqty_' + id + '" value="' + suggestedQty + '" min="1" />' +
+          '<button class="order-item-btn" onclick="submitDirectOrder(\'' + id + '\',\'' + safeName + '\')">Order</button>' +
         '</div>' +
       '</div>';
     });
-    if (!html) html = '<div class="orders-empty-state">No items found</div>';
+    if (!html) html = '<div class="orders-empty-state">' + (allInvRecords.length ? 'No items need ordering' : 'Loading inventory...') + '</div>';
     el('ordersNeedList').innerHTML = html;
   }
 
-  function addToOrderRequest(itemId, itemName) {
-    var qtyInput = el('qty_' + itemId);
-    var qty = parseInt(qtyInput.value) || 1;
-    var existing = ordersState.staging.find(function(s) { return s.id === itemId; });
-    if (existing) {
-      existing.qty += qty;
-    } else {
-      ordersState.staging.push({ id: itemId, name: itemName, qty: qty, originalQty: qty });
-    }
-    showToast('Added to order ✓');
-    switchOrdersView('review');
-  }
-
-  function renderOrdersReviewView() {
-    var html = '';
-    if (ordersState.staging.length === 0) {
-      html = '<div class="orders-empty-state">No items staged. Add items from "Need to Order"</div>';
-      el('ordersReviewActions').style.display = 'none';
-    } else {
-      ordersState.staging.forEach(function(item, idx) {
-        html += '<div class="order-item">' +
-          '<div class="order-item-info">' +
-            '<div class="order-item-name">' + item.name + '</div>' +
-            '<div class="order-item-meta">Qty: ' + item.qty + '</div>' +
-          '</div>' +
-          '<div class="order-item-qty">' +
-            '<input type="number" id="review_qty_' + idx + '" value="' + item.qty + '" min="1" onchange="updateStagingQty(' + idx + ')" />' +
-            '<button class="order-item-btn remove" onclick="removeFromOrderRequest(' + idx + ')">Remove</button>' +
-          '</div>' +
-        '</div>';
-      });
-      el('ordersReviewActions').style.display = 'flex';
-    }
-    el('ordersReviewList').innerHTML = html;
-  }
-
-  function updateStagingQty(idx) {
-    var input = el('review_qty_' + idx);
-    ordersState.staging[idx].qty = parseInt(input.value) || 1;
-  }
-
-  function removeFromOrderRequest(idx) {
-    ordersState.staging.splice(idx, 1);
-    renderOrdersReviewView();
-  }
-
-  function clearOrderRequest() {
-    ordersState.staging = [];
-    renderOrdersReviewView();
-  }
-
-  function submitOrderRequest() {
-    if (ordersState.staging.length === 0) {
-      showToast('No items to order');
-      return;
-    }
-    var orderData = ordersState.staging.map(function(item) {
-      return { recordId: item.id, name: item.name, qty: item.qty };
-    });
-    atFetch(AT_BASE + '/' + AT_ORDERS, {
-      method: 'POST',
-      body: JSON.stringify({ fields: { items: JSON.stringify(orderData), status: 'Ordered', date: new Date().toISOString() } })
-    }).then(function(data) {
-      if (data.error) { showToast('Error: ' + (data.error.message || 'check token')); return; }
-      ordersState.staging = [];
-      showToast('Order submitted ✓');
-      loadOrders();
-      renderOrdersOrderedView();
-    }).catch(function() { showToast('Error — check connection'); });
+  function submitDirectOrder(itemId, itemName) {
+    if (!isAuth()) { showToast('Log in to place orders 🔒'); return; }
+    var qtyInput = el('needqty_' + itemId);
+    var qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
+    var fields = { 'Name': 'Order: ' + itemName, 'Item': [itemId], 'QTY': qty };
+    atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: fields }) })
+      .then(function(data) {
+        if (data.error) { showToast('Error: ' + (data.error.message || 'check token')); return; }
+        showToast(itemName + ' — order placed ✓');
+        allOrderRecords = [];
+        loadOrdersData();
+        loadOrders();
+      }).catch(function() { showToast('Error — check connection'); });
   }
 
   function renderOrdersOrderedView() {
-    var html = '<div class="orders-empty-state">No pending orders</div>';
-    if (orderRecords && orderRecords.length > 0) {
-      html = '';
-      orderRecords.forEach(function(order) {
-        if (order.fields.received !== true) {
-          var items = order.fields.items ? JSON.parse(order.fields.items) : [];
-          var itemsStr = items.map(function(i) { return i.name + ' (' + i.qty + ')'; }).join(', ');
-          var date = order.fields.date || '';
-          html += '<div class="order-item">' +
-            '<div class="order-item-info">' +
-              '<div class="order-item-name">Order from ' + date.split('T')[0] + '</div>' +
-              '<div class="order-item-meta">' + itemsStr + '</div>' +
-            '</div>' +
-            '<button class="order-item-btn" onclick="switchOrdersView(\'receive\')">Receive</button>' +
-          '</div>';
-        }
-      });
-    }
-    el('ordersOrderedList').innerHTML = html;
+    var pending = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; });
+    if (!pending.length) { el('ordersOrderedList').innerHTML = '<div class="orders-empty-state">No pending orders</div>'; return; }
+    el('ordersOrderedList').innerHTML = pending.map(function(r) {
+      var name = r.fields['fldF0TJARgHugOh83'] || '—';
+      var qty = r.fields['fldbKVKkNgZtShHwh'] != null ? r.fields['fldbKVKkNgZtShHwh'] : '?';
+      var supp = r.fields['fldVq43gyw9HVLYNI'] || '';
+      var dateRaw = r.fields['fldeHBNhXCrqAJrjp'];
+      var dateStr = dateRaw ? new Date(dateRaw).toLocaleDateString() : '';
+      var meta = ['Qty: ' + qty];
+      if (supp) meta.push(supp);
+      if (dateStr) meta.push('Ordered ' + dateStr);
+      return '<div class="order-item">' +
+        '<div class="order-item-info">' +
+          '<div class="order-item-name">' + name + '</div>' +
+          '<div class="order-item-meta">' + meta.join(' · ') + '</div>' +
+        '</div>' +
+        '<button class="order-item-btn receive" onclick="switchOrdersView(\'receive\')">→ Receive</button>' +
+      '</div>';
+    }).join('');
   }
 
   function renderOrdersReceiveView() {
-    var html = '<div class="orders-empty-state">No orders to receive</div>';
-    if (orderRecords && orderRecords.length > 0) {
-      html = '';
-      orderRecords.forEach(function(order) {
-        if (order.fields.received !== true) {
-          var items = order.fields.items ? JSON.parse(order.fields.items) : [];
-          items.forEach(function(item, idx) {
-            html += '<div class="order-item">' +
-              '<div class="order-item-info">' +
-                '<div class="order-item-name">' + item.name + '</div>' +
-                '<div class="order-item-meta">Ordered: ' + item.qty + ' units</div>' +
-              '</div>' +
-              '<div class="order-item-qty">' +
-                '<input type="number" id="receive_qty_' + order.id + '_' + idx + '" value="' + item.qty + '" min="1" max="' + item.qty + '" />' +
-                '<button class="order-item-btn receive" onclick="receiveOrderItem(\'' + order.id + '\', ' + idx + ', ' + item.originalQty + ', ' + item.qty + ')">Receive</button>' +
-              '</div>' +
-            '</div>';
-          });
-        }
-      });
-    }
-    el('ordersReceiveList').innerHTML = html;
+    var pending = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; });
+    if (!pending.length) { el('ordersReceiveList').innerHTML = '<div class="orders-empty-state">No orders to receive</div>'; return; }
+    el('ordersReceiveList').innerHTML = pending.map(function(r) {
+      var ordId = r.id;
+      var name = r.fields['fldF0TJARgHugOh83'] || '—';
+      var orderedQty = r.fields['fldbKVKkNgZtShHwh'] != null ? r.fields['fldbKVKkNgZtShHwh'] : 1;
+      var supp = r.fields['fldVq43gyw9HVLYNI'] || 'supplier';
+      return '<div class="order-item" id="recv-' + ordId + '" style="flex-direction:column;align-items:stretch;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">' +
+          '<div class="order-item-info">' +
+            '<div class="order-item-name">' + name + '</div>' +
+            '<div class="order-item-meta">Ordered: ' + orderedQty + ' units</div>' +
+          '</div>' +
+          '<div class="order-item-qty">' +
+            '<input type="number" id="recvqty_' + ordId + '" value="' + orderedQty + '" min="1" max="' + orderedQty + '" style="width:60px;" />' +
+            '<button class="order-item-btn receive" onclick="receiveOrderItem(\'' + ordId + '\',' + orderedQty + ',\'' + supp.replace(/'/g,"\\'") + '\')">Receive</button>' +
+          '</div>' +
+        '</div>' +
+        '<div id="recvalert-' + ordId + '"></div>' +
+      '</div>';
+    }).join('');
   }
 
-  function receiveOrderItem(orderId, itemIdx, originalQty, orderedQty) {
-    var qtyInput = el('receive_qty_' + orderId + '_' + itemIdx);
-    var receivedQty = parseInt(qtyInput.value) || orderedQty;
+  function receiveOrderItem(orderId, orderedQty, supplier) {
+    var qtyInput = el('recvqty_' + orderId);
+    var receivedQty = parseInt(qtyInput ? qtyInput.value : orderedQty) || orderedQty;
     var isPartial = receivedQty < orderedQty;
+    var alertEl = el('recvalert-' + orderId);
 
     if (isPartial) {
-      var notice = '<div class="order-partial-notice">⚠ Partial receipt: ' + receivedQty + ' of ' + orderedQty + ' units. Contact supplier for remaining ' + (orderedQty - receivedQty) + ' units.</div>';
-      qtyInput.parentElement.appendChild(createElementFromHTML(notice));
+      var missing = orderedQty - receivedQty;
+      if (alertEl) alertEl.innerHTML = '<div class="receive-alert"><strong>⚠ Partial Receipt — Contact Supplier</strong>' +
+        'Received ' + receivedQty + ' of ' + orderedQty + ' ordered units. ' + missing + ' unit' + (missing > 1 ? 's' : '') + ' missing from ' + supplier + '.<br>' +
+        'Request a refund or fulfillment of the remaining units.</div>';
     }
 
     atFetch(AT_BASE + '/' + AT_ORDERS + '/' + orderId, {
       method: 'PATCH',
-      body: JSON.stringify({ fields: { received: true, dateReceived: new Date().toISOString(), receivedQty: receivedQty } })
+      body: JSON.stringify({ fields: { 'received': true, 'date recieved': new Date().toISOString() } })
     }).then(function(data) {
       if (data.error) { showToast('Error: ' + (data.error.message || 'check token')); return; }
-      showToast(isPartial ? 'Partial receipt recorded ⚠' : 'Order received ✓');
+      showToast(isPartial ? '⚠ Partial receipt — ' + receivedQty + ' of ' + orderedQty + ' units' : 'Order received ✓');
+      allOrderRecords = [];
+      loadOrdersData();
       loadOrders();
-      loadInventory();
-      renderOrdersReceiveView();
+      if (!isPartial) loadInventory();
     }).catch(function() { showToast('Error — check connection'); });
-  }
-
-  function createElementFromHTML(htmlString) {
-    var div = document.createElement('div');
-    div.innerHTML = htmlString.trim();
-    return div.firstChild;
   }
 
   // ── Stock status on Quote tab ──────────────────────────
@@ -1545,10 +1550,13 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   }
 
   function showStockBadge(slot, model, tier) {
+    // slot can be '1Prem', '1Std', '2Prem', '2Std'
     var rowId = 'stockRow' + slot, badgeId = 'stockBadge' + slot, detailId = 'stockDetail' + slot;
-    if (!model || !tier || !allInvRecords.length) { el(rowId).classList.add('hidden'); return; }
+    var rowEl = el(rowId);
+    if (!rowEl) return;
+    if (!model || !tier || !allInvRecords.length) { rowEl.classList.add('hidden'); return; }
     var rec = getStockForModel(model, tier);
-    if (!rec) { el(rowId).classList.add('hidden'); return; }
+    if (!rec) { rowEl.classList.add('hidden'); return; }
     var stockName = selName(rec.fields['fldZEvcZT2JnX5kwh']);
     var qty = rec.fields['fldvwFFYSxAJlcFpp'] != null ? rec.fields['fldvwFFYSxAJlcFpp'] : 0;
     var min = rec.fields['fldB16jlPFHm11tfW'] != null ? rec.fields['fldB16jlPFHm11tfW'] : 0;
@@ -1560,7 +1568,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     el(badgeId).className = 'stock-badge ' + cls;
     el(badgeId).textContent = label;
     el(detailId).textContent = detail;
-    el(rowId).classList.remove('hidden');
+    rowEl.classList.remove('hidden');
   }
 
   // ── Auth / Demo Mode ─────────────────────────────────────
@@ -1623,9 +1631,12 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       btn.textContent = '🔓 Staff Mode';
       btn.className = 'staff-badge';
       el('sentrixLink').style.display = '';
+      el('brosLink').style.display = '';
+      el('p4cLink').style.display = '';
+      el('kimiLink').style.display = '';
       el('supplierDemo').style.display = 'none';
       if (el('mobileSub')) el('mobileSub').textContent = '$15 flat · +$9/mile after 3';
-      if (el('secondSub')) el('secondSub').textContent = 'Cheaper repair gets ½ off labor';
+      if (el('secondSub')) el('secondSub').textContent = '2nd repair gets ½ off';
       // Restore fee badge to real amount if miles were entered
       if (mobileFee > 0) {
         el('feeBadgeLabel').textContent = 'Mobile service fee';
@@ -1635,14 +1646,36 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       btn.textContent = '🔒 Demo Mode';
       btn.className = 'demo-badge';
       el('sentrixLink').style.display = 'none';
+      el('brosLink').style.display = 'none';
+      el('p4cLink').style.display = 'none';
+      el('kimiLink').style.display = 'none';
       el('supplierDemo').style.display = '';
       if (el('mobileSub')) el('mobileSub').textContent = mobileOpen ? 'your mobile fee ☕' : 'your mobile fee';
-      if (el('secondSub')) el('secondSub').textContent = secondOpen ? 'Cheaper repair gets a discount ❤️' : 'Cheaper repair gets a discount';
+      if (el('secondSub')) el('secondSub').textContent = secondOpen ? 'Adding a 2nd repair gets a discount ❤️' : '2nd repair gets a discount';
       // Hide actual fee amount if visible
       if (mobileFee > 0) {
         el('feeAmt').textContent = '';
         el('feeBadgeLabel').textContent = 'Mobile service fee included in quote ☕';
       }
+    }
+  }
+
+  // ── Copy-to-clipboard helper ────────────────────────────
+  function copyLink(btn, url, label) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function() {
+        var orig = btn.textContent;
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('hlink-copied');
+        setTimeout(function() { btn.textContent = orig; btn.classList.remove('hlink-copied'); }, 1800);
+      }).catch(function() { showToast('Copy failed — check browser permissions'); });
+    } else {
+      // Fallback for older browsers
+      var ta = document.createElement('textarea');
+      ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); showToast(label + ' copied ✓'); } catch(e) { showToast('Copy not supported'); }
+      document.body.removeChild(ta);
     }
   }
 
