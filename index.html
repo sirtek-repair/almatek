@@ -1635,6 +1635,8 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       el('p4cLink').style.display = '';
       el('kimiLink').style.display = '';
       el('supplierDemo').style.display = 'none';
+      el('repairedBtn').textContent = 'Repaired Collective';
+      el('reviewBtn').textContent = '⭐ Review Link';
       if (el('mobileSub')) el('mobileSub').textContent = '$15 flat · +$9/mile after 3';
       if (el('secondSub')) el('secondSub').textContent = '2nd repair gets ½ off';
       // Restore fee badge to real amount if miles were entered
@@ -1650,6 +1652,8 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       el('p4cLink').style.display = 'none';
       el('kimiLink').style.display = 'none';
       el('supplierDemo').style.display = '';
+      el('repairedBtn').textContent = 'your website';
+      el('reviewBtn').textContent = 'your review link';
       if (el('mobileSub')) el('mobileSub').textContent = mobileOpen ? 'your mobile fee ☕' : 'your mobile fee';
       if (el('secondSub')) el('secondSub').textContent = secondOpen ? 'Adding a 2nd repair gets a discount ❤️' : '2nd repair gets a discount';
       // Hide actual fee amount if visible
