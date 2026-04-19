@@ -1263,6 +1263,11 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   var currentUser = localStorage.getItem('almatek_current_user') || '';
 
   // Google Sheets user backend
+  if (location.search.includes('reset-sheet')) {
+    localStorage.removeItem('almatek_script_url');
+    localStorage.removeItem('almatek_users_secret');
+    history.replaceState(null, '', location.pathname);
+  }
   var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '';
   var USERS_SECRET     = localStorage.getItem('almatek_users_secret') || '';
 
