@@ -1848,7 +1848,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     if (USERS_SCRIPT_URL) {
       sheetsCall({ action: 'login', pass: input }).then(function(data) {
         if (data.ok) {
-          onStaffLoginSuccess(input, data.name, false, data.structure);
+          onStaffLoginSuccess(input, data.name, false, data.structure, data.apiPass);
         } else {
           tryWorkerAuth(input);
         }
@@ -1873,10 +1873,17 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     });
   }
 
-  function onStaffLoginSuccess(pass, name, isWorkerToken, structure) {
+  function onStaffLoginSuccess(pass, name, isWorkerToken, structure, sheetApiPass) {
     authPass = pass;
-    if (isWorkerToken) { apiPass = pass; localStorage.setItem('almatek_api_pass', pass); }
-    else { apiPass = localStorage.getItem('almatek_api_pass') || apiPass; }
+    if (isWorkerToken) {
+      apiPass = pass;
+      localStorage.setItem('almatek_api_pass', pass);
+    } else if (sheetApiPass) {
+      apiPass = sheetApiPass;
+      localStorage.setItem('almatek_api_pass', sheetApiPass);
+    } else {
+      apiPass = localStorage.getItem('almatek_api_pass') || apiPass;
+    }
     localStorage.setItem('almatek_pass', pass);
     currentUser = name;
     currentUserStructure = structure || 'standard';
