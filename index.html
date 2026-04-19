@@ -709,13 +709,25 @@
       </select>
     </div>
     <div class="gap" style="margin-top:14px;">
+      <label class="field-label">Pay Structure</label>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button id="structBtnStandard" class="need-sub-btn active" onclick="setPayStructure('standard')">Standard</button>
+        <button id="structBtnFlat" class="need-sub-btn" onclick="setPayStructure('flat')">Flat Rate</button>
+      </div>
+    </div>
+    <div class="gap" style="margin-top:14px;">
       <label class="field-label" for="bookerRepairs">Repairs Booked</label>
       <input type="number" id="bookerRepairs" placeholder="0" min="0" step="1" oninput="calcBookerPay()" />
     </div>
-    <div class="gap" style="margin-top:14px;">
+    <div id="avgProfitRow" class="gap" style="margin-top:14px;">
       <label class="field-label" for="bookerAvgProfit">Avg Profit Per Repair ($)</label>
       <input type="number" id="bookerAvgProfit" value="110" min="0" step="1" oninput="calcBookerPay()" />
       <p class="hint">Default $110 — adjust if needed</p>
+    </div>
+    <div id="flatRevshareRow" class="gap hidden" style="margin-top:14px;">
+      <label class="field-label" for="flatRevshare">Rev Share % (optional)</label>
+      <input type="number" id="flatRevshare" value="0" min="0" max="100" step="0.5" oninput="calcBookerPay()" />
+      <p class="hint">Leave 0 if not applicable yet</p>
     </div>
   </div>
 
@@ -2004,47 +2016,64 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   }
 
   // ── Booker Pay Calculator ────────────────────────────────
+  var payStructure = 'standard';
+
+  function setPayStructure(type) {
+    payStructure = type;
+    el('structBtnStandard').classList.toggle('active', type === 'standard');
+    el('structBtnFlat').classList.toggle('active', type === 'flat');
+    el('avgProfitRow').classList.toggle('hidden', type === 'flat');
+    el('flatRevshareRow').classList.toggle('hidden', type !== 'flat');
+    calcBookerPay();
+  }
+
   function calcBookerPay() {
     var repairs = parseInt(el('bookerRepairs').value) || 0;
-    var avgProfit = parseFloat(el('bookerAvgProfit').value) || 110;
     if (repairs <= 0) { el('bookerResult').classList.add('hidden'); return; }
 
-    var base = 0, perRepairPay = 0, revshare = 0, phase;
-
-    if (repairs >= 110) {
-      // Phase 2: $15/repair + tiered base + 5% revshare
-      phase = 2;
-      base = repairs >= 250 ? 500 : 200;
-      perRepairPay = repairs * 15;
-      revshare = Math.round(avgProfit * repairs * 0.05);
-    } else {
-      // Phase 1: $25/repair + 3% revshare, no base
-      phase = 1;
-      perRepairPay = repairs * 25;
-      revshare = Math.round(avgProfit * repairs * 0.03);
-    }
-
-    var totalBooker = base + perRepairPay + revshare;
-    var totalRevenue = avgProfit * repairs;
-    var ownerTake = totalRevenue - totalBooker;
-
+    var base = 0, perRepairPay = 0, revshare = 0, totalRevenue = 0;
     var tag = el('bookerModelTag');
-    tag.className = 'booker-model-tag m' + phase;
-    tag.textContent = phase === 1 ? 'Phase 1 — $25/repair + 3% Rev Share' : 'Phase 2 — $15/repair + Tiered Base + 5% Rev Share';
-
     var rows = [];
-    if (phase === 2) {
+
+    if (payStructure === 'flat') {
+      var revPct = parseFloat(el('flatRevshare').value) || 0;
+      base = 50;
+      perRepairPay = repairs * 5;
+      revshare = revPct > 0 ? Math.round(totalRevenue * revPct / 100) : 0;
+      tag.className = 'booker-model-tag m1';
+      tag.textContent = 'Flat Rate — $50 base + $5/repair' + (revPct > 0 ? ' + ' + revPct + '% Rev Share' : '');
       rows.push(['Base Pay', '$' + base]);
+      rows.push(['Per-Repair (' + repairs + ' × $5)', '$' + perRepairPay]);
+      if (revPct > 0) rows.push(['Rev Share (' + revPct + '%)', '$' + revshare]);
+    } else {
+      var avgProfit = parseFloat(el('bookerAvgProfit').value) || 110;
+      totalRevenue = avgProfit * repairs;
+      var phase;
+      if (repairs >= 110) {
+        phase = 2;
+        base = repairs >= 250 ? 500 : 200;
+        perRepairPay = repairs * 15;
+        revshare = Math.round(totalRevenue * 0.05);
+      } else {
+        phase = 1;
+        perRepairPay = repairs * 25;
+        revshare = Math.round(totalRevenue * 0.03);
+      }
+      tag.className = 'booker-model-tag m' + phase;
+      tag.textContent = phase === 1 ? 'Phase 1 — $25/repair + 3% Rev Share' : 'Phase 2 — $15/repair + Tiered Base + 5% Rev Share';
+      if (phase === 2) rows.push(['Base Pay', '$' + base]);
+      rows.push(['Per-Repair (' + repairs + ' × $' + (phase === 1 ? '25' : '15') + ')', '$' + perRepairPay]);
+      rows.push(['Rev Share (' + (phase === 1 ? '3' : '5') + '% of $' + totalRevenue + ')', '$' + revshare]);
     }
-    rows.push(['Per-Repair (' + repairs + ' × $' + (phase === 1 ? '25' : '15') + ')', '$' + perRepairPay]);
-    rows.push(['Rev Share (' + (phase === 1 ? '3' : '5') + '% of $' + totalRevenue + ')', '$' + revshare]);
 
     el('bookerBreakdown').innerHTML = rows.map(function(r) {
       return '<div class="booker-row"><span class="bl">' + r[0] + '</span><span class="bv">' + r[1] + '</span></div>';
     }).join('');
 
+    var totalBooker = base + perRepairPay + revshare;
+    var ownerTake = totalRevenue > 0 ? totalRevenue - totalBooker : null;
     el('bookerPayoutAmt').textContent = '$' + totalBooker;
-    el('ownerTakeAmt').textContent = '$' + ownerTake;
+    el('ownerTakeAmt').textContent = ownerTake !== null ? '$' + ownerTake : '—';
     el('ownerTakeRow').classList.toggle('hidden', !isOwner);
     el('bookerResult').classList.remove('hidden');
   }
