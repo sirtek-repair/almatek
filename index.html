@@ -708,7 +708,7 @@
         <option>October</option><option>November</option><option>December</option>
       </select>
     </div>
-    <div class="gap" style="margin-top:14px;">
+    <div id="payStructureRow" class="gap" style="margin-top:14px;">
       <label class="field-label">Pay Structure</label>
       <div style="display:flex;gap:8px;margin-top:4px;">
         <button id="structBtnStandard" class="need-sub-btn active" onclick="setPayStructure('standard')">Standard</button>
@@ -2037,8 +2037,9 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     payStructure = type;
     el('structBtnStandard').classList.toggle('active', type === 'standard');
     el('structBtnFlat').classList.toggle('active', type === 'flat');
+    el('payStructureRow').classList.toggle('hidden', !isOwner);
     el('avgProfitRow').classList.toggle('hidden', type === 'flat');
-    el('flatRevshareRow').classList.toggle('hidden', type !== 'flat');
+    el('flatRevshareRow').classList.toggle('hidden', !isOwner || type !== 'flat');
     calcBookerPay();
   }
 
