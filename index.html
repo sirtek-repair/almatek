@@ -1151,6 +1151,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
 
   const OWNER_PASS = 'rellow4Life$';
   var authPass = localStorage.getItem('almatek_pass') || '';
+  var apiPass  = localStorage.getItem('almatek_api_pass') || '';  // valid Worker token — survives owner login
   var isOwner = authPass === OWNER_PASS;
   let allInvRecords = [];
   let activeFilter = 'all';
@@ -1162,7 +1163,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   function atFetch(path, opts) {
     opts = opts || {};
     return fetch(WORKER_URL + '/v0/' + path, Object.assign({}, opts, {
-      headers: Object.assign({ 'X-Auth': authPass, 'Content-Type': 'application/json' }, opts.headers || {})
+      headers: Object.assign({ 'X-Auth': apiPass || authPass, 'Content-Type': 'application/json' }, opts.headers || {})
     })).then(function(r) { return r.json(); });
   }
 
@@ -1690,6 +1691,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       authPass = input;
       localStorage.setItem('almatek_pass', input);
       authd = true; isOwner = true;
+      // apiPass stays as whatever valid staff token was previously cached
       el('authOverlay').classList.add('hidden');
       updateAuthBtn();
       invLoaded = false; allInvRecords = [];
@@ -1709,7 +1711,9 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
         el('authInput').select();
       } else {
         authPass = input;
+        apiPass = input;
         localStorage.setItem('almatek_pass', input);
+        localStorage.setItem('almatek_api_pass', input);
         authd = true; isOwner = false;
         el('authOverlay').classList.add('hidden');
         updateAuthBtn();
