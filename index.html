@@ -781,7 +781,11 @@
         <div class="staff-add-row">
           <input type="text" id="newUserName" placeholder="Name" autocomplete="off" />
           <input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" />
-          <button class="staff-add-btn" onclick="addStaffUser()">Add</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button>
+          <button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button>
+          <button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button>
         </div>
         <div id="addUserErr" class="chpass-err"></div>
       </div>
@@ -1257,6 +1261,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     if (isOrders) initOrders();
     else if (isInventory) initInventory();
     else if (isStaff) renderStaffTab();
+    else if (isBooker) setPayStructure(isOwner ? payStructure : currentUserStructure);
   }
 
   // ── Worker + Airtable config ─────────────────────────
@@ -1273,6 +1278,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   var apiPass  = localStorage.getItem('almatek_api_pass') || '';  // valid Worker token — survives owner login
   var isOwner = authPass === OWNER_PASS;
   var currentUser = localStorage.getItem('almatek_current_user') || '';
+  var currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
 
   // Google Sheets user backend
   if (location.search.includes('reset-sheet')) {
@@ -1842,7 +1848,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     if (USERS_SCRIPT_URL) {
       sheetsCall({ action: 'login', pass: input }).then(function(data) {
         if (data.ok) {
-          onStaffLoginSuccess(input, data.name, false);
+          onStaffLoginSuccess(input, data.name, false, data.structure);
         } else {
           tryWorkerAuth(input);
         }
@@ -1867,12 +1873,14 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     });
   }
 
-  function onStaffLoginSuccess(pass, name, isWorkerToken) {
+  function onStaffLoginSuccess(pass, name, isWorkerToken, structure) {
     authPass = pass;
     if (isWorkerToken) { apiPass = pass; localStorage.setItem('almatek_api_pass', pass); }
     else { apiPass = localStorage.getItem('almatek_api_pass') || apiPass; }
     localStorage.setItem('almatek_pass', pass);
     currentUser = name;
+    currentUserStructure = structure || 'standard';
+    localStorage.setItem('almatek_user_structure', currentUserStructure);
     if (name) localStorage.setItem('almatek_current_user', name);
     else localStorage.removeItem('almatek_current_user');
     authd = true; isOwner = false;
@@ -2092,7 +2100,9 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
         list.innerHTML = '<p style="color:var(--muted);font-size:13px;">No users yet. Add one below.</p>';
       } else {
         list.innerHTML = data.users.map(function(u) {
-          return '<div class="staff-user-row"><span class="staff-user-name">' + u.name + '</span><button class="staff-del-btn" onclick="deleteStaffUser(\'' + u.name.replace(/'/g, "\\'") + '\')">Remove</button></div>';
+          var safeName = u.name.replace(/'/g, "\\'");
+          var isFlat = u.structure === 'flat';
+          return '<div class="staff-user-row"><span class="staff-user-name">' + u.name + '</span><div style="display:flex;gap:6px;align-items:center;"><button style="font-size:11px;padding:3px 8px;" class="need-sub-btn' + (!isFlat ? ' active' : '') + '" onclick="setUserStructure(\'' + safeName + '\',\'standard\',this)">Standard</button><button style="font-size:11px;padding:3px 8px;" class="need-sub-btn' + (isFlat ? ' active' : '') + '" onclick="setUserStructure(\'' + safeName + '\',\'flat\',this)">Flat</button><button class="staff-del-btn" onclick="deleteStaffUser(\'' + safeName + '\')">Remove</button></div></div>';
         }).join('');
       }
     }).catch(function() {
@@ -2128,9 +2138,10 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     var name = el('newUserName').value.trim();
     var pass = el('newUserPass').value.trim();
     var err = el('addUserErr');
+    var structure = el('newStructFlat').classList.contains('active') ? 'flat' : 'standard';
     if (!name || !pass) { err.textContent = 'Name and password required.'; return; }
     err.textContent = 'Adding…';
-    sheetsCall({ action: 'add', name: name, pass: pass, secret: USERS_SECRET }).then(function(data) {
+    sheetsCall({ action: 'add', name: name, pass: pass, structure: structure, secret: USERS_SECRET }).then(function(data) {
       if (!data.ok) { err.textContent = data.error || 'Error adding user.'; return; }
       el('newUserName').value = '';
       el('newUserPass').value = '';
@@ -2144,6 +2155,15 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     sheetsCall({ action: 'delete', name: name, secret: USERS_SECRET }).then(function(data) {
       if (!data.ok) { showToast('Error: ' + (data.error || 'could not remove')); return; }
       renderStaffTab();
+    }).catch(function() { showToast('Network error.'); });
+  }
+
+  function setUserStructure(name, structure, btn) {
+    sheetsCall({ action: 'setStructure', name: name, structure: structure, secret: USERS_SECRET }).then(function(data) {
+      if (!data.ok) { showToast('Error: ' + (data.error || 'could not update')); return; }
+      var row = btn.closest('.staff-user-row');
+      row.querySelectorAll('.need-sub-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
     }).catch(function() { showToast('Network error.'); });
   }
 
