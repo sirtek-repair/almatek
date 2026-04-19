@@ -702,7 +702,7 @@
         <div class="bt-label">Booker Payout</div>
         <div class="bt-amt" id="bookerPayoutAmt">$—</div>
       </div>
-      <div class="owner-take">
+      <div class="owner-take" id="ownerTakeRow">
         <span class="ot-label">💰 Your Take</span>
         <span class="ot-amt" id="ownerTakeAmt">$—</span>
       </div>
@@ -1863,20 +1863,17 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     var avgProfit = parseFloat(el('bookerAvgProfit').value) || 110;
     if (repairs <= 0) { el('bookerResult').classList.add('hidden'); return; }
 
-    var base = 0, perRepairPay = 0, revshare = 0, model;
+    var base = 0, perRepairPay = 0, revshare = 0, phase;
 
     if (repairs >= 110) {
-      // Model 1: tiered base + $10/repair, no revshare
-      model = 1;
-      var tiers = [[48,100],[80,150],[120,200],[160,250],[200,300],[240,350],[280,400],[320,450]];
-      base = 500;
-      for (var i = 0; i < tiers.length; i++) {
-        if (repairs <= tiers[i][0]) { base = tiers[i][1]; break; }
-      }
-      perRepairPay = repairs * 10;
+      // Phase 2: $15/repair + tiered base + 5% revshare
+      phase = 2;
+      base = repairs >= 250 ? 500 : 200;
+      perRepairPay = repairs * 15;
+      revshare = Math.round(avgProfit * repairs * 0.05);
     } else {
-      // Model 2: $25/repair + 3% revshare, no base
-      model = 2;
+      // Phase 1: $25/repair + 3% revshare, no base
+      phase = 1;
       perRepairPay = repairs * 25;
       revshare = Math.round(avgProfit * repairs * 0.03);
     }
@@ -1886,23 +1883,23 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     var ownerTake = totalRevenue - totalBooker;
 
     var tag = el('bookerModelTag');
-    tag.className = 'booker-model-tag m' + model;
-    tag.textContent = model === 1 ? 'Model 1 — Tiered Base + $10/repair' : 'Model 2 — $25/repair + 3% Rev Share';
+    tag.className = 'booker-model-tag m' + phase;
+    tag.textContent = phase === 1 ? 'Phase 1 — $25/repair + 3% Rev Share' : 'Phase 2 — $15/repair + Tiered Base + 5% Rev Share';
 
     var rows = [];
-    if (model === 1) {
+    if (phase === 2) {
       rows.push(['Base Pay', '$' + base]);
-      rows.push(['Per-Repair (' + repairs + ' × $10)', '$' + perRepairPay]);
-    } else {
-      rows.push(['Per-Repair (' + repairs + ' × $25)', '$' + perRepairPay]);
-      rows.push(['Rev Share (3% of $' + totalRevenue + ')', '$' + revshare]);
     }
+    rows.push(['Per-Repair (' + repairs + ' × $' + (phase === 1 ? '25' : '15') + ')', '$' + perRepairPay]);
+    rows.push(['Rev Share (' + (phase === 1 ? '3' : '5') + '% of $' + totalRevenue + ')', '$' + revshare]);
+
     el('bookerBreakdown').innerHTML = rows.map(function(r) {
       return '<div class="booker-row"><span class="bl">' + r[0] + '</span><span class="bv">' + r[1] + '</span></div>';
     }).join('');
 
     el('bookerPayoutAmt').textContent = '$' + totalBooker;
     el('ownerTakeAmt').textContent = '$' + ownerTake;
+    el('ownerTakeRow').classList.toggle('hidden', !isOwner);
     el('bookerResult').classList.remove('hidden');
   }
 
