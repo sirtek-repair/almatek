@@ -237,6 +237,29 @@
     .owner-take { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
     .owner-take .ot-label { font-size: 13px; font-weight: 600; color: var(--green); }
     .owner-take .ot-amt { font-size: 22px; font-weight: 800; color: var(--green); }
+    /* Staff management tab */
+    .staff-section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; }
+    .staff-user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .staff-user-row:last-child { border-bottom: none; }
+    .staff-user-name { font-size: 14px; font-weight: 600; }
+    .staff-del-btn { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .staff-add-row { display: flex; gap: 8px; margin-top: 12px; }
+    .staff-add-row input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text); font-size: 14px; font-family: inherit; outline: none; }
+    .staff-add-row input:focus { border-color: var(--accent); }
+    .staff-add-btn { background: var(--accent); border: none; color: #fff; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap; }
+    /* Change password modal */
+    .chpass-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .chpass-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; width: 90%; max-width: 340px; }
+    .chpass-box h3 { margin: 0 0 16px; font-size: 17px; }
+    .chpass-box input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-size: 16px; font-family: inherit; outline: none; margin-bottom: 10px; box-sizing: border-box; }
+    .chpass-box input:focus { border-color: var(--accent); }
+    .chpass-actions { display: flex; gap: 8px; margin-top: 6px; }
+    .chpass-actions button { flex: 1; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; border: none; }
+    .chpass-save { background: var(--accent); color: #fff; }
+    .chpass-cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border) !important; }
+    .chpass-err { font-size: 12px; color: #ef4444; margin-top: 4px; min-height: 16px; }
+    /* Change pass link button */
+    .chpass-link { background: none; border: none; color: var(--muted); font-size: 11px; font-family: inherit; cursor: pointer; padding: 2px 4px; text-decoration: underline; display: none; }
   </style>
 </head>
 <body>
@@ -258,6 +281,7 @@
   <button class="tab-btn" id="tabOrdBtn" onclick="switchTab('orders')">📋 Orders</button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
   <button class="tab-btn hidden" id="tabBookerBtn" onclick="switchTab('booker')">📊 Booker</button>
+  <button class="tab-btn hidden" id="tabStaffBtn" onclick="switchTab('staff')">👥 Staff</button>
 </div>
 
 <!-- Quote Tab -->
@@ -281,6 +305,7 @@
       <button class="hlink" id="reviewBtn" onclick="copyLink(this, 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D', 'Review link')">⭐ Review Link</button>
       <span class="hlink" id="supplierDemo" style="display:none;">your part supplier</span>
       <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Demo Mode</button>
+      <button id="chpassBtn" class="chpass-link" onclick="showChangePass()">Change Password</button>
     </div>
   </header>
 
@@ -702,7 +727,7 @@
         <div class="bt-label">Booker Payout</div>
         <div class="bt-amt" id="bookerPayoutAmt">$—</div>
       </div>
-      <div class="owner-take">
+      <div class="owner-take" id="ownerTakeRow">
         <span class="ot-label">💰 Your Take</span>
         <span class="ot-amt" id="ownerTakeAmt">$—</span>
       </div>
@@ -710,6 +735,82 @@
     </div>
   </div>
 </div>
+</div>
+
+<!-- Staff Management Tab (Owner only) -->
+<div id="tabStaff" class="hidden">
+<div class="container">
+  <header style="padding:16px 0 20px;">
+    <h1 style="font-size:17px;">👥 Staff Management</h1>
+  </header>
+
+  <!-- Setup section (shown when script URL not configured) -->
+  <div id="staffSetupSection" class="card">
+    <div class="staff-section-title">Connect Google Sheet</div>
+    <p style="font-size:12px;color:var(--muted);margin:0 0 12px;">Paste your Google Apps Script web app URL and the secret you set in the script.</p>
+    <div class="staff-add-row" style="flex-direction:column;gap:8px;">
+      <input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;" />
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="scriptSecretInput" placeholder="Admin secret" autocomplete="off" style="flex:1;" />
+        <button class="staff-add-btn" onclick="saveScriptSetup()">Connect</button>
+      </div>
+    </div>
+    <div id="setupErr" class="chpass-err"></div>
+  </div>
+
+  <!-- Main section (shown when connected) -->
+  <div id="staffMainSection" class="hidden">
+    <div class="card">
+      <div class="staff-section-title">Team Members</div>
+      <div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div>
+      <div style="margin-top:16px;">
+        <div class="staff-section-title">Add User</div>
+        <div class="staff-add-row">
+          <input type="text" id="newUserName" placeholder="Name" autocomplete="off" />
+          <input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" />
+          <button class="staff-add-btn" onclick="addStaffUser()">Add</button>
+        </div>
+        <div id="addUserErr" class="chpass-err"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="staff-section-title">Reset a Password</div>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p>
+      <div class="staff-add-row">
+        <input type="text" id="resetUserName" placeholder="Name" autocomplete="off" />
+        <input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" />
+        <button class="staff-add-btn" onclick="resetUserPassword()">Reset</button>
+      </div>
+      <div id="resetPassErr" class="chpass-err"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="staff-section-title">API Pass (Worker Token)</div>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">The shared Cloudflare Worker token. Set once per device so the app can reach Airtable.</p>
+      <div class="staff-add-row">
+        <input type="password" id="apiPassField" placeholder="Worker token" autocomplete="off" />
+        <button class="staff-add-btn" onclick="saveApiPassField()">Save</button>
+      </div>
+      <div id="apiPassStatus" style="font-size:12px;color:var(--green);margin-top:6px;"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="chpassOverlay" class="chpass-overlay hidden">
+  <div class="chpass-box">
+    <h3>🔑 Change Password</h3>
+    <input type="password" id="chpassCurrent" placeholder="Current password" autocomplete="off" />
+    <input type="password" id="chpassNew" placeholder="New password" autocomplete="off" />
+    <input type="password" id="chpassConfirm" placeholder="Confirm new password" autocomplete="off" onkeydown="if(event.key==='Enter') saveNewPassword()" />
+    <div class="chpass-err" id="chpassErr"></div>
+    <div class="chpass-actions">
+      <button class="chpass-cancel" onclick="el('chpassOverlay').classList.add('hidden')">Cancel</button>
+      <button class="chpass-save" onclick="saveNewPassword()">Save</button>
+    </div>
+  </div>
 </div>
 
 <div class="inv-toast" id="invToast"></div>
@@ -1129,16 +1230,20 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     const isOrders = tab === 'orders';
     const isInventory = tab === 'inventory';
     const isBooker = tab === 'booker';
+    const isStaff = tab === 'staff';
     el('tabQuote').classList.toggle('hidden', !isQuote);
     el('tabOrders').classList.toggle('hidden', !isOrders);
     el('tabInventory').classList.toggle('hidden', !isInventory);
     el('tabBooker').classList.toggle('hidden', !isBooker);
+    el('tabStaff').classList.toggle('hidden', !isStaff);
     el('tabQuoteBtn').classList.toggle('active', isQuote);
     el('tabOrdBtn').classList.toggle('active', isOrders);
     el('tabInvBtn').classList.toggle('active', isInventory);
     el('tabBookerBtn').classList.toggle('active', isBooker);
+    el('tabStaffBtn').classList.toggle('active', isStaff);
     if (isOrders) initOrders();
     else if (isInventory) initInventory();
+    else if (isStaff) renderStaffTab();
   }
 
   // ── Worker + Airtable config ─────────────────────────
@@ -1154,6 +1259,19 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   var authPass = localStorage.getItem('almatek_pass') || '';
   var apiPass  = localStorage.getItem('almatek_api_pass') || '';  // valid Worker token — survives owner login
   var isOwner = authPass === OWNER_PASS;
+  var currentUser = localStorage.getItem('almatek_current_user') || '';
+
+  // Google Sheets user backend
+  var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '';
+  var USERS_SECRET     = localStorage.getItem('almatek_users_secret') || '';
+
+  function sheetsCall(payload) {
+    if (!USERS_SCRIPT_URL) return Promise.reject('not-configured');
+    var params = new URLSearchParams();
+    params.set('payload', JSON.stringify(payload));
+    return fetch(USERS_SCRIPT_URL, { method: 'POST', body: params, redirect: 'follow' })
+      .then(function(r) { return r.json(); });
+  }
   let allInvRecords = [];
   let activeFilter = 'all';
   let invLoaded = false;
@@ -1666,7 +1784,8 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     if (authd) {
       if (confirm('Log out and switch to Demo Mode?')) {
         localStorage.removeItem('almatek_pass');
-        authPass = '';
+        localStorage.removeItem('almatek_current_user');
+        authPass = ''; currentUser = '';
         authd = false; isOwner = false;
         switchTab('quote');
         updateAuthBtn();
@@ -1703,7 +1822,21 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       return;
     }
     el('authError').textContent = 'Checking...';
-    // Staff password — validated via Worker
+    // Try Google Sheets user list first, fall back to Worker
+    if (USERS_SCRIPT_URL) {
+      sheetsCall({ action: 'login', pass: input }).then(function(data) {
+        if (data.ok) {
+          onStaffLoginSuccess(input, data.name, false);
+        } else {
+          tryWorkerAuth(input);
+        }
+      }).catch(function() { tryWorkerAuth(input); });
+    } else {
+      tryWorkerAuth(input);
+    }
+  }
+
+  function tryWorkerAuth(input) {
     fetch(WORKER_URL + '/v0/' + AT_BASE + '/' + AT_INV + '?returnFieldsByFieldId=true&pageSize=1', {
       headers: { 'X-Auth': input, 'Content-Type': 'application/json' }
     }).then(function(r) { return r.json(); }).then(function(data) {
@@ -1711,29 +1844,38 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
         el('authError').textContent = 'Wrong code — try again ✌️';
         el('authInput').select();
       } else {
-        authPass = input;
-        apiPass = input;
-        localStorage.setItem('almatek_pass', input);
-        localStorage.setItem('almatek_api_pass', input);
-        authd = true; isOwner = false;
-        el('authOverlay').classList.add('hidden');
-        updateAuthBtn();
-        invLoaded = false; allInvRecords = [];
-        ordersLoaded = false;
-        loadInventoryPage(null, true);
-        if (!el('tabInventory').classList.contains('hidden')) { loadInventory(); loadOrders(); }
-        tryRenderQuote();
+        onStaffLoginSuccess(input, '', true);
       }
     }).catch(function() {
       el('authError').textContent = 'Network error — check connection';
     });
   }
 
+  function onStaffLoginSuccess(pass, name, isWorkerToken) {
+    authPass = pass;
+    if (isWorkerToken) { apiPass = pass; localStorage.setItem('almatek_api_pass', pass); }
+    else { apiPass = localStorage.getItem('almatek_api_pass') || apiPass; }
+    localStorage.setItem('almatek_pass', pass);
+    currentUser = name;
+    if (name) localStorage.setItem('almatek_current_user', name);
+    else localStorage.removeItem('almatek_current_user');
+    authd = true; isOwner = false;
+    el('authOverlay').classList.add('hidden');
+    updateAuthBtn();
+    invLoaded = false; allInvRecords = [];
+    ordersLoaded = false;
+    loadInventoryPage(null, true);
+    if (!el('tabInventory').classList.contains('hidden')) { loadInventory(); loadOrders(); }
+    tryRenderQuote();
+  }
+
   function updateAuthBtn() {
     var btn = el('authBtn');
-    el('tabBookerBtn').classList.toggle('hidden', !isOwner);
+    el('tabBookerBtn').classList.toggle('hidden', !authd);
+    el('tabStaffBtn').classList.toggle('hidden', !isOwner);
+    el('chpassBtn').style.display = (authd && !isOwner) ? 'inline' : 'none';
     if (authd) {
-      btn.textContent = isOwner ? '🔑 Owner Mode' : '🔓 Staff Mode';
+      btn.textContent = isOwner ? '🔑 Owner Mode' : ('🔓 ' + (currentUser || 'Staff Mode'));
       btn.className = isOwner ? 'owner-badge' : 'staff-badge';
       el('suppliersDropdown').style.display = '';
       el('supplierDemo').style.display = 'none';
@@ -1863,20 +2005,17 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     var avgProfit = parseFloat(el('bookerAvgProfit').value) || 110;
     if (repairs <= 0) { el('bookerResult').classList.add('hidden'); return; }
 
-    var base = 0, perRepairPay = 0, revshare = 0, model;
+    var base = 0, perRepairPay = 0, revshare = 0, phase;
 
     if (repairs >= 110) {
-      // Model 1: tiered base + $10/repair, no revshare
-      model = 1;
-      var tiers = [[48,100],[80,150],[120,200],[160,250],[200,300],[240,350],[280,400],[320,450]];
-      base = 500;
-      for (var i = 0; i < tiers.length; i++) {
-        if (repairs <= tiers[i][0]) { base = tiers[i][1]; break; }
-      }
-      perRepairPay = repairs * 10;
+      // Phase 2: $15/repair + tiered base + 5% revshare
+      phase = 2;
+      base = repairs >= 250 ? 500 : 200;
+      perRepairPay = repairs * 15;
+      revshare = Math.round(avgProfit * repairs * 0.05);
     } else {
-      // Model 2: $25/repair + 3% revshare, no base
-      model = 2;
+      // Phase 1: $25/repair + 3% revshare, no base
+      phase = 1;
       perRepairPay = repairs * 25;
       revshare = Math.round(avgProfit * repairs * 0.03);
     }
@@ -1886,24 +2025,137 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     var ownerTake = totalRevenue - totalBooker;
 
     var tag = el('bookerModelTag');
-    tag.className = 'booker-model-tag m' + model;
-    tag.textContent = model === 1 ? 'Model 1 — Tiered Base + $10/repair' : 'Model 2 — $25/repair + 3% Rev Share';
+    tag.className = 'booker-model-tag m' + phase;
+    tag.textContent = phase === 1 ? 'Phase 1 — $25/repair + 3% Rev Share' : 'Phase 2 — $15/repair + Tiered Base + 5% Rev Share';
 
     var rows = [];
-    if (model === 1) {
+    if (phase === 2) {
       rows.push(['Base Pay', '$' + base]);
-      rows.push(['Per-Repair (' + repairs + ' × $10)', '$' + perRepairPay]);
-    } else {
-      rows.push(['Per-Repair (' + repairs + ' × $25)', '$' + perRepairPay]);
-      rows.push(['Rev Share (3% of $' + totalRevenue + ')', '$' + revshare]);
     }
+    rows.push(['Per-Repair (' + repairs + ' × $' + (phase === 1 ? '25' : '15') + ')', '$' + perRepairPay]);
+    rows.push(['Rev Share (' + (phase === 1 ? '3' : '5') + '% of $' + totalRevenue + ')', '$' + revshare]);
+
     el('bookerBreakdown').innerHTML = rows.map(function(r) {
       return '<div class="booker-row"><span class="bl">' + r[0] + '</span><span class="bv">' + r[1] + '</span></div>';
     }).join('');
 
     el('bookerPayoutAmt').textContent = '$' + totalBooker;
     el('ownerTakeAmt').textContent = '$' + ownerTake;
+    el('ownerTakeRow').classList.toggle('hidden', !isOwner);
     el('bookerResult').classList.remove('hidden');
+  }
+
+  // ── Staff Management (Owner) — Google Sheets backend ──
+  function renderStaffTab() {
+    var scriptSet = !!USERS_SCRIPT_URL;
+    el('staffSetupSection').classList.toggle('hidden', scriptSet);
+    el('staffMainSection').classList.toggle('hidden', !scriptSet);
+    if (!scriptSet) return;
+    var list = el('staffUserList');
+    list.innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading…</p>';
+    sheetsCall({ action: 'list', secret: USERS_SECRET }).then(function(data) {
+      if (!data.ok) { list.innerHTML = '<p style="color:#ef4444;font-size:13px;">Error: ' + (data.error || 'could not load users') + '</p>'; return; }
+      if (!data.users.length) {
+        list.innerHTML = '<p style="color:var(--muted);font-size:13px;">No users yet. Add one below.</p>';
+      } else {
+        list.innerHTML = data.users.map(function(u) {
+          return '<div class="staff-user-row"><span class="staff-user-name">' + u.name + '</span><button class="staff-del-btn" onclick="deleteStaffUser(\'' + u.name.replace(/'/g, "\\'") + '\')">Remove</button></div>';
+        }).join('');
+      }
+    }).catch(function() {
+      list.innerHTML = '<p style="color:#ef4444;font-size:13px;">Network error loading users.</p>';
+    });
+    var stored = localStorage.getItem('almatek_api_pass') || '';
+    el('apiPassField').value = stored ? '••••••••' : '';
+    el('apiPassStatus').textContent = stored ? '✓ API pass is set' : '';
+  }
+
+  function saveScriptSetup() {
+    var url = el('scriptUrlInput').value.trim();
+    var secret = el('scriptSecretInput').value.trim();
+    if (!url || !secret) { el('setupErr').textContent = 'Both fields required.'; return; }
+    USERS_SCRIPT_URL = url;
+    USERS_SECRET = secret;
+    localStorage.setItem('almatek_script_url', url);
+    localStorage.setItem('almatek_users_secret', secret);
+    el('setupErr').textContent = '';
+    renderStaffTab();
+  }
+
+  function addStaffUser() {
+    var name = el('newUserName').value.trim();
+    var pass = el('newUserPass').value.trim();
+    var err = el('addUserErr');
+    if (!name || !pass) { err.textContent = 'Name and password required.'; return; }
+    err.textContent = 'Adding…';
+    sheetsCall({ action: 'add', name: name, pass: pass, secret: USERS_SECRET }).then(function(data) {
+      if (!data.ok) { err.textContent = data.error || 'Error adding user.'; return; }
+      el('newUserName').value = '';
+      el('newUserPass').value = '';
+      err.textContent = '';
+      renderStaffTab();
+    }).catch(function() { err.textContent = 'Network error.'; });
+  }
+
+  function deleteStaffUser(name) {
+    if (!confirm('Remove ' + name + '?')) return;
+    sheetsCall({ action: 'delete', name: name, secret: USERS_SECRET }).then(function(data) {
+      if (!data.ok) { showToast('Error: ' + (data.error || 'could not remove')); return; }
+      renderStaffTab();
+    }).catch(function() { showToast('Network error.'); });
+  }
+
+  function resetUserPassword() {
+    var name = el('resetUserName').value.trim();
+    var pass = el('resetUserPass').value.trim();
+    var err = el('resetPassErr');
+    if (!name || !pass) { err.textContent = 'Fill in both fields.'; return; }
+    err.textContent = 'Saving…';
+    sheetsCall({ action: 'resetPass', name: name, newPass: pass, secret: USERS_SECRET }).then(function(data) {
+      if (!data.ok) { err.textContent = data.error || 'Error resetting password.'; return; }
+      el('resetUserName').value = '';
+      el('resetUserPass').value = '';
+      err.textContent = '';
+      showToast('Password reset for ' + name + ' ✓');
+    }).catch(function() { err.textContent = 'Network error.'; });
+  }
+
+  function saveApiPassField() {
+    var val = el('apiPassField').value.trim();
+    if (!val || val === '••••••••') { el('apiPassStatus').textContent = 'Enter the Worker token first.'; return; }
+    localStorage.setItem('almatek_api_pass', val);
+    apiPass = val;
+    el('apiPassField').value = '••••••••';
+    el('apiPassStatus').textContent = '✓ Saved';
+  }
+
+  // ── Change Password (Staff) ──────────────────────────
+  function showChangePass() {
+    el('chpassCurrent').value = '';
+    el('chpassNew').value = '';
+    el('chpassConfirm').value = '';
+    el('chpassErr').textContent = '';
+    el('chpassOverlay').classList.remove('hidden');
+    setTimeout(function() { el('chpassCurrent').focus(); }, 100);
+  }
+
+  function saveNewPassword() {
+    var current = el('chpassCurrent').value;
+    var next = el('chpassNew').value;
+    var confirm = el('chpassConfirm').value;
+    var err = el('chpassErr');
+    if (!current || !next) { err.textContent = 'Fill in all fields.'; return; }
+    if (next.length < 4) { err.textContent = 'At least 4 characters required.'; return; }
+    if (next !== confirm) { err.textContent = 'Passwords do not match.'; return; }
+    if (!currentUser) { err.textContent = 'No user session — log out and back in.'; return; }
+    err.textContent = 'Saving…';
+    sheetsCall({ action: 'changePass', name: currentUser, oldPass: current, newPass: next }).then(function(data) {
+      if (!data.ok) { err.textContent = data.error || 'Current password incorrect.'; return; }
+      authPass = next;
+      localStorage.setItem('almatek_pass', next);
+      el('chpassOverlay').classList.add('hidden');
+      showToast('Password updated ✓');
+    }).catch(function() { err.textContent = 'Network error — try again.'; });
   }
 
   function shareBookerResults() {
