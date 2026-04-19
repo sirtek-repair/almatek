@@ -760,8 +760,9 @@
 
   <!-- Main section (shown when connected) -->
   <div id="staffMainSection" class="hidden">
-    <div class="card">
-      <div class="staff-section-title">Team Members</div>
+    <div style="text-align:right;margin-bottom:8px;">
+      <button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Reset Google Sheet connection</button>
+    </div>
       <div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div>
       <div style="margin-top:16px;">
         <div class="staff-section-title">Add User</div>
@@ -2068,6 +2069,15 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     var stored = localStorage.getItem('almatek_api_pass') || '';
     el('apiPassField').value = stored ? '••••••••' : '';
     el('apiPassStatus').textContent = stored ? '✓ API pass is set' : '';
+  }
+
+  function resetScriptConnection() {
+    if (!confirm('Disconnect Google Sheet? You can reconnect anytime.')) return;
+    USERS_SCRIPT_URL = '';
+    USERS_SECRET = '';
+    localStorage.removeItem('almatek_script_url');
+    localStorage.removeItem('almatek_users_secret');
+    renderStaffTab();
   }
 
   function saveScriptSetup() {
