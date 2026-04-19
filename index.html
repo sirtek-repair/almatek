@@ -218,6 +218,25 @@
     .hlink-dropdown { position: relative; }
     .hlink-dropdown-menu { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); z-index: 200; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px; display: flex; flex-direction: column; gap: 4px; min-width: 170px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
     .hlink-dropdown-menu .hlink { display: block; text-align: left; }
+    /* Owner badge */
+    .owner-badge { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.4); color: #a78bfa; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-family: inherit; }
+    /* Booker calculator */
+    input[type="text"] { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; color: var(--text); font-size: 16px; font-family: inherit; outline: none; transition: border-color 0.15s; }
+    input[type="text"]:focus { border-color: var(--accent); }
+    input[type="text"]::placeholder { color: var(--muted); }
+    .booker-model-tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; }
+    .booker-model-tag.m1 { background: rgba(59,130,246,0.15); color: var(--accent); border: 1px solid rgba(59,130,246,0.3); }
+    .booker-model-tag.m2 { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+    .booker-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .booker-row:last-child { border-bottom: none; }
+    .booker-row .bl { color: var(--muted); }
+    .booker-row .bv { font-weight: 700; }
+    .booker-total { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 16px; margin: 12px 0; text-align: center; }
+    .booker-total .bt-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
+    .booker-total .bt-amt { font-size: 42px; font-weight: 800; letter-spacing: -0.03em; }
+    .owner-take { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+    .owner-take .ot-label { font-size: 13px; font-weight: 600; color: var(--green); }
+    .owner-take .ot-amt { font-size: 22px; font-weight: 800; color: var(--green); }
   </style>
 </head>
 <body>
@@ -225,8 +244,8 @@
 <div id="authOverlay" class="auth-overlay hidden">
   <div class="auth-box">
     <div style="font-size:36px;margin-bottom:10px;">⚡</div>
-    <h2>Staff Access</h2>
-    <p>Enter your staff access code to unlock real pricing and live inventory.</p>
+    <h2>AlmaTek Access</h2>
+    <p>Enter your access code to unlock features.</p>
     <input type="password" id="authInput" placeholder="Access code" onkeydown="if(event.key==='Enter') tryAuth()" autocomplete="off" />
     <button class="auth-submit" onclick="tryAuth()">Unlock</button>
     <div class="auth-error" id="authError"></div>
@@ -238,6 +257,7 @@
   <button class="tab-btn active" id="tabQuoteBtn" onclick="switchTab('quote')">💰 Quote</button>
   <button class="tab-btn" id="tabOrdBtn" onclick="switchTab('orders')">📋 Orders</button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
+  <button class="tab-btn hidden" id="tabBookerBtn" onclick="switchTab('booker')">📊 Booker</button>
 </div>
 
 <!-- Quote Tab -->
@@ -638,6 +658,56 @@
   </div>
 
   <div id="ordersNoData" class="orders-empty-state" style="text-align:center;padding:40px 20px;color:var(--muted);">No items to show</div>
+</div>
+</div>
+
+<!-- Booker Pay Calculator Tab (Owner only) -->
+<div id="tabBooker" class="hidden">
+<div class="container">
+  <header style="padding:16px 0 20px;">
+    <h1 style="font-size:17px;">📊 Booker Pay Calculator</h1>
+  </header>
+
+  <div class="card">
+    <div class="gap">
+      <label class="field-label" for="bookerName">Booker Name</label>
+      <input type="text" id="bookerName" placeholder="Name" oninput="calcBookerPay()" />
+    </div>
+    <div class="gap" style="margin-top:14px;">
+      <label class="field-label" for="bookerMonth">Month</label>
+      <select id="bookerMonth" onchange="calcBookerPay()">
+        <option value="">— Select month —</option>
+        <option>January</option><option>February</option><option>March</option>
+        <option>April</option><option>May</option><option>June</option>
+        <option>July</option><option>August</option><option>September</option>
+        <option>October</option><option>November</option><option>December</option>
+      </select>
+    </div>
+    <div class="gap" style="margin-top:14px;">
+      <label class="field-label" for="bookerRepairs">Repairs Booked</label>
+      <input type="number" id="bookerRepairs" placeholder="0" min="0" step="1" oninput="calcBookerPay()" />
+    </div>
+    <div class="gap" style="margin-top:14px;">
+      <label class="field-label" for="bookerAvgProfit">Avg Profit Per Repair ($)</label>
+      <input type="number" id="bookerAvgProfit" value="110" min="0" step="1" oninput="calcBookerPay()" />
+      <p class="hint">Default $110 — adjust if needed</p>
+    </div>
+  </div>
+
+  <div id="bookerResult" class="hidden">
+    <div class="card">
+      <div id="bookerModelTag"></div>
+      <div id="bookerBreakdown"></div>
+      <div class="booker-total">
+        <div class="bt-label">Booker Payout</div>
+        <div class="bt-amt" id="bookerPayoutAmt">$—</div>
+      </div>
+      <div class="owner-take">
+        <span class="ot-label">💰 Your Take</span>
+        <span class="ot-amt" id="ownerTakeAmt">$—</span>
+      </div>
+    </div>
+  </div>
 </div>
 </div>
 
@@ -1057,12 +1127,15 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     const isQuote = tab === 'quote';
     const isOrders = tab === 'orders';
     const isInventory = tab === 'inventory';
+    const isBooker = tab === 'booker';
     el('tabQuote').classList.toggle('hidden', !isQuote);
     el('tabOrders').classList.toggle('hidden', !isOrders);
     el('tabInventory').classList.toggle('hidden', !isInventory);
+    el('tabBooker').classList.toggle('hidden', !isBooker);
     el('tabQuoteBtn').classList.toggle('active', isQuote);
     el('tabOrdBtn').classList.toggle('active', isOrders);
     el('tabInvBtn').classList.toggle('active', isInventory);
+    el('tabBookerBtn').classList.toggle('active', isBooker);
     if (isOrders) initOrders();
     else if (isInventory) initInventory();
   }
@@ -1076,7 +1149,9 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   const AT_ORDERS = 'tbli8pFcvU1mV5O6B';
   const AT_SOLD   = 'tblTw2ZVlJABAkJoo';
 
+  const OWNER_PASS = 'rellow4Life$';
   var authPass = localStorage.getItem('almatek_pass') || '';
+  var isOwner = authPass === OWNER_PASS;
   let allInvRecords = [];
   let activeFilter = 'all';
   let invLoaded = false;
@@ -1590,7 +1665,8 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       if (confirm('Log out and switch to Demo Mode?')) {
         localStorage.removeItem('almatek_pass');
         authPass = '';
-        authd = false;
+        authd = false; isOwner = false;
+        switchTab('quote');
         updateAuthBtn();
         invLoaded = false; allInvRecords = [];
         if (el('tabInventory') && !el('tabInventory').classList.contains('hidden')) {
@@ -1609,8 +1685,22 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   function tryAuth() {
     var input = el('authInput').value.trim();
     if (!input) return;
+    // Owner password — validated client-side
+    if (input === OWNER_PASS) {
+      authPass = input;
+      localStorage.setItem('almatek_pass', input);
+      authd = true; isOwner = true;
+      el('authOverlay').classList.add('hidden');
+      updateAuthBtn();
+      invLoaded = false; allInvRecords = [];
+      ordersLoaded = false;
+      loadInventoryPage(null, true);
+      if (!el('tabInventory').classList.contains('hidden')) { loadInventory(); loadOrders(); }
+      tryRenderQuote();
+      return;
+    }
     el('authError').textContent = 'Checking...';
-    // Validate by sending the password to the Worker
+    // Staff password — validated via Worker
     fetch(WORKER_URL + '/v0/' + AT_BASE + '/' + AT_INV + '?returnFieldsByFieldId=true&pageSize=1', {
       headers: { 'X-Auth': input, 'Content-Type': 'application/json' }
     }).then(function(r) { return r.json(); }).then(function(data) {
@@ -1620,7 +1710,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       } else {
         authPass = input;
         localStorage.setItem('almatek_pass', input);
-        authd = true;
+        authd = true; isOwner = false;
         el('authOverlay').classList.add('hidden');
         updateAuthBtn();
         invLoaded = false; allInvRecords = [];
@@ -1636,9 +1726,10 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
 
   function updateAuthBtn() {
     var btn = el('authBtn');
+    el('tabBookerBtn').classList.toggle('hidden', !isOwner);
     if (authd) {
-      btn.textContent = '🔓 Staff Mode';
-      btn.className = 'staff-badge';
+      btn.textContent = isOwner ? '🔑 Owner Mode' : '🔓 Staff Mode';
+      btn.className = isOwner ? 'owner-badge' : 'staff-badge';
       el('suppliersDropdown').style.display = '';
       el('supplierDemo').style.display = 'none';
       el('repairedBtn').textContent = 'Repaired Collective';
@@ -1759,6 +1850,55 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   if (!isAuth() && !el('tabInventory').classList.contains('hidden')) {
     renderDemoInventory();
     loadOrders();
+  }
+
+  // ── Booker Pay Calculator ────────────────────────────────
+  function calcBookerPay() {
+    var repairs = parseInt(el('bookerRepairs').value) || 0;
+    var avgProfit = parseFloat(el('bookerAvgProfit').value) || 110;
+    if (repairs <= 0) { el('bookerResult').classList.add('hidden'); return; }
+
+    var base = 0, perRepairPay = 0, revshare = 0, model;
+
+    if (repairs >= 110) {
+      // Model 1: tiered base + $10/repair, no revshare
+      model = 1;
+      var tiers = [[48,100],[80,150],[120,200],[160,250],[200,300],[240,350],[280,400],[320,450]];
+      base = 500;
+      for (var i = 0; i < tiers.length; i++) {
+        if (repairs <= tiers[i][0]) { base = tiers[i][1]; break; }
+      }
+      perRepairPay = repairs * 10;
+    } else {
+      // Model 2: $25/repair + 3% revshare, no base
+      model = 2;
+      perRepairPay = repairs * 25;
+      revshare = Math.round(avgProfit * repairs * 0.03);
+    }
+
+    var totalBooker = base + perRepairPay + revshare;
+    var totalRevenue = avgProfit * repairs;
+    var ownerTake = totalRevenue - totalBooker;
+
+    var tag = el('bookerModelTag');
+    tag.className = 'booker-model-tag m' + model;
+    tag.textContent = model === 1 ? 'Model 1 — Tiered Base + $10/repair' : 'Model 2 — $25/repair + 3% Rev Share';
+
+    var rows = [];
+    if (model === 1) {
+      rows.push(['Base Pay', '$' + base]);
+      rows.push(['Per-Repair (' + repairs + ' × $10)', '$' + perRepairPay]);
+    } else {
+      rows.push(['Per-Repair (' + repairs + ' × $25)', '$' + perRepairPay]);
+      rows.push(['Rev Share (3% of $' + totalRevenue + ')', '$' + revshare]);
+    }
+    el('bookerBreakdown').innerHTML = rows.map(function(r) {
+      return '<div class="booker-row"><span class="bl">' + r[0] + '</span><span class="bv">' + r[1] + '</span></div>';
+    }).join('');
+
+    el('bookerPayoutAmt').textContent = '$' + totalBooker;
+    el('ownerTakeAmt').textContent = '$' + ownerTake;
+    el('bookerResult').classList.remove('hidden');
   }
 
 </script>
