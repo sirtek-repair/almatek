@@ -1273,10 +1273,8 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
 
   function sheetsCall(payload) {
     if (!USERS_SCRIPT_URL) return Promise.reject('not-configured');
-    var params = new URLSearchParams();
-    params.set('payload', JSON.stringify(payload));
-    return fetch(USERS_SCRIPT_URL, { method: 'POST', body: params, redirect: 'follow' })
-      .then(function(r) { return r.json(); });
+    var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+    return fetch(url).then(function(r) { return r.json(); });
   }
   let allInvRecords = [];
   let activeFilter = 'all';
