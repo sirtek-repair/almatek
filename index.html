@@ -706,6 +706,7 @@
         <span class="ot-label">💰 Your Take</span>
         <span class="ot-amt" id="ownerTakeAmt">$—</span>
       </div>
+      <button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">📤 Share Results</button>
     </div>
   </div>
 </div>
@@ -1903,6 +1904,29 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     el('bookerPayoutAmt').textContent = '$' + totalBooker;
     el('ownerTakeAmt').textContent = '$' + ownerTake;
     el('bookerResult').classList.remove('hidden');
+  }
+
+  function shareBookerResults() {
+    var name = el('bookerName').value.trim() || 'Booker';
+    var month = el('bookerMonth').value || '';
+    var repairs = el('bookerRepairs').value || '0';
+    var model = el('bookerModelTag').textContent;
+    var payout = el('bookerPayoutAmt').textContent;
+    var ownerAmt = el('ownerTakeAmt').textContent;
+    var rows = el('bookerBreakdown').querySelectorAll('.booker-row');
+    var breakdown = [];
+    rows.forEach(function(r) {
+      var lbl = r.querySelector('.bl') ? r.querySelector('.bl').textContent : '';
+      var val = r.querySelector('.bv') ? r.querySelector('.bv').textContent : '';
+      breakdown.push(lbl + ': ' + val);
+    });
+    var header = 'AlmaTek Booker Pay' + (month ? ' — ' + month : '') + '\nBooker: ' + name + '\n' + model;
+    var body = header + '\n\nRepairs Booked: ' + repairs + '\n' + breakdown.join('\n') + '\n\nBooker Payout: ' + payout + '\nOwner Take: ' + ownerAmt;
+    if (navigator.share) {
+      navigator.share({ title: 'Booker Pay — ' + name, text: body }).catch(function() {});
+    } else {
+      window.location.href = 'mailto:?subject=' + encodeURIComponent('Booker Pay — ' + name) + '&body=' + encodeURIComponent(body);
+    }
   }
 
 </script>
