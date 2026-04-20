@@ -1281,12 +1281,15 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
 
   const OWNER_PASS = 'rellow4Life$';
   var authPass = localStorage.getItem('almatek_pass') || '';
-  var apiPass  = localStorage.getItem('almatek_api_pass') || '';  // valid Worker token — survives owner login
+  var apiPass  = localStorage.getItem('almatek_api_pass') || OWNER_PASS;
   var isOwner = authPass === OWNER_PASS;
   var currentUser = localStorage.getItem('almatek_current_user') || '';
   var currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
 
   // Google Sheets user backend
+  // Clear stale apiPass so the correct default takes over
+  localStorage.removeItem('almatek_api_pass');
+
   if (location.search.includes('reset-sheet')) {
     localStorage.removeItem('almatek_script_url');
     localStorage.removeItem('almatek_users_secret');
@@ -1310,7 +1313,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   function atFetch(path, opts) {
     opts = opts || {};
     return fetch(WORKER_URL + '/v0/' + path, Object.assign({}, opts, {
-      headers: Object.assign({ 'X-Auth': isOwner ? authPass : (apiPass || authPass), 'Content-Type': 'application/json' }, opts.headers || {})
+      headers: Object.assign({ 'X-Auth': apiPass, 'Content-Type': 'application/json' }, opts.headers || {})
     })).then(function(r) { return r.json(); });
   }
 
