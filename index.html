@@ -754,6 +754,7 @@
 <div class="container">
   <header style="padding:16px 0 20px;">
     <h1 style="font-size:17px;">👥 Staff Management</h1>
+    <button onclick="showApiPassModal()" style="margin-top:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">🔑 Set Worker Token</button>
   </header>
 
   <!-- Setup section (shown when script URL not configured) -->
@@ -802,17 +803,22 @@
       <div id="resetPassErr" class="chpass-err"></div>
     </div>
 
-    <div class="card" style="margin-top:16px;">
-      <div class="staff-section-title">API Pass (Worker Token)</div>
-      <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">The shared Cloudflare Worker token. Set once per device so the app can reach Airtable.</p>
-      <div class="staff-add-row">
-        <input type="password" id="apiPassField" placeholder="Worker token" autocomplete="off" />
-        <button class="staff-add-btn" onclick="saveApiPassField()">Save</button>
-      </div>
-      <div id="apiPassStatus" style="font-size:12px;color:var(--green);margin-top:6px;"></div>
-    </div>
   </div>
 </div>
+</div>
+
+<!-- API Pass setup (always accessible to owner, outside Staff tab) -->
+<div id="apiPassModal" class="chpass-overlay hidden">
+  <div class="chpass-box">
+    <h3>🔑 Worker Token</h3>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Enter your Cloudflare Worker AUTH_PASS to connect to inventory.</p>
+    <input type="password" id="apiPassModalInput" placeholder="AUTH_PASS value" autocomplete="off" onkeydown="if(event.key==='Enter') saveApiPassModal()" />
+    <div class="chpass-err" id="apiPassModalErr"></div>
+    <div class="chpass-actions" style="margin-top:10px;">
+      <button class="chpass-cancel" onclick="el('apiPassModal').classList.add('hidden')">Cancel</button>
+      <button class="chpass-save" onclick="saveApiPassModal()">Save</button>
+    </div>
+  </div>
 </div>
 
 <!-- Change Password Modal -->
@@ -1324,7 +1330,12 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     var url = AT_BASE + '/' + AT_INV + '?returnFieldsByFieldId=true&fields[]=fldWzYeFcqm0qnxD8&fields[]=fldQa2ViIJ7aeicZJ&fields[]=fldZEvcZT2JnX5kwh&fields[]=fldvwFFYSxAJlcFpp&fields[]=fldxQhVZSYmXNK6CW&fields[]=fldB16jlPFHm11tfW&fields[]=fldV0jSP3xJuinS8t&pageSize=100';
     if (offset) url += '&offset=' + encodeURIComponent(offset);
     atFetch(url).then(function(data) {
-      if (data.error) { if (!quiet) el('invLoading').textContent = 'Error: ' + (data.error.message || 'Check your token.'); return; }
+      if (data.error) {
+        if (!quiet) {
+          el('invLoading').innerHTML = 'Invalid Worker token. <button onclick="showApiPassModal()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;">Set Token</button>';
+        }
+        return;
+      }
       allInvRecords = allInvRecords.concat(data.records || []);
       if (data.offset) {
         loadInventoryPage(data.offset, quiet);
@@ -2191,12 +2202,29 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   }
 
   function saveApiPassField() {
-    var val = el('apiPassField').value.trim();
-    if (!val || val === '••••••••') { el('apiPassStatus').textContent = 'Enter the Worker token first.'; return; }
+    var val = el('apiPassField') && el('apiPassField').value.trim();
+    if (!val || val === '••••••••') return;
     localStorage.setItem('almatek_api_pass', val);
     apiPass = val;
     el('apiPassField').value = '••••••••';
-    el('apiPassStatus').textContent = '✓ Saved';
+    if (el('apiPassStatus')) el('apiPassStatus').textContent = '✓ Saved';
+  }
+
+  function showApiPassModal() {
+    el('apiPassModalInput').value = '';
+    el('apiPassModalErr').textContent = '';
+    el('apiPassModal').classList.remove('hidden');
+    setTimeout(function() { el('apiPassModalInput').focus(); }, 100);
+  }
+
+  function saveApiPassModal() {
+    var val = el('apiPassModalInput').value.trim();
+    if (!val) { el('apiPassModalErr').textContent = 'Enter the token.'; return; }
+    localStorage.setItem('almatek_api_pass', val);
+    apiPass = val;
+    el('apiPassModal').classList.add('hidden');
+    invLoaded = false; allInvRecords = [];
+    if (!el('tabInventory').classList.contains('hidden')) loadInventory();
   }
 
   // ── Change Password (Staff) ──────────────────────────
