@@ -748,7 +748,13 @@ function loadInventory() { el('invLoading').classList.remove('hidden'); el('invL
 function loadInventoryPage(offset, quiet) {
   var url = AT_BASE + '/' + AT_INV + '?returnFieldsByFieldId=true&fields[]=fldWzYeFcqm0qnxD8&fields[]=fldQa2ViIJ7aeicZJ&fields[]=fldZEvcZT2JnX5kwh&fields[]=fldvwFFYSxAJlcFpp&fields[]=fldxQhVZSYmXNK6CW&fields[]=fldB16jlPFHm11tfW&fields[]=fldV0jSP3xJuinS8t&pageSize=100';
   if (offset) url += '&offset=' + encodeURIComponent(offset);
-  atFetch(url).then(data => { if (data.error) return; allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } } });
+  atFetch(url).then(data => {
+    if (data.error) {
+      if (!quiet) el('invLoading').innerHTML = 'Auth error: ' + (data.error.message||'Invalid token') + '. <button onclick="showApiPassModal()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;">Set Token</button>';
+      return;
+    }
+    allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } }
+  });
 }
 
 function setFilter(f, btn) { activeFilter = f; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderInventory(); }
@@ -798,7 +804,16 @@ var authd = !!authPass;
 
 function onAuthBtnClick() { if (authd) { if (confirm('Log out?')) { localStorage.removeItem('almatek_pass'); authPass = ''; authd = false; updateAuthBtn(); } } else { el('authOverlay').classList.remove('hidden'); } }
 function tryAuth() { var input = el('authInput').value.trim(); if (!input) return; if (input === OWNER_PASS) { authPass = input; localStorage.setItem('almatek_pass', input); authd = true; isOwner = true; el('authOverlay').classList.add('hidden'); updateAuthBtn(); } else { el('authError').textContent = 'Wrong code'; } }
-function updateAuthBtn() { var btn = el('authBtn'); if (authd) { btn.textContent = isOwner ? 'Owner · Log Out' : 'Staff · Log Out'; btn.className = isOwner ? 'owner-badge' : 'staff-badge'; } else { btn.textContent = '🔒 Demo Mode'; btn.className = 'demo-badge'; } el('tabBookerBtn').classList.toggle('hidden', !authd); el('tabStaffBtn').classList.toggle('hidden', !isOwner); }
+function updateAuthBtn() {
+  var btn = el('authBtn'), btnInv = el('authBtnInv');
+  var label = authd ? ((isOwner ? 'Owner' : (currentUser || 'Staff')) + ' · Log Out') : '🔒 Demo Mode';
+  btn.textContent = label;
+  btn.className = authd ? (isOwner ? 'owner-badge' : 'staff-badge') : 'demo-badge';
+  if (btnInv) btnInv.textContent = authd ? label : '🔒 Log In';
+  el('tabBookerBtn').classList.toggle('hidden', !authd);
+  el('tabStaffBtn').classList.toggle('hidden', !isOwner);
+  var chp = el('chpassBtn'); if (chp) chp.style.display = (authd && !isOwner) ? 'inline' : 'none';
+}
 
 function toggleSuppliers(e) { e.stopPropagation(); el('suppliersMenu').classList.toggle('hidden'); }
 document.addEventListener('click', () => el('suppliersMenu')?.classList.add('hidden'));
@@ -810,6 +825,9 @@ updateAuthBtn();
 // ============================================
 // LEADS MANAGEMENT
 // ============================================
+var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '';
+function sheetsCall(payload) { if (!USERS_SCRIPT_URL) return Promise.resolve({}); return fetch(USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload))).then(function(r) { return r.json(); }); }
+
 var leadsStorage = [], leadFilterStatus = 'all', currentLeadId = null;
 
 function loadLeadsFromStorage() { var saved = localStorage.getItem('almatek_leads'); leadsStorage = saved ? JSON.parse(saved) : []; renderLeadsList(); }
