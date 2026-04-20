@@ -1311,19 +1311,22 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
 
   // ── Tab switching ────────────────────────────────────
   function switchTab(tab) {
-    const isQuote = tab === 'quote';
-    const isOrders = tab === 'orders';
-    const isInventory = tab === 'inventory';
-    const isBooker = tab === 'booker';
-    const isStaff = tab === 'staff';
-    el('tabQuote').classList.toggle('hidden', !isQuote);
+  const isQuote = tab === 'quote';
+  const isOrders = tab === 'orders';
+  const isInventory = tab === 'inventory';
+  const isLeads = tab === 'leads';
+  const isBooker = tab === 'booker';
+  const isStaff = tab === 'staff';
+        el('tabQuote').classList.toggle('hidden', !isQuote);
     el('tabOrders').classList.toggle('hidden', !isOrders);
     el('tabInventory').classList.toggle('hidden', !isInventory);
+    el('tabLeads').classList.toggle('hidden', !isLeads);
     el('tabBooker').classList.toggle('hidden', !isBooker);
     el('tabStaff').classList.toggle('hidden', !isStaff);
     el('tabQuoteBtn').classList.toggle('active', isQuote);
     el('tabOrdBtn').classList.toggle('active', isOrders);
     el('tabInvBtn').classList.toggle('active', isInventory);
+    el('tabLeadsBtn').classList.toggle('active', isLeads);
     el('tabBookerBtn').classList.toggle('active', isBooker);
     el('tabStaffBtn').classList.toggle('active', isStaff);
     if (isOrders) initOrders();
