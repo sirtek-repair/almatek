@@ -1335,7 +1335,8 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     atFetch(url).then(function(data) {
       if (data.error) {
         if (!quiet) {
-          el('invLoading').innerHTML = 'Invalid Worker token. <button onclick="showApiPassModal()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;">Set Token</button>';
+          var msg = data.error.message || JSON.stringify(data.error);
+          el('invLoading').innerHTML = 'Worker error: <b>' + msg + '</b><br><small style="color:var(--muted)">Token sent: ' + apiPass.slice(0,4) + '****</small> <button onclick="showApiPassModal()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;">Set Token</button>';
         }
         return;
       }
