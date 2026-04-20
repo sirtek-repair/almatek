@@ -702,11 +702,12 @@
         <button onclick="addLeadNote()" style="width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Add Note</button>
       </div>
       
-      <div style="display:flex;gap:8px;margin-top:12px;">
-        <button onclick="markLeadContacted()" id="contactedBtn" style="flex:1;padding:8px;background:#3b82f6;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">✓ Contacted</button>
-        <button onclick="showFollowUpPicker()" style="flex:1;padding:8px;background:#8b5cf6;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">📅 Follow-up</button>
-        <button onclick="markLeadBooked()" style="flex:1;padding:8px;background:#10b981;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">💰 Booked</button>
-      </div>
+     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+  <button onclick="markLeadContacted()" id="contactedBtn" style="flex:1;padding:8px;background:#3b82f6;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">✓ Contacted</button>
+  <button onclick="showFollowUpPicker()" style="flex:1;padding:8px;background:#8b5cf6;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">📅 Follow-up</button>
+  <button onclick="markLeadBooked()" style="flex:1;padding:8px;background:#10b981;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">💰 Booked</button>
+  <button onclick="markLeadClosed()" style="flex:1;padding:8px;background:#ef4444;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">❌ Closed Lost</button>
+</div>
     </div>
   </div>
 </div>
@@ -2525,8 +2526,12 @@ function openLeadDetail(leadId) {
   el('detailLeadName').textContent = lead.name || 'Unnamed';
   
   var color = getStatusColor(lead.status);
-  var html = '<div style="margin-bottom:16px;">' +
+  var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">' +
     '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';border-color:' + color + '40;">' + getStatusLabel(lead.status) + '</span>' +
+    '<div style="display:flex;gap:6px;">' +
+      '<button onclick="closeLeadDetail(); editLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">✏️ Edit</button>' +
+      '<button onclick="deleteLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Delete</button>' +
+    '</div>' +
     '</div>' +
     '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Phone</strong><br>' + (lead.phone || '—') + '</div>' +
     '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Email</strong><br>' + (lead.email || '—') + '</div>' +
@@ -2544,6 +2549,13 @@ function openLeadDetail(leadId) {
         '<div style="font-size:11px;color:var(--muted);margin-top:4px;">' + new Date(n.createdAt).toLocaleString() + '</div>' +
       '</div>';
     }
+    html += '</div>';
+  }
+  
+  el('leadDetailContent').innerHTML = html;
+  el('leadDetailModal').classList.remove('hidden');
+}
+
     html += '</div>';
   }
   
@@ -2653,7 +2665,132 @@ function markLeadBooked() {
   renderLeadsList();
   showToast('Marked as booked ✓');
 }
+function editLead(leadId) {
+  currentLeadId = leadId;
+  var lead = leadsStorage.find(function(l) { return l.id === leadId; });
+  if (!lead) return;
+  
+  // Populate the new lead form with existing data
+  el('leadName').value = lead.name || '';
+  el('leadPhone').value = lead.phone || '';
+  el('leadEmail').value = lead.email || '';
+  el('leadDevice').value = lead.device || '';
+  el('leadIssue').value = lead.issue || '';
+  
+  // Change form to edit mode
+  closeLeadDetail();
+  showNewLeadForm();
+  el('newLeadBtn').style.display = 'none';
+  
+  // Change save button behavior
+  var saveBtn = document.querySelector('#newLeadForm button[onclick="createNewLead()"]');
+  if (saveBtn) {
+    saveBtn.textContent = 'Update Lead';
+    saveBtn.setAttribute('onclick', 'updateExistingLead()');
+  }
+  
+  // Add cancel edit option
+  var cancelBtn = document.querySelector('#newLeadForm button[onclick="hideNewLeadForm()"]');
+  if (cancelBtn) {
+    cancelBtn.setAttribute('onclick', 'cancelEditLead()');
+  }
+}
 
+function updateExistingLead() {
+  if (!currentLeadId) return;
+  
+  var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; });
+  if (!lead) return;
+  
+  var name = el('leadName').value.trim();
+  var phone = el('leadPhone').value.trim();
+  if (!name || !phone) { showToast('Name and phone required'); return; }
+  
+  lead.name = name;
+  lead.phone = phone;
+  lead.email = el('leadEmail').value.trim();
+  lead.device = el('leadDevice').value.trim();
+  lead.issue = el('leadIssue').value.trim();
+  lead.updatedAt = new Date().toISOString();
+  
+  saveLeadsToStorage();
+  
+  syncUpdateToSheet(currentLeadId, {
+    name: lead.name,
+    phone: lead.phone,
+    email: lead.email,
+    device: lead.device,
+    issue: lead.issue,
+    updatedAt: lead.updatedAt
+  }).then(function() {
+    showToast('Lead updated ✓');
+  }).catch(function() {
+    showToast('Lead updated locally ✓');
+  });
+  
+  cancelEditLead();
+  renderLeadsList();
+}
+
+function cancelEditLead() {
+  hideNewLeadForm();
+  currentLeadId = null;
+  
+  // Reset form buttons
+  var saveBtn = document.querySelector('#newLeadForm button[onclick="updateExistingLead()"]');
+  if (saveBtn) {
+    saveBtn.textContent = 'Save Lead';
+    saveBtn.setAttribute('onclick', 'createNewLead()');
+  }
+  
+  var cancelBtn = document.querySelector('#newLeadForm button[onclick="cancelEditLead()"]');
+  if (cancelBtn) {
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.setAttribute('onclick', 'hideNewLeadForm()');
+  }
+}
+
+function deleteLead(leadId) {
+  if (!confirm('Delete this lead? This cannot be undone.')) return;
+  
+  var index = leadsStorage.findIndex(function(l) { return l.id === leadId; });
+  if (index === -1) return;
+  
+  leadsStorage.splice(index, 1);
+  saveLeadsToStorage();
+  
+  // Delete from sheet
+  if (USERS_SCRIPT_URL) {
+    sheetsCall({ action: 'deleteLead', leadId: leadId }).catch(function() {});
+  }
+  
+  closeLeadDetail();
+  renderLeadsList();
+  showToast('Lead deleted ✓');
+}
+
+function markLeadClosed() {
+  if (!currentLeadId) return;
+  if (!confirm('Mark this lead as closed/lost?')) return;
+  
+  var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; });
+  if (!lead) return;
+  
+  lead.status = 'closed_lost';
+  lead.closedAt = new Date().toISOString();
+  lead.updatedAt = new Date().toISOString();
+  saveLeadsToStorage();
+  
+  syncUpdateToSheet(currentLeadId, { 
+    status: lead.status, 
+    closedAt: lead.closedAt,
+    updatedAt: lead.updatedAt 
+  });
+  
+  closeLeadDetail();
+  renderLeadsList();
+  showToast('Marked as closed ✓');
+}
 // Initialize leads
 if (USERS_SCRIPT_URL) {
   loadLeadsFromSheet();
