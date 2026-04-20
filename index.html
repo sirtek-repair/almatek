@@ -280,6 +280,7 @@
   <button class="tab-btn active" id="tabQuoteBtn" onclick="switchTab('quote')">💰 Quote</button>
   <button class="tab-btn" id="tabOrdBtn" onclick="switchTab('orders')">📋 Orders</button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
+  <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 Leads</button>
   <button class="tab-btn hidden" id="tabBookerBtn" onclick="switchTab('booker')">📊 Booker</button>
   <button class="tab-btn hidden" id="tabStaffBtn" onclick="switchTab('staff')">👥 Staff</button>
 </div>
@@ -648,7 +649,68 @@
     <div id="ordersList"></div>
   </div>
 </div>
+<!-- Leads Tab -->
+<div id="tabLeads" class="hidden">
+<div class="container">
+  <header style="padding:16px 0 20px;">
+    <h1 style="font-size:17px;">👤 Lead Management</h1>
+    <button id="newLeadBtn" onclick="showNewLeadForm()" style="margin-top:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
+  </header>
 
+  <!-- New Lead Form -->
+  <div id="newLeadForm" class="card hidden">
+    <h3 style="margin:0 0 16px;font-size:15px;">New Lead</h3>
+    <input type="text" id="leadName" placeholder="Customer Name" style="width:100%;margin-bottom:10px;" />
+    <input type="text" id="leadPhone" placeholder="Phone Number" style="width:100%;margin-bottom:10px;" />
+    <input type="email" id="leadEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;" />
+    <input type="text" id="leadDevice" placeholder="Device" style="width:100%;margin-bottom:10px;" />
+    <textarea id="leadIssue" placeholder="Issue / Notes" rows="2" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="createNewLead()" style="flex:1;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Save Lead</button>
+      <button onclick="hideNewLeadForm()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <input type="text" id="leadSearch" placeholder="Search leads..." oninput="filterLeads()" style="width:100%;margin:12px 0;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;" />
+
+  <!-- Status Filter -->
+  <div class="filter-row" id="leadFilters">
+    <button class="filter-btn active" onclick="filterLeadsByStatus('all', this)">All</button>
+    <button class="filter-btn" onclick="filterLeadsByStatus('new', this)">New</button>
+    <button class="filter-btn" onclick="filterLeadsByStatus('contacted', this)">Contacted</button>
+    <button class="filter-btn" onclick="filterLeadsByStatus('follow_up_scheduled', this)">Follow-up</button>
+    <button class="filter-btn" onclick="filterLeadsByStatus('booked', this)">Booked</button>
+  </div>
+
+  <!-- Leads List -->
+  <div id="leadsList"></div>
+
+  <!-- Lead Detail Modal -->
+  <div id="leadDetailModal" class="chpass-overlay hidden">
+    <div class="chpass-box" style="max-width:500px;max-height:80vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;" id="detailLeadName">Lead Details</h3>
+        <button onclick="closeLeadDetail()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+      </div>
+      
+      <div id="leadDetailContent"></div>
+      
+      <div style="margin-top:16px;">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Add Note</label>
+        <textarea id="newNoteText" rows="2" placeholder="Type a note..." style="width:100%;margin-bottom:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+        <button onclick="addLeadNote()" style="width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Add Note</button>
+      </div>
+      
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button onclick="markLeadContacted()" id="contactedBtn" style="flex:1;padding:8px;background:#3b82f6;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">✓ Contacted</button>
+        <button onclick="showFollowUpPicker()" style="flex:1;padding:8px;background:#8b5cf6;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">📅 Follow-up</button>
+        <button onclick="markLeadBooked()" style="flex:1;padding:8px;background:#10b981;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">💰 Booked</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
 <!-- Orders Tab -->
 <div id="tabOrders" class="hidden">
 <div class="container">
@@ -2286,7 +2348,268 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       window.location.href = 'mailto:?subject=' + encodeURIComponent('Booker Pay — ' + name) + '&body=' + encodeURIComponent(body);
     }
   }
+// ─── Leads Management ─────────────────────────────────────
+var leadsStorage = [];
+var leadFilterStatus = 'all';
+var currentLeadId = null;
 
+// Load leads from localStorage on startup
+function loadLeadsFromStorage() {
+  var saved = localStorage.getItem('almatek_leads');
+  if (saved) {
+    leadsStorage = JSON.parse(saved);
+  } else {
+    // Add sample leads for demo
+    var now = new Date().toISOString();
+    leadsStorage = [
+      { id: 'lead_' + Date.now() + '_1', name: 'John Smith', phone: '555-123-4567', email: 'john@example.com', device: 'iPhone 14 Pro', issue: 'Cracked screen', status: 'new', followUpAt: null, followUpNotes: '', assignedTo: 'staff', createdBy: 'staff', lastContactedAt: null, contactAttempts: 0, bookedAt: null, closedAt: null, notes: [], createdAt: now, updatedAt: now },
+      { id: 'lead_' + Date.now() + '_2', name: 'Sarah Johnson', phone: '555-987-6543', email: 'sarah@example.com', device: 'MacBook Air', issue: 'Battery replacement', status: 'contacted', followUpAt: null, followUpNotes: '', assignedTo: 'staff', createdBy: 'staff', lastContactedAt: now, contactAttempts: 1, bookedAt: null, closedAt: null, notes: [{ text: 'Left voicemail', createdAt: now, createdBy: 'staff' }], createdAt: now, updatedAt: now },
+      { id: 'lead_' + Date.now() + '_3', name: 'Mike Williams', phone: '555-456-7890', email: '', device: 'Samsung S23', issue: 'Water damage', status: 'follow_up_scheduled', followUpAt: new Date(Date.now() + 2*24*60*60*1000).toISOString(), followUpNotes: 'Check insurance', assignedTo: 'staff', createdBy: 'staff', lastContactedAt: now, contactAttempts: 2, bookedAt: null, closedAt: null, notes: [], createdAt: now, updatedAt: now }
+    ];
+    saveLeadsToStorage();
+  }
+}
+
+function saveLeadsToStorage() {
+  localStorage.setItem('almatek_leads', JSON.stringify(leadsStorage));
+}
+
+function showNewLeadForm() {
+  el('newLeadForm').classList.remove('hidden');
+  el('newLeadBtn').style.display = 'none';
+}
+
+function hideNewLeadForm() {
+  el('newLeadForm').classList.add('hidden');
+  el('newLeadBtn').style.display = 'block';
+  el('leadName').value = '';
+  el('leadPhone').value = '';
+  el('leadEmail').value = '';
+  el('leadDevice').value = '';
+  el('leadIssue').value = '';
+}
+
+function createNewLead() {
+  var name = el('leadName').value.trim();
+  var phone = el('leadPhone').value.trim();
+  if (!name || !phone) { showToast('Name and phone required'); return; }
+  
+  var now = new Date().toISOString();
+  var newLead = {
+    id: 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+    name: name,
+    phone: phone,
+    email: el('leadEmail').value.trim(),
+    device: el('leadDevice').value.trim(),
+    issue: el('leadIssue').value.trim(),
+    status: 'new',
+    followUpAt: null,
+    followUpNotes: '',
+    assignedTo: currentUser || 'staff',
+    createdBy: currentUser || 'staff',
+    lastContactedAt: null,
+    contactAttempts: 0,
+    bookedAt: null,
+    closedAt: null,
+    notes: [],
+    createdAt: now,
+    updatedAt: now
+  };
+  
+  leadsStorage.push(newLead);
+  saveLeadsToStorage();
+  hideNewLeadForm();
+  renderLeadsList();
+  showToast('Lead saved ✓');
+}
+
+function filterLeads() {
+  renderLeadsList();
+}
+
+function filterLeadsByStatus(status, btn) {
+  leadFilterStatus = status;
+  document.querySelectorAll('#leadFilters .filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderLeadsList();
+}
+
+function getStatusLabel(status) {
+  var labels = { 'new': 'New', 'contacted': 'Contacted', 'awaiting_response': 'Awaiting', 'follow_up_scheduled': 'Follow-up', 'booked': 'Booked', 'closed_lost': 'Closed' };
+  return labels[status] || status;
+}
+
+function getStatusColor(status) {
+  var colors = { 'new': '#3b82f6', 'contacted': '#10b981', 'awaiting_response': '#f59e0b', 'follow_up_scheduled': '#8b5cf6', 'booked': '#06b6d4', 'closed_lost': '#ef4444' };
+  return colors[status] || '#6b7280';
+}
+
+function renderLeadsList() {
+  var search = (el('leadSearch').value || '').toLowerCase();
+  var filtered = leadsStorage.filter(function(l) {
+    var matchesSearch = !search || l.name.toLowerCase().includes(search) || l.phone.includes(search) || (l.email && l.email.toLowerCase().includes(search));
+    var matchesStatus = leadFilterStatus === 'all' || l.status === leadFilterStatus;
+    return matchesSearch && matchesStatus;
+  });
+  
+  filtered.sort(function(a, b) { return new Date(b.updatedAt) - new Date(a.updatedAt); });
+  
+  if (!filtered.length) {
+    el('leadsList').innerHTML = '<div class="orders-empty-state" style="padding:40px 20px;">No leads found</div>';
+    return;
+  }
+  
+  el('leadsList').innerHTML = filtered.map(function(l) {
+    var color = getStatusColor(l.status);
+    return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;">' +
+      '<div class="inv-item-top">' +
+        '<div>' +
+          '<div class="inv-item-name">' + l.name + '</div>' +
+          '<div class="inv-item-model">' + (l.phone || 'No phone') + (l.device ? ' · ' + l.device : '') + '</div>' +
+        '</div>' +
+        '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';border-color:' + color + '40;">' + getStatusLabel(l.status) + '</span>' +
+      '</div>' +
+      (l.issue ? '<div class="inv-item-meta">' + l.issue.substring(0, 60) + (l.issue.length > 60 ? '...' : '') + '</div>' : '') +
+      '<div class="inv-item-meta" style="margin-top:8px;">' +
+        (l.lastContactedAt ? '📞 ' + new Date(l.lastContactedAt).toLocaleDateString() : 'No contact yet') +
+        (l.followUpAt ? ' · 📅 ' + new Date(l.followUpAt).toLocaleDateString() : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openLeadDetail(leadId) {
+  currentLeadId = leadId;
+  var lead = leadsStorage.find(function(l) { return l.id === leadId; });
+  if (!lead) return;
+  
+  el('detailLeadName').textContent = lead.name;
+  
+  var color = getStatusColor(lead.status);
+  var html = '<div style="margin-bottom:16px;">' +
+    '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';border-color:' + color + '40;">' + getStatusLabel(lead.status) + '</span>' +
+    '</div>' +
+    '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Phone</strong><br>' + (lead.phone || '—') + '</div>' +
+    '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Email</strong><br>' + (lead.email || '—') + '</div>' +
+    '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Device</strong><br>' + (lead.device || '—') + '</div>' +
+    '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Issue</strong><br>' + (lead.issue || '—') + '</div>' +
+    '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Contact Attempts</strong><br>' + lead.contactAttempts + '</div>' +
+    (lead.followUpAt ? '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Follow-up</strong><br>' + new Date(lead.followUpAt).toLocaleString() + (lead.followUpNotes ? '<br><span style="color:var(--muted);">' + lead.followUpNotes + '</span>' : '') + '</div>' : '');
+  
+  if (lead.notes && lead.notes.length) {
+    html += '<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);"><strong style="color:var(--muted);font-size:12px;">Notes</strong>';
+    for (var i = lead.notes.length - 1; i >= 0; i--) {
+      var n = lead.notes[i];
+      html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;">' +
+        '<div style="font-size:13px;">' + n.text + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:4px;">' + new Date(n.createdAt).toLocaleString() + '</div>' +
+      '</div>';
+    }
+    html += '</div>';
+  }
+  
+  el('leadDetailContent').innerHTML = html;
+  el('contactedBtn').style.display = lead.status === 'closed_lost' ? 'none' : 'block';
+  el('leadDetailModal').classList.remove('hidden');
+}
+
+function closeLeadDetail() {
+  el('leadDetailModal').classList.add('hidden');
+  currentLeadId = null;
+  el('newNoteText').value = '';
+}
+
+function addLeadNote() {
+  if (!currentLeadId) return;
+  var noteText = el('newNoteText').value.trim();
+  if (!noteText) return;
+  
+  var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; });
+  if (!lead) return;
+  
+  lead.notes.push({
+    text: noteText,
+    createdAt: new Date().toISOString(),
+    createdBy: currentUser || 'staff'
+  });
+  lead.updatedAt = new Date().toISOString();
+  saveLeadsToStorage();
+  
+  el('newNoteText').value = '';
+  openLeadDetail(currentLeadId);
+  renderLeadsList();
+  showToast('Note added ✓');
+}
+
+function markLeadContacted() {
+  if (!currentLeadId) return;
+  var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; });
+  if (!lead) return;
+  
+  lead.status = 'contacted';
+  lead.lastContactedAt = new Date().toISOString();
+  lead.contactAttempts = (lead.contactAttempts || 0) + 1;
+  lead.updatedAt = new Date().toISOString();
+  saveLeadsToStorage();
+  
+  openLeadDetail(currentLeadId);
+  renderLeadsList();
+  showToast('Marked contacted ✓');
+}
+
+function showFollowUpPicker() {
+  if (!currentLeadId) return;
+  var dateStr = prompt('Enter follow-up date and time:\n(YYYY-MM-DD HH:MM)\nExample: 2026-04-25 14:00', '');
+  if (!dateStr) return;
+  
+  var notes = prompt('Follow-up notes (optional):', '');
+  
+  var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; });
+  if (!lead) return;
+  
+  lead.status = 'follow_up_scheduled';
+  lead.followUpAt = new Date(dateStr).toISOString();
+  lead.followUpNotes = notes || '';
+  lead.updatedAt = new Date().toISOString();
+  saveLeadsToStorage();
+  
+  openLeadDetail(currentLeadId);
+  renderLeadsList();
+  showToast('Follow-up scheduled ✓');
+}
+
+function markLeadBooked() {
+  if (!currentLeadId) return;
+  var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; });
+  if (!lead) return;
+  
+  lead.status = 'booked';
+  lead.bookedAt = new Date().toISOString();
+  lead.updatedAt = new Date().toISOString();
+  saveLeadsToStorage();
+  
+  openLeadDetail(currentLeadId);
+  renderLeadsList();
+  showToast('Marked as booked ✓');
+}
+
+// Initialize leads when app starts
+loadLeadsFromStorage();
+
+// Update switchTab to handle leads tab
+var originalSwitchTab = switchTab;
+switchTab = function(tab) {
+  originalSwitchTab(tab);
+  if (tab === 'leads') {
+    renderLeadsList();
+    el('newLeadBtn').style.display = 'block';
+    hideNewLeadForm();
+  }
+  el('tabLeadsBtn').classList.toggle('active', tab === 'leads');
+};
+
+// Make leads tab visible for all users
+el('tabLeadsBtn').classList.remove('hidden');
 </script>
 </body>
 </html>
