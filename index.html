@@ -612,7 +612,7 @@
 <div id="tabInventory" class="hidden">
 <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
     <input class="inv-search" id="invSearch" placeholder="Search inventory..." oninput="filterInventory()" style="margin-bottom:0;flex:1;" />
-    <button onclick="onAuthBtnClick()" style="padding:8px 12px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;white-space:nowrap;font-family:inherit;">🔑 Token</button>
+    <button id="authBtnInv" onclick="onAuthBtnClick()" style="padding:8px 12px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;white-space:nowrap;font-family:inherit;">🔒 Log In</button>
   </div>
   <div class="filter-row">
     <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
@@ -1915,12 +1915,16 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
 
   function updateAuthBtn() {
     var btn = el('authBtn');
+    var btnInv = el('authBtnInv');
     el('tabBookerBtn').classList.toggle('hidden', !authd);
     el('tabStaffBtn').classList.toggle('hidden', !isOwner);
     el('chpassBtn').style.display = (authd && !isOwner) ? 'inline' : 'none';
+    var displayName = isOwner ? 'Owner' : (currentUser || 'Staff');
     if (authd) {
-      btn.textContent = isOwner ? '🔑 Owner Mode' : ('🔓 ' + (currentUser || 'Staff Mode'));
+      var loggedInLabel = displayName + ' · Log Out';
+      btn.textContent = loggedInLabel;
       btn.className = isOwner ? 'owner-badge' : 'staff-badge';
+      if (btnInv) { btnInv.textContent = loggedInLabel; btnInv.className = ''; btnInv.style.cssText = 'padding:8px 12px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;white-space:nowrap;font-family:inherit;'; }
       el('suppliersDropdown').style.display = '';
       el('supplierDemo').style.display = 'none';
       el('repairedBtn').textContent = 'Repaired Collective';
@@ -1935,6 +1939,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
     } else {
       btn.textContent = '🔒 Demo Mode';
       btn.className = 'demo-badge';
+      if (btnInv) { btnInv.textContent = '🔒 Log In'; }
       el('suppliersDropdown').style.display = 'none';
       el('supplierDemo').style.display = '';
       el('repairedBtn').textContent = 'your website';
