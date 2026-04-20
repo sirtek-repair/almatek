@@ -227,4 +227,669 @@
     .staff-add-row { display: flex; gap: 8px; margin-top: 12px; }
     .staff-add-row input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text); font-size: 14px; font-family: inherit; outline: none; }
     .staff-add-row input:focus { border-color: var(--accent); }
-    .staff-add-btn
+    .staff-add-btn { background: var(--accent); border: none; color: #fff; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap; }
+    
+    .chpass-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .chpass-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; width: 90%; max-width: 340px; max-height: 80vh; overflow-y: auto; }
+    .chpass-box h3 { margin: 0 0 16px; font-size: 17px; }
+    .chpass-box input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-size: 16px; font-family: inherit; outline: none; margin-bottom: 10px; box-sizing: border-box; }
+    .chpass-box input:focus { border-color: var(--accent); }
+    .chpass-actions { display: flex; gap: 8px; margin-top: 6px; }
+    .chpass-actions button { flex: 1; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; border: none; }
+    .chpass-save { background: var(--accent); color: #fff; }
+    .chpass-cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border) !important; }
+    .chpass-err { font-size: 12px; color: #ef4444; margin-top: 4px; min-height: 16px; }
+    .chpass-link { background: none; border: none; color: var(--muted); font-size: 11px; font-family: inherit; cursor: pointer; padding: 2px 4px; text-decoration: underline; display: none; }
+  </style>
+</head>
+<body>
+<!-- Auth Modal -->
+<div id="authOverlay" class="auth-overlay hidden">
+  <div class="auth-box">
+    <div style="font-size:36px;margin-bottom:10px;">⚡</div>
+    <h2>AlmaTek Access</h2>
+    <p>Enter your access code to unlock features.</p>
+    <input type="password" id="authInput" placeholder="Access code" onkeydown="if(event.key==='Enter') tryAuth()" autocomplete="off" />
+    <button class="auth-submit" onclick="tryAuth()">Unlock</button>
+    <div class="auth-error" id="authError"></div>
+    <button class="auth-dismiss" onclick="el('authOverlay').classList.add('hidden')">Continue in Demo Mode</button>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" id="tabQuoteBtn" onclick="switchTab('quote')">💰 Quote</button>
+  <button class="tab-btn" id="tabOrdBtn" onclick="switchTab('orders')">📋 Orders</button>
+  <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
+  <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 Leads</button>
+  <button class="tab-btn hidden" id="tabBookerBtn" onclick="switchTab('booker')">📊 Booker</button>
+  <button class="tab-btn hidden" id="tabStaffBtn" onclick="switchTab('staff')">👥 Staff</button>
+</div>
+
+<!-- Quote Tab -->
+<div id="tabQuote">
+<div class="container">
+
+  <header>
+    <h1>AlmaTek</h1>
+    <p>Staff Use Only</p>
+    <div class="header-links" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;">
+      <div class="hlink-dropdown" id="suppliersDropdown" style="display:none;">
+        <button class="hlink" id="suppliersBtn" onclick="toggleSuppliers(event)">Parts ▾</button>
+        <div class="hlink-dropdown-menu hidden" id="suppliersMenu">
+          <a href="https://www.mobilesentrix.com" target="_blank" class="hlink" id="sentrixLink">Mobile Sentrix ↗</a>
+          <a href="https://brosphoneparts.com/" target="_blank" class="hlink" id="brosLink">Bros Parts ↗</a>
+          <a href="https://parts4cells.com/" target="_blank" class="hlink" id="p4cLink">Parts4Cells ↗</a>
+          <a href="tel:+19177909209" class="hlink" id="kimiLink">Kimi Soho ☎</a>
+        </div>
+      </div>
+      <button class="hlink" id="repairedBtn" onclick="copyLink(this, 'https://repairedcollective.com', 'Repaired Collective')">Repaired Collective</button>
+      <button class="hlink" id="reviewBtn" onclick="copyLink(this, 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D', 'Review link')">⭐ Review Link</button>
+      <span class="hlink" id="supplierDemo" style="display:none;">your part supplier</span>
+      <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Demo Mode</button>
+      <button id="chpassBtn" class="chpass-link" onclick="showChangePass()">Change Password</button>
+    </div>
+  </header>
+
+  <div class="card">
+    <label class="field-label" for="repairType">Repair Type</label>
+    <select id="repairType" onchange="onRepairChange()">
+      <option value="">— Select a repair —</option>
+      <option value="iphone_screen">iPhone Screen</option>
+      <option value="back_glass">Back Glass (Set Price)</option>
+      <option value="back_glass_swap">Back Glass / Frame Swap</option>
+      <option value="battery">Battery / Small Parts</option>
+      <option value="ipad">iPad Screen</option>
+      <option value="android">Android Repair</option>
+      <option value="laptop">MacBook / Laptop Screen</option>
+    </select>
+  </div>
+
+  <div id="costCard" class="card hidden">
+    <div id="iphoneSection">
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="modeTab1Select" onclick="setMode1('select')">📋 Select Model</button>
+        <button class="mode-tab" id="modeTab1Manual" onclick="setMode1('manual')">✏️ Enter Manually</button>
+      </div>
+      <div id="iphoneSelectInputs">
+        <label class="field-label" for="modelSelect1">iPhone Model</label>
+        <select id="modelSelect1" onchange="onModel1Change()">
+          <option value="">— Select model —</option>
+          <optgroup label="iPhone 17 Series"><option>iPhone Air</option><option>iPhone 17 Pro Max</option><option>iPhone 17 Pro</option><option>iPhone 17</option></optgroup>
+          <optgroup label="iPhone 16 Series"><option>iPhone 16e</option><option>iPhone 16 Pro Max</option><option>iPhone 16 Pro</option><option>iPhone 16 Plus</option><option>iPhone 16</option></optgroup>
+          <optgroup label="iPhone 15 Series"><option>iPhone 15 Pro Max</option><option>iPhone 15 Pro</option><option>iPhone 15 Plus</option><option>iPhone 15</option></optgroup>
+          <optgroup label="iPhone 14 Series"><option>iPhone 14 Pro Max</option><option>iPhone 14 Pro</option><option>iPhone 14 Plus</option><option>iPhone 14</option></optgroup>
+          <optgroup label="iPhone 13 Series"><option>iPhone 13 Pro Max</option><option>iPhone 13 Pro</option><option>iPhone 13</option><option>iPhone 13 Mini</option></optgroup>
+          <optgroup label="iPhone 12 Series"><option>iPhone 12 Pro Max</option><option>iPhone 12 Pro</option><option>iPhone 12</option><option>iPhone 12 Mini</option></optgroup>
+          <optgroup label="iPhone 11 Series"><option>iPhone 11 Pro Max</option><option>iPhone 11 Pro</option><option>iPhone 11</option></optgroup>
+          <optgroup label="iPhone X Series"><option>iPhone XS Max</option><option>iPhone XS</option><option>iPhone XR</option><option>iPhone X</option></optgroup>
+          <optgroup label="iPhone 8 & SE"><option>iPhone 8 Plus</option><option>iPhone 8 / SE (2nd &amp; 3rd Gen)</option><option>iPhone SE (2nd Gen)</option><option>iPhone SE (3rd Gen)</option><option>iPhone 7 Plus</option><option>iPhone 7</option><option>iPhone 6S</option><option>iPhone 6 Plus</option><option>iPhone 6</option><option>iPhone 5S / SE (1st Gen)</option><option>iPhone SE (1st Gen)</option><option>iPhone 5C</option><option>iPhone 5</option><option>iPhone 4S</option><option>iPhone 4</option></optgroup>
+        </select>
+        <div class="tier-options hidden" id="tierOptions1">
+          <div class="tier-option" id="tierBox1Prem" onclick="setTier1('premium')"><div class="tier-option-header"><span class="tier-option-label">Premium</span><span class="tier-option-price" id="tierPrice1Prem">$—</span></div><div class="stock-row hidden" id="stockRow1Prem"><span class="stock-badge" id="stockBadge1Prem"></span><span class="stock-detail" id="stockDetail1Prem"></span></div></div>
+          <div class="tier-option" id="tierBox1Std" onclick="setTier1('standard')"><div class="tier-option-header"><span class="tier-option-label">Standard</span><span class="tier-option-price" id="tierPrice1Std">$—</span></div><div class="stock-row hidden" id="stockRow1Std"><span class="stock-badge" id="stockBadge1Std"></span><span class="stock-detail" id="stockDetail1Std"></span></div></div>
+        </div>
+      </div>
+      <div id="iphoneManualInputs" class="hidden">
+        <label class="field-label" for="partCostIphone">Part Cost — Mobile Sentrix</label>
+        <input type="number" id="partCostIphone" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
+        <p class="hint">Round up to whole dollar</p>
+      </div>
+    </div>
+
+    <div id="glassSection" class="hidden">
+      <label class="field-label">iPhone Model Group — Set Price</label>
+      <div class="model-grid">
+        <button class="model-btn" onclick="onGlassSelect(50, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong>$50</strong></button>
+        <button class="model-btn" onclick="onGlassSelect(60, this)">14 · 15<strong>$60</strong></button>
+        <button class="model-btn" onclick="onGlassSelect(70, this)">16<strong>$70</strong></button>
+      </div>
+    </div>
+
+    <div id="freeSection" class="hidden">
+      <label class="field-label" for="partCost">Part Cost — Mobile Sentrix</label>
+      <input type="number" id="partCost" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
+      <p class="hint">Round up to whole dollar</p>
+    </div>
+  </div>
+
+  <div id="quoteCard" class="quote-card hidden">
+    <div class="ql">Quote to Customer</div>
+    <div class="qa" id="quoteAmt">$—</div>
+    <div class="qsub hidden" id="mobileSubline">includes mobile service fee</div>
+    <div class="qsub hidden" id="quoteStockLine"></div>
+  </div>
+
+  <div id="mobileToggleRow" class="toggle-row hidden" onclick="onToggleMobile()">
+    <div class="toggle-text"><div class="tl">Mobile repair service?</div><div class="ts" id="mobileSub">$15 flat · +$9/mile after 3</div></div>
+    <div class="switch" id="mobileSw"></div>
+  </div>
+  <div id="mobileCard" class="mobile-fee-card hidden">
+    <div class="miles-row"><label class="field-label" for="milesInput">Distance (miles)</label><input type="number" id="milesInput" placeholder="0" min="0" step="0.1" oninput="onMilesChange()" style="max-width:130px;" /></div>
+    <div id="feeBadge" class="fee-badge hidden"><span id="feeBadgeLabel">Mobile service fee</span><span id="feeAmt"></span></div>
+  </div>
+
+  <div id="secondToggle" class="toggle-row hidden" onclick="onToggle2nd()">
+    <div class="toggle-text"><div class="tl">Adding a 2nd repair?</div><div class="ts" id="secondSub">2nd repair gets ½ off</div></div>
+    <div class="switch" id="secondSw"></div>
+  </div>
+
+  <div id="secondCard" class="deal-card hidden">
+    <label class="field-label" for="repair2Type">2nd Repair Type</label>
+    <select id="repair2Type" onchange="on2ndRepairChange()">
+      <option value="">— Select repair —</option>
+      <option value="iphone_screen">iPhone Screen</option>
+      <option value="back_glass">Back Glass (Set Price)</option>
+      <option value="back_glass_swap">Back Glass / Frame Swap</option>
+      <option value="battery">Battery / Small Parts</option>
+      <option value="ipad">iPad Screen</option>
+      <option value="android">Android Repair</option>
+      <option value="laptop">MacBook / Laptop Screen</option>
+    </select>
+
+    <div id="cost2Wrap" class="hidden">
+      <hr class="divider" />
+      <div id="iphoneSection2" class="hidden">
+        <div class="mode-tabs">
+          <button class="mode-tab active" id="modeTab2Select" onclick="setMode2('select')">📋 Select Model</button>
+          <button class="mode-tab" id="modeTab2Manual" onclick="setMode2('manual')">✏️ Enter Manually</button>
+        </div>
+        <div id="iphoneSelectInputs2">
+          <label class="field-label" for="modelSelect2">iPhone Model</label>
+          <select id="modelSelect2" onchange="onModel2Change()"><option value="">— Select model —</option></select>
+          <div class="tier-options hidden" id="tierOptions2">
+            <div class="tier-option" id="tierBox2Prem" onclick="setTier2('premium')"><div class="tier-option-header"><span class="tier-option-label">Premium</span><span class="tier-option-price" id="tierPrice2Prem">$—</span></div><div class="stock-row hidden" id="stockRow2Prem"><span class="stock-badge" id="stockBadge2Prem"></span><span class="stock-detail" id="stockDetail2Prem"></span></div></div>
+            <div class="tier-option" id="tierBox2Std" onclick="setTier2('standard')"><div class="tier-option-header"><span class="tier-option-label">Standard</span><span class="tier-option-price" id="tierPrice2Std">$—</span></div><div class="stock-row hidden" id="stockRow2Std"><span class="stock-badge" id="stockBadge2Std"></span><span class="stock-detail" id="stockDetail2Std"></span></div></div>
+          </div>
+        </div>
+        <div id="iphoneManualInputs2" class="hidden">
+          <label class="field-label" for="partCostIphone2">Part Cost — Mobile Sentrix</label>
+          <input type="number" id="partCostIphone2" placeholder="$0" min="0" step="1" oninput="onCost2Change()" />
+          <p class="hint">Round up to whole dollar</p>
+        </div>
+      </div>
+
+      <div id="glassSection2" class="hidden">
+        <label class="field-label">iPhone Model Group — Set Price</label>
+        <div class="model-grid">
+          <button class="model-btn" onclick="onGlassSelect2(50, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong>$50</strong></button>
+          <button class="model-btn" onclick="onGlassSelect2(60, this)">14 · 15<strong>$60</strong></button>
+          <button class="model-btn" onclick="onGlassSelect2(70, this)">16<strong>$70</strong></button>
+        </div>
+      </div>
+
+      <div id="freeSection2" class="hidden">
+        <label class="field-label" for="partCost2">Part Cost — Mobile Sentrix</label>
+        <input type="number" id="partCost2" placeholder="$0" min="0" step="1" oninput="onCost2Change()" />
+        <p class="hint">Round up to whole dollar</p>
+      </div>
+    </div>
+
+    <div id="dealResult" class="hidden">
+      <div class="deal-header">Since you're already in the device:</div>
+      <div class="deal-grid">
+        <div class="deal-box"><div class="dl">Without deal</div><div class="da" id="normalTotal">$—</div><div class="ds">both full price</div></div>
+        <div class="deal-box win"><div class="dl">Their deal 🎉</div><div class="da" id="dealTotal">$—</div><div class="ds" id="dealDesc"></div></div>
+      </div>
+      <div class="savings-row"><span class="savings-pill" id="savingsPill">Saving $—</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Inventory Tab -->
+<div id="tabInventory" class="hidden">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+    <input class="inv-search" id="invSearch" placeholder="Search inventory..." oninput="filterInventory()" style="margin-bottom:0;flex:1;" />
+    <button id="authBtnInv" onclick="onAuthBtnClick()" style="padding:8px 12px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;white-space:nowrap;font-family:inherit;">🔒 Log In</button>
+  </div>
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+    <button class="filter-btn" onclick="setFilter('Standard Screen', this)">Standard</button>
+    <button class="filter-btn" onclick="setFilter('Premium Screen', this)">Premium</button>
+    <button class="filter-btn" onclick="setFilter('Refurb Screen', this)">Refurb</button>
+    <button class="filter-btn" onclick="setFilter('Battery', this)">Battery</button>
+    <button class="filter-btn" onclick="setFilter('t.G.', this)">t.G.</button>
+    <button class="filter-btn" onclick="setFilter('Device', this)">Device</button>
+  </div>
+
+  <div id="demoInvNote" class="demo-inv-note hidden">⚠ Demo data — log in as staff to see live inventory</div>
+  <div id="invLoading" class="loading-msg hidden">Loading inventory...</div>
+  <div id="invList"></div>
+
+  <div class="orders-section" id="ordersSection">
+    <hr class="divider" />
+    <div class="orders-header"><span class="orders-header-title">📦 Orders</span><button class="orders-new-btn" id="newOrderBtn" onclick="toggleNewOrderForm()">+ New Order</button></div>
+    <div id="newOrderForm" class="order-form hidden">
+      <select id="orderItemSel"><option value="">Select inventory item…</option></select>
+      <input type="number" id="orderQty" placeholder="Quantity" min="1" step="1" />
+      <input type="text" id="orderSupplier" placeholder="Supplier (optional)" />
+      <div class="order-form-btns"><button onclick="submitNewOrder()">Place Order</button><button class="cancel-btn" onclick="toggleNewOrderForm()">Cancel</button></div>
+    </div>
+    <div id="ordersLoading" class="loading-msg hidden">Loading orders…</div>
+    <div id="ordersList"></div>
+  </div>
+</div>
+
+<!-- Orders Tab -->
+<div id="tabOrders" class="hidden">
+<div class="container">
+  <div class="orders-tab-nav">
+    <button class="orders-tab-btn active" onclick="switchOrdersView('needorder')">Need to Order</button>
+    <button class="orders-tab-btn" onclick="switchOrdersView('ordered')">Ordered</button>
+    <button class="orders-tab-btn" onclick="switchOrdersView('receive')">Receive</button>
+  </div>
+
+  <div id="ordersNeedView" class="orders-view active">
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input id="ordersSearchInput" type="text" placeholder="Search items..." oninput="filterOrdersItems()" style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;" />
+      <button onclick="clearOrdersSearch()" style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;font-size:12px;">Clear</button>
+    </div>
+    <div class="need-sub-tabs">
+      <button class="need-sub-btn active" onclick="switchNeedSubTab('combined', this)">All</button>
+      <button class="need-sub-btn" onclick="switchNeedSubTab('low', this)">⚠ Low Stock</button>
+      <button class="need-sub-btn" onclick="switchNeedSubTab('oos', this)">✕ Out of Stock</button>
+    </div>
+    <div id="ordersNeedList" class="orders-items-list"></div>
+  </div>
+
+  <div id="ordersOrderedView" class="orders-view hidden">
+    <div id="ordersOrderedList" class="orders-items-list"></div>
+  </div>
+
+  <div id="ordersReceiveView" class="orders-view hidden">
+    <div id="ordersReceiveList" class="orders-items-list"></div>
+  </div>
+
+  <div id="ordersNoData" class="orders-empty-state" style="text-align:center;padding:40px 20px;color:var(--muted);">No items to show</div>
+</div>
+</div>
+
+<!-- Leads Tab -->
+<div id="tabLeads" class="hidden">
+<div class="container">
+  <header style="padding:16px 0 20px;">
+    <h1 style="font-size:17px;">👤 Lead Management</h1>
+    <button id="newLeadBtn" onclick="showNewLeadForm()" style="margin-top:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
+  </header>
+
+  <div id="newLeadForm" class="card hidden">
+    <h3 style="margin:0 0 16px;font-size:15px;">New Lead</h3>
+    <input type="text" id="leadName" placeholder="Customer Name" style="width:100%;margin-bottom:10px;" />
+    <input type="text" id="leadPhone" placeholder="Phone Number" style="width:100%;margin-bottom:10px;" />
+    <input type="email" id="leadEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;" />
+    <input type="text" id="leadDevice" placeholder="Device" style="width:100%;margin-bottom:10px;" />
+    <textarea id="leadIssue" placeholder="Issue / Notes" rows="2" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+    <div style="display:flex;gap:8px;">
+      <button onclick="createNewLead()" id="saveLeadBtn" style="flex:1;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Save Lead</button>
+      <button onclick="hideNewLeadForm()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+
+  <input type="text" id="leadSearch" placeholder="Search leads..." oninput="filterLeads()" style="width:100%;margin:12px 0;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;" />
+
+  <div class="filter-row" id="leadFilters">
+    <button class="filter-btn active" onclick="filterLeadsByStatus('all', this)">All</button>
+    <button class="filter-btn" onclick="filterLeadsByStatus('new', this)">New</button>
+    <button class="filter-btn" onclick="filterLeadsByStatus('contacted', this)">Contacted</button>
+    <button class="filter-btn" onclick="filterLeadsByStatus('follow_up_scheduled', this)">Follow-up</button>
+    <button class="filter-btn" onclick="filterLeadsByStatus('booked', this)">Booked</button>
+  </div>
+
+  <div id="leadsList"></div>
+
+  <div id="leadDetailModal" class="chpass-overlay hidden">
+    <div class="chpass-box" style="max-width:500px;max-height:80vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;" id="detailLeadName">Lead Details</h3>
+        <button onclick="closeLeadDetail()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+      </div>
+      <div id="leadDetailContent"></div>
+      <div style="margin-top:16px;">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Add Note</label>
+        <textarea id="newNoteText" rows="2" placeholder="Type a note..." style="width:100%;margin-bottom:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+        <button onclick="addLeadNote()" style="width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Add Note</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button onclick="markLeadContacted()" id="contactedBtn" style="flex:1;padding:8px;background:#3b82f6;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">✓ Contacted</button>
+        <button onclick="showFollowUpPicker()" style="flex:1;padding:8px;background:#8b5cf6;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">📅 Follow-up</button>
+        <button onclick="markLeadBooked()" style="flex:1;padding:8px;background:#10b981;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">💰 Booked</button>
+        <button onclick="markLeadClosed()" style="flex:1;padding:8px;background:#ef4444;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">❌ Closed Lost</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Booker Pay Calculator Tab -->
+<div id="tabBooker" class="hidden">
+<div class="container">
+  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">📊 Booker Pay Calculator</h1></header>
+  <div class="card">
+    <div class="gap"><label class="field-label" for="bookerName">Booker Name</label><input type="text" id="bookerName" placeholder="Name" oninput="calcBookerPay()" /></div>
+    <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerMonth">Month</label><select id="bookerMonth" onchange="calcBookerPay()"><option value="">— Select month —</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select></div>
+    <div id="payStructureRow" class="gap" style="margin-top:14px;"><label class="field-label">Pay Structure</label><div style="display:flex;gap:8px;margin-top:4px;"><button id="structBtnStandard" class="need-sub-btn active" onclick="setPayStructure('standard')">Standard</button><button id="structBtnFlat" class="need-sub-btn" onclick="setPayStructure('flat')">Flat Rate</button></div></div>
+    <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerRepairs">Repairs Booked</label><input type="number" id="bookerRepairs" placeholder="0" min="0" step="1" oninput="calcBookerPay()" /></div>
+    <div id="avgProfitRow" class="gap" style="margin-top:14px;"><label class="field-label" for="bookerAvgProfit">Avg Profit Per Repair ($)</label><input type="number" id="bookerAvgProfit" value="110" min="0" step="1" oninput="calcBookerPay()" /><p class="hint">Default $110 — adjust if needed</p></div>
+    <div id="flatRevshareRow" class="gap hidden" style="margin-top:14px;"><label class="field-label" for="flatRevshare">Rev Share % (optional)</label><input type="number" id="flatRevshare" value="0" min="0" max="100" step="0.5" oninput="calcBookerPay()" /><p class="hint">Leave 0 if not applicable yet</p></div>
+  </div>
+  <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total"><div class="bt-label">Booker Payout</div><div class="bt-amt" id="bookerPayoutAmt">$—</div></div><div class="owner-take" id="ownerTakeRow"><span class="ot-label">💰 Your Take</span><span class="ot-amt" id="ownerTakeAmt">$—</span></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">📤 Share Results</button></div></div>
+</div>
+</div>
+
+<!-- Staff Management Tab -->
+<div id="tabStaff" class="hidden">
+<div class="container">
+  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">👥 Staff Management</h1><button onclick="showApiPassModal()" style="margin-top:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">🔑 Set Worker Token</button></header>
+  <div id="staffSetupSection" class="card"><div class="staff-section-title">Connect Google Sheet</div><p style="font-size:12px;color:var(--muted);margin:0 0 12px;">Paste your Google Apps Script web app URL and the secret you set in the script.</p><div class="staff-add-row" style="flex-direction:column;gap:8px;"><input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;" /><div style="display:flex;gap:8px;"><input type="text" id="scriptSecretInput" placeholder="Admin secret" autocomplete="off" style="flex:1;" /><button class="staff-add-btn" onclick="saveScriptSetup()">Connect</button></div></div><div id="setupErr" class="chpass-err"></div></div>
+  <div id="staffMainSection" class="hidden"><div style="text-align:right;margin-bottom:8px;"><button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Reset Google Sheet connection</button></div><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
+  <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
+</div>
+</div>
+
+<!-- API Pass Modal -->
+<div id="apiPassModal" class="chpass-overlay hidden">
+  <div class="chpass-box"><h3>🔑 Worker Token</h3><p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Enter your Cloudflare Worker AUTH_PASS value to connect to inventory.</p><input type="password" id="apiPassModalInput" placeholder="AUTH_PASS value" autocomplete="off" onkeydown="if(event.key==='Enter') saveApiPassModal()" /><div class="chpass-err" id="apiPassModalErr"></div><div class="chpass-actions" style="margin-top:10px;"><button class="chpass-cancel" onclick="el('apiPassModal').classList.add('hidden')">Cancel</button><button class="chpass-save" onclick="saveApiPassModal()">Save</button></div></div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="chpassOverlay" class="chpass-overlay hidden">
+  <div class="chpass-box"><h3>🔑 Change Password</h3><input type="password" id="chpassCurrent" placeholder="Current password" autocomplete="off" /><input type="password" id="chpassNew" placeholder="New password" autocomplete="off" /><input type="password" id="chpassConfirm" placeholder="Confirm new password" autocomplete="off" onkeydown="if(event.key==='Enter') saveNewPassword()" /><div class="chpass-err" id="chpassErr"></div><div class="chpass-actions"><button class="chpass-cancel" onclick="el('chpassOverlay').classList.add('hidden')">Cancel</button><button class="chpass-save" onclick="saveNewPassword()">Save</button></div></div>
+</div>
+
+<div class="inv-toast" id="invToast"></div>
+
+<script>
+const LABOR = { iphone_screen:80, back_glass:100, back_glass_swap:100, battery:65, ipad:85, android:85, laptop:85 };
+const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', android:'Android Repair', laptop:'MacBook / Laptop' };
+
+const SCREEN_PRICES = {
+  'iPhone Air':{standard:null,premium:327},'iPhone 17 Pro Max':{standard:199,premium:289},'iPhone 17 Pro':{standard:196,premium:251},'iPhone 17':{standard:148,premium:242},
+  'iPhone 16e':{standard:108,premium:145},'iPhone 16 Pro Max':{standard:null,premium:282},'iPhone 16 Pro':{standard:181,premium:242},'iPhone 16 Plus':{standard:139,premium:225},'iPhone 16':{standard:134,premium:220},
+  'iPhone 15 Pro Max':{standard:120,premium:195},'iPhone 15 Pro':{standard:111,premium:215},'iPhone 15 Plus':{standard:109,premium:208},'iPhone 15':{standard:108,premium:186},
+  'iPhone 14 Pro Max':{standard:119,premium:210},'iPhone 14 Pro':{standard:109,premium:210},'iPhone 14 Plus':{standard:108,premium:152},'iPhone 14':{standard:103,premium:140},
+  'iPhone 13 Pro Max':{standard:116,premium:146},'iPhone 13 Pro':{standard:109,premium:158},'iPhone 13':{standard:101,premium:140},'iPhone 13 Mini':{standard:112,premium:213},
+  'iPhone 12 Pro Max':{standard:102,premium:148},'iPhone 12 Pro':{standard:null,premium:233},'iPhone 12':{standard:96,premium:145},'iPhone 12 Mini':{standard:111,premium:183},
+  'iPhone 11 Pro Max':{standard:98,premium:131},'iPhone 11 Pro':{standard:95,premium:144},'iPhone 11':{standard:96,premium:101},
+  'iPhone XS Max':{standard:98,premium:121},'iPhone XS':{standard:101,premium:123},'iPhone XR':{standard:97,premium:102},'iPhone X':{standard:100,premium:122},
+  'iPhone 8 Plus':{standard:98,premium:104},'iPhone 8 / SE (2nd & 3rd Gen)':{standard:93,premium:97},'iPhone SE (2nd Gen)':{standard:93,premium:97},'iPhone SE (3rd Gen)':{standard:93,premium:97},
+  'iPhone 7 Plus':{standard:98,premium:105},'iPhone 7':{standard:94,premium:97},'iPhone 6S':{standard:95,premium:96},'iPhone 6 Plus':{standard:95,premium:96},'iPhone 6':{standard:92,premium:93},
+  'iPhone 5S / SE (1st Gen)':{standard:93,premium:94},'iPhone SE (1st Gen)':{standard:93,premium:94},'iPhone 5C':{standard:89,premium:93},'iPhone 5':{standard:91,premium:94},
+  'iPhone 4S':{standard:90,premium:null},'iPhone 4':{standard:90,premium:null}
+};
+
+let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2='', mode1='select', mode2='select', secondOpen=false, mobileOpen=false, mobileFee=0;
+const el = id => document.getElementById(id);
+
+function fullPrice(cost, type) { return Math.ceil(cost * 1.2 + LABOR[type]); }
+function getPrice1() {
+  if (type1 === 'iphone_screen') { if (mode1 === 'select') { if (!model1 || !tier1) return 0; return SCREEN_PRICES[model1]?.[tier1] || 0; } else { return cost1 > 0 ? fullPrice(cost1, 'iphone_screen') : 0; } }
+  if (type1 === 'back_glass') { return cost1 > 0 ? cost1 : 0; }
+  return cost1 > 0 ? fullPrice(cost1, type1) : 0;
+}
+function getPrice2() {
+  if (type2 === 'iphone_screen') { if (mode2 === 'select') { if (!model2 || !tier2) return 0; return SCREEN_PRICES[model2]?.[tier2] || 0; } else { return cost2 > 0 ? fullPrice(cost2, 'iphone_screen') : 0; } }
+  if (type2 === 'back_glass') { return cost2 > 0 ? cost2 : 0; }
+  return cost2 > 0 ? fullPrice(cost2, type2) : 0;
+}
+
+function onRepairChange() {
+  type1 = el('repairType').value; cost1=0; model1=''; tier1=''; mode1='select'; resetMobile(); resetSecond();
+  ['costCard','quoteCard','mobileToggleRow','secondToggle'].forEach(id => el(id).classList.add('hidden'));
+  ['iphoneSection','glassSection','freeSection'].forEach(id => el(id).classList.add('hidden'));
+  if (!type1) return;
+  el('costCard').classList.remove('hidden'); el('quoteCard').classList.add('hidden');
+  if (type1 === 'iphone_screen') { el('iphoneSection').classList.remove('hidden'); setMode1('select'); el('partCostIphone').value = ''; el('modelSelect1').value = ''; el('tierOptions1').classList.add('hidden'); }
+  else if (type1 === 'back_glass') { el('glassSection').classList.remove('hidden'); clearBtns('#glassSection'); }
+  else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; }
+}
+
+function setMode1(m) {
+  mode1 = m; el('modeTab1Select').classList.toggle('active', m==='select'); el('modeTab1Manual').classList.toggle('active', m==='manual');
+  el('iphoneSelectInputs').classList.toggle('hidden', m!=='select'); el('iphoneManualInputs').classList.toggle('hidden', m!=='manual');
+  cost1=0; model1=''; tier1=''; el('partCostIphone').value = ''; el('tierOptions1').classList.add('hidden'); hideQuote();
+}
+function onModel1Change() { model1 = el('modelSelect1').value; tier1=''; hideQuote(); updateTierDisplay1(); }
+function updateTierDisplay1() {
+  if (!model1) { el('tierOptions1').classList.add('hidden'); return; }
+  const p = SCREEN_PRICES[model1] || {}; el('tierOptions1').classList.remove('hidden');
+  if (p.premium) { el('tierBox1Prem').classList.remove('na'); el('tierPrice1Prem').textContent = '$' + p.premium; } else { el('tierBox1Prem').classList.add('na'); el('tierPrice1Prem').textContent = 'N/A'; }
+  if (p.standard) { el('tierBox1Std').classList.remove('na'); el('tierPrice1Std').textContent = '$' + p.standard; } else { el('tierBox1Std').classList.add('na'); el('tierPrice1Std').textContent = 'N/A'; }
+  showStockBadge('1Prem', model1, 'premium'); showStockBadge('1Std', model1, 'standard');
+  if (p.premium) { setTier1('premium'); } else if (p.standard) { setTier1('standard'); }
+}
+function setTier1(t) { if (!model1) return; const p = SCREEN_PRICES[model1] || {}; if (!p[t]) return; tier1 = t; el('tierBox1Prem').classList.toggle('active', t === 'premium'); el('tierBox1Std').classList.toggle('active', t === 'standard'); tryRenderQuote(); }
+
+function setMode2(m) {
+  mode2 = m; el('modeTab2Select').classList.toggle('active', m==='select'); el('modeTab2Manual').classList.toggle('active', m==='manual');
+  el('iphoneSelectInputs2').classList.toggle('hidden', m!=='select'); el('iphoneManualInputs2').classList.toggle('hidden', m!=='manual');
+  cost2=0; model2=''; tier2=''; el('partCostIphone2').value = ''; el('tierOptions2').classList.add('hidden'); el('dealResult').classList.add('hidden');
+}
+function onModel2Change() { model2 = el('modelSelect2').value; tier2=''; el('dealResult').classList.add('hidden'); updateTierDisplay2(); }
+function updateTierDisplay2() {
+  if (!model2) { el('tierOptions2').classList.add('hidden'); return; }
+  const p = SCREEN_PRICES[model2] || {}; el('tierOptions2').classList.remove('hidden');
+  if (p.premium) { el('tierBox2Prem').classList.remove('na'); el('tierPrice2Prem').textContent = '$' + p.premium; } else { el('tierBox2Prem').classList.add('na'); el('tierPrice2Prem').textContent = 'N/A'; }
+  if (p.standard) { el('tierBox2Std').classList.remove('na'); el('tierPrice2Std').textContent = '$' + p.standard; } else { el('tierBox2Std').classList.add('na'); el('tierPrice2Std').textContent = 'N/A'; }
+  showStockBadge('2Prem', model2, 'premium'); showStockBadge('2Std', model2, 'standard');
+  if (p.premium) { setTier2('premium'); } else if (p.standard) { setTier2('standard'); }
+}
+function setTier2(t) { if (!model2) return; const p = SCREEN_PRICES[model2] || {}; if (!p[t]) return; tier2 = t; el('tierBox2Prem').classList.toggle('active', t === 'premium'); el('tierBox2Std').classList.toggle('active', t === 'standard'); renderDeal(); }
+
+function onGlassSelect(cost, btn) { clearBtns('#glassSection'); btn.classList.add('active'); cost1=cost; tryRenderQuote(); }
+function onGlassSelect2(cost, btn) { clearBtns('#glassSection2'); btn.classList.add('active'); cost2=cost; renderDeal(); }
+
+function onCost1Change() { const inputId = type1==='iphone_screen' ? 'partCostIphone' : 'partCost'; cost1 = parseFloat(el(inputId).value) || 0; tryRenderQuote(); }
+function onCost2Change() { const inputId = type2==='iphone_screen' ? 'partCostIphone2' : 'partCost2'; cost2 = parseFloat(el(inputId).value) || 0; renderDeal(); }
+
+function tryRenderQuote() {
+  const p = getPrice1(); if (p <= 0) { hideQuote(); return; }
+  const total = p + mobileFee;
+  if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileFee > 0) { sub.textContent = 'includes mobile service fee'; sub.classList.remove('hidden'); } else sub.classList.add('hidden'); }
+  else { const mobileStr = mobileFee > 0 ? ' + ☕' : ''; el('quoteAmt').textContent = 'Part + Tax + ❤️' + mobileStr; el('quoteAmt').className = 'qa demo-price'; el('mobileSubline').classList.add('hidden'); }
+  el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
+  if (secondOpen) renderDeal();
+}
+function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); }
+
+function onToggleMobile() {
+  mobileOpen = !mobileOpen; el('mobileSw').classList.toggle('on', mobileOpen); el('mobileToggleRow').classList.toggle('active', mobileOpen); el('mobileCard').classList.toggle('hidden', !mobileOpen);
+  if (!mobileOpen) { mobileFee=0; el('milesInput').value=''; el('feeBadge').classList.add('hidden'); tryRenderQuote(); }
+}
+function onMilesChange() {
+  const miles = parseFloat(el('milesInput').value) || 0;
+  if (miles <= 0) { mobileFee=0; el('feeBadge').classList.add('hidden'); } else { mobileFee = miles<=3 ? 15 : Math.ceil(15 + (miles-3)*9); el('feeAmt').textContent = isAuth() ? '$'+mobileFee : ''; el('feeBadge').classList.remove('hidden'); }
+  tryRenderQuote();
+}
+function resetMobile() { mobileOpen=false; mobileFee=0; el('mobileSw').classList.remove('on'); el('mobileToggleRow').classList.remove('active'); el('mobileCard').classList.add('hidden'); el('feeBadge').classList.add('hidden'); if(el('milesInput')) el('milesInput').value=''; }
+
+function onToggle2nd() { secondOpen = !secondOpen; el('secondSw').classList.toggle('on', secondOpen); el('secondToggle').classList.toggle('active', secondOpen); el('secondCard').classList.toggle('hidden', !secondOpen); if (!secondOpen) el('dealResult').classList.add('hidden'); }
+function on2ndRepairChange() {
+  type2 = el('repair2Type').value; cost2=0; model2=''; tier2=''; mode2='select'; el('dealResult').classList.add('hidden');
+  ['iphoneSection2','glassSection2','freeSection2'].forEach(id => el(id).classList.add('hidden'));
+  if (!type2) { el('cost2Wrap').classList.add('hidden'); return; }
+  el('cost2Wrap').classList.remove('hidden');
+  if (type2==='iphone_screen') { el('iphoneSection2').classList.remove('hidden'); setMode2('select'); }
+  else if (type2==='back_glass') { el('glassSection2').classList.remove('hidden'); clearBtns('#glassSection2'); }
+  else { el('freeSection2').classList.remove('hidden'); }
+}
+function renderDeal() {
+  const p1=getPrice1(), p2=getPrice2(); if (p1<=0 || p2<=0) return;
+  const fullTotal = p1+p2, discounted2 = Math.ceil(p2 / 2), dealTotal = p1 + discounted2, savings = fullTotal - dealTotal;
+  el('normalTotal').textContent=isAuth() ? '$'+fullTotal : 'Parts + Tax + ❤️'; el('dealTotal').textContent=isAuth() ? '$'+dealTotal : 'Parts + ❤️ + ❤️';
+  el('savingsPill').textContent=isAuth() ? 'Saving $'+savings : 'They save 🤝'; el('dealResult').classList.remove('hidden');
+}
+function resetSecond() { secondOpen=false; type2=''; cost2=0; el('secondSw').classList.remove('on'); el('secondToggle').classList.remove('active'); el('secondCard').classList.add('hidden'); el('repair2Type').value=''; el('cost2Wrap').classList.add('hidden'); el('dealResult').classList.add('hidden'); }
+
+function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b=>b.classList.remove('active')); }
+
+function switchTab(tab) {
+  const isQuote = tab === 'quote', isOrders = tab === 'orders', isInventory = tab === 'inventory', isLeads = tab === 'leads', isBooker = tab === 'booker', isStaff = tab === 'staff';
+  el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff);
+  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff);
+  if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) setPayStructure(isOwner ? payStructure : currentUserStructure); else if (isLeads) { if (typeof renderLeadsList === 'function') renderLeadsList(); }
+}
+
+// Worker + Airtable config
+var WORKER_URL = 'https://almatek.sirtek-repair.workers.dev';
+const AT_BASE = 'appDFaflvCWvIGhZB', AT_INV = 'tblGqxylJqQjAgJ40', AT_ORDERS = 'tbli8pFcvU1mV5O6B', AT_SOLD = 'tblTw2ZVlJABAkJoo';
+const OWNER_PASS = 'rellow4Life$', WORKER_TOKEN = 'almatek2026';
+var authPass = localStorage.getItem('almatek_pass') || '', apiPass = WORKER_TOKEN, isOwner = authPass === OWNER_PASS, currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
+
+var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '', USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
+function sheetsCall(payload) { if (!USERS_SCRIPT_URL) return Promise.reject('not-configured'); var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)); return fetch(url).then(r => r.json()); }
+
+let allInvRecords = [], activeFilter = 'all', invLoaded = false;
+function selName(v) { return v ? (typeof v === 'object' ? (v.name || '') : v) : ''; }
+
+function atFetch(path, opts) { opts = opts || {}; return fetch(WORKER_URL + '/v0/' + path, Object.assign({}, opts, { headers: Object.assign({ 'X-Auth': apiPass, 'Content-Type': 'application/json' }, opts.headers || {}) })).then(r => r.json()); }
+
+function initInventory() { if (!invLoaded) loadInventory(); loadOrders(); }
+function loadInventory() { el('invLoading').classList.remove('hidden'); el('invList').innerHTML = ''; allInvRecords = []; loadInventoryPage(null, false); }
+function loadInventoryPage(offset, quiet) {
+  var url = AT_BASE + '/' + AT_INV + '?returnFieldsByFieldId=true&fields[]=fldWzYeFcqm0qnxD8&fields[]=fldQa2ViIJ7aeicZJ&fields[]=fldZEvcZT2JnX5kwh&fields[]=fldvwFFYSxAJlcFpp&fields[]=fldxQhVZSYmXNK6CW&fields[]=fldB16jlPFHm11tfW&fields[]=fldV0jSP3xJuinS8t&pageSize=100';
+  if (offset) url += '&offset=' + encodeURIComponent(offset);
+  atFetch(url).then(data => { if (data.error) return; allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } } });
+}
+
+function setFilter(f, btn) { activeFilter = f; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderInventory(); }
+function filterInventory() { renderInventory(); }
+
+function renderInventory() {
+  var search = (el('invSearch').value || '').toLowerCase();
+  var list = allInvRecords.filter(r => { var name = (r.fields['fldWzYeFcqm0qnxD8'] || '').toLowerCase(); var type = selName(r.fields['fldxQhVZSYmXNK6CW']); return (activeFilter === 'all' || type === activeFilter) && (!search || name.includes(search)); });
+  list.sort((a,b) => { var ord = {'O.O.S.':0,'orderSoon':1,'reOrder':1,'In Stock':2}; return (ord[selName(a.fields['fldZEvcZT2JnX5kwh'])]||1) - (ord[selName(b.fields['fldZEvcZT2JnX5kwh'])]||1); });
+  if (!list.length) { el('invList').innerHTML = '<div class="loading-msg">No screens found.</div>'; return; }
+  el('invList').innerHTML = list.map(r => {
+    var id = r.id, name = r.fields['fldWzYeFcqm0qnxD8'] || '—', model = r.fields['fldV0jSP3xJuinS8t'] || '', qty = r.fields['fldvwFFYSxAJlcFpp'] != null ? r.fields['fldvwFFYSxAJlcFpp'] : 0, min = r.fields['fldB16jlPFHm11tfW'] != null ? r.fields['fldB16jlPFHm11tfW'] : 0, stockName = selName(r.fields['fldZEvcZT2JnX5kwh']), isIn = stockName === 'In Stock', isLow = isIn && min > 0 && qty <= min, cls = isLow ? 'low' : (isIn ? 'in' : 'out'), badge = isLow ? '⚠ Low Stock' : (isIn ? '✓ In Stock' : '✕ O.O.S.');
+    return '<div class="inv-item" id="item-' + id + '"><div class="inv-item-top"><div><div class="inv-item-name">' + name + '</div><div class="inv-item-model">' + model + '</div></div><span class="stock-badge ' + cls + '">' + badge + '</span></div><div class="inv-item-meta">Qty: ' + qty + (min > 0 ? ' · Min: ' + min : '') + '</div><div class="inv-actions"><button class="inv-btn receive" onclick="showReceive(\'' + id + '\')">+ Receive</button><button class="inv-btn used" onclick="markUsed(\'' + id + '\',\'' + name.replace(/'/g,"\\'") + '\')">Mark Used</button><button class="inv-btn remove" onclick="removeItem(\'' + id + '\',\'' + name.replace(/'/g,"\\'") + '\')">− Remove</button></div><div class="inv-inline hidden" id="receive-' + id + '"><input type="number" min="1" placeholder="Qty" id="rqty-' + id + '"><button onclick="confirmReceive(\'' + id + '\')">Confirm</button><button class="cancel-btn" onclick="hideReceive(\'' + id + '\')">Cancel</button></div></div>';
+  }).join('');
+}
+
+function showReceive(id) { el('receive-' + id).classList.remove('hidden'); el('rqty-' + id).focus(); }
+function hideReceive(id) { el('receive-' + id).classList.add('hidden'); el('rqty-' + id).value = ''; }
+function confirmReceive(id) {
+  var qty = parseInt(el('rqty-' + id).value); if (!qty || qty < 1) return;
+  atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': qty, 'date recieved': new Date().toISOString() } }) }).then(data => { if (data.error) { showToast('Error'); return; } hideReceive(id); showToast('Received ' + qty + ' ✓'); invLoaded = false; allInvRecords = []; loadInventory(); loadOrders(); });
+}
+function markUsed(id, name) { atFetch(AT_BASE + '/' + AT_SOLD, { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' marked used ✓'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
+function removeItem(id, name) { if (!confirm('Remove 1 unit?')) return; atFetch(AT_BASE + '/tblFoAyBRZ0KLuYQl', { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' removed ✓'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
+
+var ordersLoaded = false, DEMO_ORDERS = [{ id:'o1', fields:{ 'fldF0TJARgHugOh83':'Order: iPhone 16 Pro Max Screen', 'fldbKVKkNgZtShHwh':3, 'fldVq43gyw9HVLYNI':'Mobilink', 'fldeHBNhXCrqAJrjp':'2026-03-28', 'fldwGKyfgOuue1eyE':true } }];
+function loadOrders() { if (!isAuth()) { renderOrders(DEMO_ORDERS); return; } el('ordersLoading').classList.remove('hidden'); atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(data => { el('ordersLoading').classList.add('hidden'); if (data.error) return; renderOrders(data.records || []); }); }
+function renderOrders(records) { if (!records.length) { el('ordersList').innerHTML = '<div class="loading-msg">No orders yet.</div>'; return; } el('ordersList').innerHTML = records.map(r => '<div class="order-item"><div class="order-item-top"><div><div class="order-item-name">' + (r.fields['fldF0TJARgHugOh83']||'—') + '</div><div class="order-item-meta">Qty: ' + (r.fields['fldbKVKkNgZtShHwh']||'?') + '</div></div><span class="order-status ' + (r.fields['fldwGKyfgOuue1eyE']?'received':'pending') + '">' + (r.fields['fldwGKyfgOuue1eyE']?'✓ Received':'⏳ Pending') + '</span></div></div>').join(''); }
+
+function toggleNewOrderForm() { if (!isAuth()) { showToast('Log in as staff'); return; } el('newOrderForm').classList.toggle('hidden'); }
+function submitNewOrder() { showToast('Order placed ✓'); toggleNewOrderForm(); }
+
+function showToast(msg) { var t = el('invToast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+
+var ordersState = { view: 'needorder' }, needSubTab = 'combined', allOrderRecords = [];
+function initOrders() { switchOrdersView('needorder'); }
+function switchOrdersView(view) { ordersState.view = view; document.querySelectorAll('.orders-view').forEach(v => v.classList.remove('active')); document.querySelectorAll('.orders-tab-btn').forEach(b => b.classList.remove('active')); if (view === 'needorder') { el('ordersNeedView').classList.add('active'); document.querySelectorAll('.orders-tab-btn')[0].classList.add('active'); } }
+function filterOrdersItems() {}
+function clearOrdersSearch() { el('ordersSearchInput').value = ''; }
+function switchNeedSubTab(tab, btn) { needSubTab = tab; document.querySelectorAll('.need-sub-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+
+var TIER_TO_TYPE = { standard: 'Standard Screen', premium: 'Premium Screen' };
+function showStockBadge(slot, model, tier) { var rowEl = el('stockRow' + slot); if (!rowEl) return; rowEl.classList.add('hidden'); }
+
+function isAuth() { return authd; }
+var authd = !!authPass;
+
+function onAuthBtnClick() { if (authd) { if (confirm('Log out?')) { localStorage.removeItem('almatek_pass'); authPass = ''; authd = false; updateAuthBtn(); } } else { el('authOverlay').classList.remove('hidden'); } }
+function tryAuth() { var input = el('authInput').value.trim(); if (!input) return; if (input === OWNER_PASS) { authPass = input; localStorage.setItem('almatek_pass', input); authd = true; isOwner = true; el('authOverlay').classList.add('hidden'); updateAuthBtn(); } else { el('authError').textContent = 'Wrong code'; } }
+function updateAuthBtn() { var btn = el('authBtn'); if (authd) { btn.textContent = isOwner ? 'Owner · Log Out' : 'Staff · Log Out'; btn.className = isOwner ? 'owner-badge' : 'staff-badge'; } else { btn.textContent = '🔒 Demo Mode'; btn.className = 'demo-badge'; } el('tabBookerBtn').classList.toggle('hidden', !authd); el('tabStaffBtn').classList.toggle('hidden', !isOwner); }
+
+function toggleSuppliers(e) { e.stopPropagation(); el('suppliersMenu').classList.toggle('hidden'); }
+document.addEventListener('click', () => el('suppliersMenu')?.classList.add('hidden'));
+
+function copyLink(btn, url, label) { navigator.clipboard?.writeText(url).then(() => { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = label; }, 1800); }); }
+
+updateAuthBtn();
+
+// ============================================
+// LEADS MANAGEMENT
+// ============================================
+var leadsStorage = [], leadFilterStatus = 'all', currentLeadId = null;
+
+function loadLeadsFromStorage() { var saved = localStorage.getItem('almatek_leads'); leadsStorage = saved ? JSON.parse(saved) : []; renderLeadsList(); }
+function saveLeadsToStorage() { localStorage.setItem('almatek_leads', JSON.stringify(leadsStorage)); }
+
+function syncLeadToSheet(lead) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'createLead', lead: lead }); }
+function syncUpdateToSheet(leadId, updates) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'updateLead', leadId: leadId, updates: updates }); }
+
+function showNewLeadForm() { el('newLeadForm').classList.remove('hidden'); el('newLeadBtn').style.display = 'none'; }
+function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue'].forEach(id => el(id).value = ''); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
+
+function createNewLead() {
+  var name = el('leadName').value.trim(), phone = el('leadPhone').value.trim(); if (!name || !phone) { showToast('Name and phone required'); return; }
+  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: 'new', followUpAt: '', followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], createdAt: now, updatedAt: now };
+  leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead); hideNewLeadForm(); renderLeadsList(); showToast('Lead saved ✓');
+}
+
+function filterLeads() { renderLeadsList(); }
+function filterLeadsByStatus(status, btn) { leadFilterStatus = status; document.querySelectorAll('#leadFilters .filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderLeadsList(); }
+
+function getStatusLabel(s) { var labels = { new:'New', contacted:'Contacted', follow_up_scheduled:'Follow-up', booked:'Booked', closed_lost:'Closed' }; return labels[s] || s; }
+function getStatusColor(s) { var colors = { new:'#3b82f6', contacted:'#10b981', follow_up_scheduled:'#8b5cf6', booked:'#06b6d4', closed_lost:'#ef4444' }; return colors[s] || '#6b7280'; }
+
+function renderLeadsList() {
+  var search = (el('leadSearch')?.value || '').toLowerCase();
+  var filtered = leadsStorage.filter(l => { var match = !search || (l.name||'').toLowerCase().includes(search) || (l.phone||'').includes(search); return match && (leadFilterStatus === 'all' || l.status === leadFilterStatus); });
+  filtered.sort((a,b) => new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt));
+  el('leadsList').innerHTML = filtered.length ? filtered.map(l => '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div><span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>').join('') : '<div class="orders-empty-state">No leads found</div>';
+}
+
+function openLeadDetail(leadId) {
+  currentLeadId = leadId; var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
+  el('detailLeadName').textContent = lead.name || 'Unnamed';
+  var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;"><span class="stock-badge" style="background:' + getStatusColor(lead.status) + '20;color:' + getStatusColor(lead.status) + '">' + getStatusLabel(lead.status) + '</span><div><button onclick="closeLeadDetail();editLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px;">✏️ Edit</button><button onclick="deleteLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Delete</button></div></div>';
+  html += '<div><strong>Phone</strong><br>' + (lead.phone||'—') + '</div><div><strong>Email</strong><br>' + (lead.email||'—') + '</div><div><strong>Device</strong><br>' + (lead.device||'—') + '</div><div><strong>Issue</strong><br>' + (lead.issue||'—') + '</div>';
+  if (lead.notes?.length) { html += '<div style="margin-top:16px;"><strong>Notes</strong>'; lead.notes.slice().reverse().forEach(n => html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;">' + n.text + '<div style="font-size:11px;color:var(--muted);">' + new Date(n.createdAt).toLocaleString() + '</div></div>'); html += '</div>'; }
+  el('leadDetailContent').innerHTML = html; el('leadDetailModal').classList.remove('hidden');
+}
+
+function closeLeadDetail() { el('leadDetailModal').classList.add('hidden'); currentLeadId = null; el('newNoteText').value = ''; }
+function addLeadNote() { if (!currentLeadId) return; var note = el('newNoteText').value.trim(); if (!note) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.notes.push({ text: note, createdAt: new Date().toISOString() }); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { notes: lead.notes }); closeLeadDetail(); renderLeadsList(); showToast('Note added'); }
+
+function markLeadContacted() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'contacted'; lead.lastContactedAt = new Date().toISOString(); lead.contactAttempts = (lead.contactAttempts||0) + 1; lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, lastContactedAt: lead.lastContactedAt, contactAttempts: lead.contactAttempts }); closeLeadDetail(); renderLeadsList(); showToast('Contacted ✓'); }
+function showFollowUpPicker() { if (!currentLeadId) return; var date = prompt('Follow-up date (YYYY-MM-DD):'); if (!date) return; var notes = prompt('Notes (optional):'); var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'follow_up_scheduled'; lead.followUpAt = date; lead.followUpNotes = notes || ''; lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, followUpAt: lead.followUpAt, followUpNotes: lead.followUpNotes }); closeLeadDetail(); renderLeadsList(); showToast('Follow-up scheduled ✓'); }
+function markLeadBooked() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'booked'; lead.bookedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: lead.bookedAt }); closeLeadDetail(); renderLeadsList(); showToast('Booked ✓'); }
+function markLeadClosed() { if (!currentLeadId || !confirm('Mark as closed/lost?')) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'closed_lost'; lead.closedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, closedAt: lead.closedAt }); closeLeadDetail(); renderLeadsList(); showToast('Closed ✓'); }
+
+function editLead(leadId) {
+  var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
+  el('leadName').value = lead.name || ''; el('leadPhone').value = lead.phone || ''; el('leadEmail').value = lead.email || ''; el('leadDevice').value = lead.device || ''; el('leadIssue').value = lead.issue || '';
+  closeLeadDetail(); showNewLeadForm(); currentLeadId = leadId;
+  el('saveLeadBtn').textContent = 'Update Lead'; el('saveLeadBtn').setAttribute('onclick', 'updateExistingLead()');
+}
+function updateExistingLead() {
+  if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId);
+  lead.name = el('leadName').value.trim(); lead.phone = el('leadPhone').value.trim(); lead.email = el('leadEmail').value.trim(); lead.device = el('leadDevice').value.trim(); lead.issue = el('leadIssue').value.trim(); lead.updatedAt = new Date().toISOString();
+  saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { name: lead.name, phone: lead.phone, email: lead.email, device: lead.device, issue: lead.issue }); hideNewLeadForm(); renderLeadsList(); showToast('Lead updated ✓');
+}
+function deleteLead(leadId) { if (!confirm('Delete this lead?')) return; leadsStorage = leadsStorage.filter(l => l.id !== leadId); saveLeadsToStorage(); if (USERS_SCRIPT_URL) sheetsCall({ action: 'deleteLead', leadId: leadId }); closeLeadDetail(); renderLeadsList(); showToast('Lead deleted ✓'); }
+
+loadLeadsFromStorage();
+
+// Booker Pay Calculator
+var payStructure = 'standard';
+function setPayStructure(type) { payStructure = type; el('structBtnStandard').classList.toggle('active', type === 'standard'); el('structBtnFlat').classList.toggle('active', type === 'flat'); }
+function calcBookerPay() { var repairs = parseInt(el('bookerRepairs').value) || 0; if (repairs <= 0) { el('bookerResult').classList.add('hidden'); return; } el('bookerPayoutAmt').textContent = '$' + (repairs * 25); el('bookerResult').classList.remove('hidden'); }
+function shareBookerResults() { showToast('Results ready to share'); }
+
+// Staff Management
+function renderStaffTab() {}
+function showApiPassModal() { el('apiPassModal').classList.remove('hidden'); }
+function saveApiPassModal() { el('apiPassModal').classList.add('hidden'); }
+function saveScriptSetup() {}
+function resetScriptConnection() {}
+function addStaffUser() {}
+function resetUserPassword() {}
+function showChangePass() {}
+function saveNewPassword() {}
+
+el('tabLeadsBtn').classList.remove('hidden');
+</script>
+</body>
+</html>
