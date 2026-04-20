@@ -1279,15 +1279,15 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   const AT_ORDERS = 'tbli8pFcvU1mV5O6B';
   const AT_SOLD   = 'tblTw2ZVlJABAkJoo';
 
-  const OWNER_PASS = 'rellow4Life$';
+  const OWNER_PASS   = 'rellow4Life$';
+  const WORKER_TOKEN = 'almatek2025';      // must match AUTH_PASS in Cloudflare
   var authPass = localStorage.getItem('almatek_pass') || '';
-  var apiPass  = localStorage.getItem('almatek_api_pass') || OWNER_PASS;
+  var apiPass  = WORKER_TOKEN;             // always start fresh; updated on login
   var isOwner = authPass === OWNER_PASS;
   var currentUser = localStorage.getItem('almatek_current_user') || '';
   var currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
 
   // Google Sheets user backend
-  // Clear stale apiPass so the correct default takes over
   localStorage.removeItem('almatek_api_pass');
 
   if (location.search.includes('reset-sheet')) {
@@ -1847,7 +1847,6 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       authPass = input;
       localStorage.setItem('almatek_pass', input);
       authd = true; isOwner = true;
-      // apiPass stays as whatever valid staff token was previously cached
       el('authOverlay').classList.add('hidden');
       updateAuthBtn();
       invLoaded = false; allInvRecords = [];
