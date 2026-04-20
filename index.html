@@ -2351,30 +2351,60 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
       window.location.href = 'mailto:?subject=' + encodeURIComponent('Booker Pay — ' + name) + '&body=' + encodeURIComponent(body);
     }
   }
-// ─── Leads Management ─────────────────────────────────────
+// ─── Leads Management (Google Sheets Sync) ─────────────────
 var leadsStorage = [];
 var leadFilterStatus = 'all';
 var currentLeadId = null;
+var leadsSheetSync = true;
 
-// Load leads from localStorage on startup
+// Load leads from Google Sheet
+function loadLeadsFromSheet() {
+  if (!USERS_SCRIPT_URL) {
+    loadLeadsFromStorage();
+    return;
+  }
+  
+  sheetsCall({ action: 'getLeads' }).then(function(data) {
+    if (data.ok) {
+      leadsStorage = data.leads || [];
+      renderLeadsList();
+    } else {
+      console.error('Failed to load leads:', data.error);
+      loadLeadsFromStorage();
+    }
+  }).catch(function() {
+    loadLeadsFromStorage();
+  });
+}
+
+// Fallback to localStorage
 function loadLeadsFromStorage() {
   var saved = localStorage.getItem('almatek_leads');
   if (saved) {
     leadsStorage = JSON.parse(saved);
   } else {
-    // Add sample leads for demo
     var now = new Date().toISOString();
     leadsStorage = [
-      { id: 'lead_' + Date.now() + '_1', name: 'John Smith', phone: '555-123-4567', email: 'john@example.com', device: 'iPhone 14 Pro', issue: 'Cracked screen', status: 'new', followUpAt: null, followUpNotes: '', assignedTo: 'staff', createdBy: 'staff', lastContactedAt: null, contactAttempts: 0, bookedAt: null, closedAt: null, notes: [], createdAt: now, updatedAt: now },
-      { id: 'lead_' + Date.now() + '_2', name: 'Sarah Johnson', phone: '555-987-6543', email: 'sarah@example.com', device: 'MacBook Air', issue: 'Battery replacement', status: 'contacted', followUpAt: null, followUpNotes: '', assignedTo: 'staff', createdBy: 'staff', lastContactedAt: now, contactAttempts: 1, bookedAt: null, closedAt: null, notes: [{ text: 'Left voicemail', createdAt: now, createdBy: 'staff' }], createdAt: now, updatedAt: now },
-      { id: 'lead_' + Date.now() + '_3', name: 'Mike Williams', phone: '555-456-7890', email: '', device: 'Samsung S23', issue: 'Water damage', status: 'follow_up_scheduled', followUpAt: new Date(Date.now() + 2*24*60*60*1000).toISOString(), followUpNotes: 'Check insurance', assignedTo: 'staff', createdBy: 'staff', lastContactedAt: now, contactAttempts: 2, bookedAt: null, closedAt: null, notes: [], createdAt: now, updatedAt: now }
+      { id: 'lead_demo_1', name: 'John Smith', phone: '555-123-4567', email: 'john@example.com', device: 'iPhone 14 Pro', issue: 'Cracked screen', status: 'new', followUpAt: null, followUpNotes: '', assignedTo: 'staff', createdBy: 'staff', lastContactedAt: null, contactAttempts: 0, bookedAt: null, closedAt: null, notes: [], createdAt: now, updatedAt: now },
+      { id: 'lead_demo_2', name: 'Sarah Johnson', phone: '555-987-6543', email: 'sarah@example.com', device: 'MacBook Air', issue: 'Battery replacement', status: 'contacted', followUpAt: null, followUpNotes: '', assignedTo: 'staff', createdBy: 'staff', lastContactedAt: now, contactAttempts: 1, bookedAt: null, closedAt: null, notes: [{ text: 'Left voicemail', createdAt: now, createdBy: 'staff' }], createdAt: now, updatedAt: now }
     ];
     saveLeadsToStorage();
   }
+  renderLeadsList();
 }
 
 function saveLeadsToStorage() {
   localStorage.setItem('almatek_leads', JSON.stringify(leadsStorage));
+}
+
+function syncLeadToSheet(lead) {
+  if (!USERS_SCRIPT_URL) return Promise.resolve();
+  return sheetsCall({ action: 'createLead', lead: lead });
+}
+
+function syncUpdateToSheet(leadId, updates) {
+  if (!USERS_SCRIPT_URL) return Promise.resolve();
+  return sheetsCall({ action: 'updateLead', leadId: leadId, updates: updates });
 }
 
 function showNewLeadForm() {
@@ -2406,14 +2436,14 @@ function createNewLead() {
     device: el('leadDevice').value.trim(),
     issue: el('leadIssue').value.trim(),
     status: 'new',
-    followUpAt: null,
+    followUpAt: '',
     followUpNotes: '',
     assignedTo: currentUser || 'staff',
     createdBy: currentUser || 'staff',
-    lastContactedAt: null,
+    lastContactedAt: '',
     contactAttempts: 0,
-    bookedAt: null,
-    closedAt: null,
+    bookedAt: '',
+    closedAt: '',
     notes: [],
     createdAt: now,
     updatedAt: now
@@ -2421,9 +2451,15 @@ function createNewLead() {
   
   leadsStorage.push(newLead);
   saveLeadsToStorage();
+  
+  syncLeadToSheet(newLead).then(function() {
+    showToast('Lead saved ✓');
+  }).catch(function() {
+    showToast('Lead saved locally ✓');
+  });
+  
   hideNewLeadForm();
   renderLeadsList();
-  showToast('Lead saved ✓');
 }
 
 function filterLeads() {
@@ -2448,14 +2484,14 @@ function getStatusColor(status) {
 }
 
 function renderLeadsList() {
-  var search = (el('leadSearch').value || '').toLowerCase();
+  var search = (el('leadSearch') ? el('leadSearch').value : '').toLowerCase();
   var filtered = leadsStorage.filter(function(l) {
-    var matchesSearch = !search || l.name.toLowerCase().includes(search) || l.phone.includes(search) || (l.email && l.email.toLowerCase().includes(search));
+    var matchesSearch = !search || (l.name && l.name.toLowerCase().includes(search)) || (l.phone && l.phone.includes(search)) || (l.email && l.email.toLowerCase().includes(search));
     var matchesStatus = leadFilterStatus === 'all' || l.status === leadFilterStatus;
     return matchesSearch && matchesStatus;
   });
   
-  filtered.sort(function(a, b) { return new Date(b.updatedAt) - new Date(a.updatedAt); });
+  filtered.sort(function(a, b) { return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt); });
   
   if (!filtered.length) {
     el('leadsList').innerHTML = '<div class="orders-empty-state" style="padding:40px 20px;">No leads found</div>';
@@ -2467,7 +2503,7 @@ function renderLeadsList() {
     return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;">' +
       '<div class="inv-item-top">' +
         '<div>' +
-          '<div class="inv-item-name">' + l.name + '</div>' +
+          '<div class="inv-item-name">' + (l.name || 'Unnamed') + '</div>' +
           '<div class="inv-item-model">' + (l.phone || 'No phone') + (l.device ? ' · ' + l.device : '') + '</div>' +
         '</div>' +
         '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';border-color:' + color + '40;">' + getStatusLabel(l.status) + '</span>' +
@@ -2486,7 +2522,7 @@ function openLeadDetail(leadId) {
   var lead = leadsStorage.find(function(l) { return l.id === leadId; });
   if (!lead) return;
   
-  el('detailLeadName').textContent = lead.name;
+  el('detailLeadName').textContent = lead.name || 'Unnamed';
   
   var color = getStatusColor(lead.status);
   var html = '<div style="margin-bottom:16px;">' +
@@ -2496,7 +2532,7 @@ function openLeadDetail(leadId) {
     '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Email</strong><br>' + (lead.email || '—') + '</div>' +
     '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Device</strong><br>' + (lead.device || '—') + '</div>' +
     '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Issue</strong><br>' + (lead.issue || '—') + '</div>' +
-    '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Contact Attempts</strong><br>' + lead.contactAttempts + '</div>' +
+    '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Contact Attempts</strong><br>' + (lead.contactAttempts || 0) + '</div>' +
     (lead.followUpAt ? '<div style="margin-bottom:12px;"><strong style="color:var(--muted);font-size:12px;">Follow-up</strong><br>' + new Date(lead.followUpAt).toLocaleString() + (lead.followUpNotes ? '<br><span style="color:var(--muted);">' + lead.followUpNotes + '</span>' : '') + '</div>' : '');
   
   if (lead.notes && lead.notes.length) {
@@ -2512,14 +2548,13 @@ function openLeadDetail(leadId) {
   }
   
   el('leadDetailContent').innerHTML = html;
-  el('contactedBtn').style.display = lead.status === 'closed_lost' ? 'none' : 'block';
   el('leadDetailModal').classList.remove('hidden');
 }
 
 function closeLeadDetail() {
   el('leadDetailModal').classList.add('hidden');
   currentLeadId = null;
-  el('newNoteText').value = '';
+  if (el('newNoteText')) el('newNoteText').value = '';
 }
 
 function addLeadNote() {
@@ -2530,13 +2565,16 @@ function addLeadNote() {
   var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; });
   if (!lead) return;
   
-  lead.notes.push({
+  var newNote = {
     text: noteText,
     createdAt: new Date().toISOString(),
     createdBy: currentUser || 'staff'
-  });
+  };
+  lead.notes.push(newNote);
   lead.updatedAt = new Date().toISOString();
   saveLeadsToStorage();
+  
+  syncUpdateToSheet(currentLeadId, { notes: lead.notes, updatedAt: lead.updatedAt });
   
   el('newNoteText').value = '';
   openLeadDetail(currentLeadId);
@@ -2555,14 +2593,21 @@ function markLeadContacted() {
   lead.updatedAt = new Date().toISOString();
   saveLeadsToStorage();
   
-  openLeadDetail(currentLeadId);
+  syncUpdateToSheet(currentLeadId, { 
+    status: lead.status, 
+    lastContactedAt: lead.lastContactedAt, 
+    contactAttempts: lead.contactAttempts,
+    updatedAt: lead.updatedAt 
+  });
+  
+  closeLeadDetail();
   renderLeadsList();
   showToast('Marked contacted ✓');
 }
 
 function showFollowUpPicker() {
   if (!currentLeadId) return;
-  var dateStr = prompt('Enter follow-up date and time:\n(YYYY-MM-DD HH:MM)\nExample: 2026-04-25 14:00', '');
+  var dateStr = prompt('Enter follow-up date (YYYY-MM-DD):\nExample: 2026-04-25', '');
   if (!dateStr) return;
   
   var notes = prompt('Follow-up notes (optional):', '');
@@ -2571,12 +2616,19 @@ function showFollowUpPicker() {
   if (!lead) return;
   
   lead.status = 'follow_up_scheduled';
-  lead.followUpAt = new Date(dateStr).toISOString();
+  lead.followUpAt = dateStr;
   lead.followUpNotes = notes || '';
   lead.updatedAt = new Date().toISOString();
   saveLeadsToStorage();
   
-  openLeadDetail(currentLeadId);
+  syncUpdateToSheet(currentLeadId, { 
+    status: lead.status, 
+    followUpAt: lead.followUpAt, 
+    followUpNotes: lead.followUpNotes,
+    updatedAt: lead.updatedAt 
+  });
+  
+  closeLeadDetail();
   renderLeadsList();
   showToast('Follow-up scheduled ✓');
 }
@@ -2591,28 +2643,42 @@ function markLeadBooked() {
   lead.updatedAt = new Date().toISOString();
   saveLeadsToStorage();
   
-  openLeadDetail(currentLeadId);
+  syncUpdateToSheet(currentLeadId, { 
+    status: lead.status, 
+    bookedAt: lead.bookedAt,
+    updatedAt: lead.updatedAt 
+  });
+  
+  closeLeadDetail();
   renderLeadsList();
   showToast('Marked as booked ✓');
 }
 
-// Initialize leads when app starts
-loadLeadsFromStorage();
+// Initialize leads
+if (USERS_SCRIPT_URL) {
+  loadLeadsFromSheet();
+} else {
+  loadLeadsFromStorage();
+}
 
 // Update switchTab to handle leads tab
 var originalSwitchTab = switchTab;
 switchTab = function(tab) {
   originalSwitchTab(tab);
   if (tab === 'leads') {
-    renderLeadsList();
-    el('newLeadBtn').style.display = 'block';
+    if (USERS_SCRIPT_URL) {
+      loadLeadsFromSheet();
+    } else {
+      renderLeadsList();
+    }
+    if (el('newLeadBtn')) el('newLeadBtn').style.display = 'block';
     hideNewLeadForm();
   }
-  el('tabLeadsBtn').classList.toggle('active', tab === 'leads');
+  if (el('tabLeadsBtn')) el('tabLeadsBtn').classList.toggle('active', tab === 'leads');
 };
 
-// Make leads tab visible for all users
-el('tabLeadsBtn').classList.remove('hidden');
+// Make leads tab visible
+if (el('tabLeadsBtn')) el('tabLeadsBtn').classList.remove('hidden');
 </script>
 </body>
 </html>
