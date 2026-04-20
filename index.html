@@ -1310,7 +1310,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
   function atFetch(path, opts) {
     opts = opts || {};
     return fetch(WORKER_URL + '/v0/' + path, Object.assign({}, opts, {
-      headers: Object.assign({ 'X-Auth': apiPass || authPass, 'Content-Type': 'application/json' }, opts.headers || {})
+      headers: Object.assign({ 'X-Auth': isOwner ? authPass : (apiPass || authPass), 'Content-Type': 'application/json' }, opts.headers || {})
     })).then(function(r) { return r.json(); });
   }
 
