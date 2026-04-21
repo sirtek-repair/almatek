@@ -1327,6 +1327,9 @@ function syncUpdateToSheet(leadId, updates) { if (!USERS_SCRIPT_URL) return Prom
 
 function showNewLeadForm() { el('newLeadForm').classList.remove('hidden'); el('newLeadBtn').style.display = 'none'; }
 var specialOrderMode = false;
+var SO_STAGES = ['need_to_order','part_ordered','part_arrived','repair_done'];
+var SO_LABELS = { need_to_order:'Need to Order', part_ordered:'Part Ordered', part_arrived:'Part Arrived · Called CX', repair_done:'Repair Done · Called CX' };
+var SO_COLORS = { need_to_order:'#f59e0b', part_ordered:'#3b82f6', part_arrived:'#8b5cf6', repair_done:'#10b981' };
 function toggleSpecialOrder(val) {
   specialOrderMode = val;
   el('soToggleNo').style.cssText = val ? 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;' : 'flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;';
@@ -1343,7 +1346,7 @@ function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newL
 function createNewLead() {
   var name = el('leadName').value.trim(), phone = el('leadPhone').value.trim(); if (!name || !phone) { showToast('Name and phone required'); return; }
   var followUp = el('leadFollowUp') ? el('leadFollowUp').value : '';
-  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: specialOrderMode ? (parseFloat(el('leadQuote').value)||0) : 0, deposit: specialOrderMode ? (parseFloat(el('leadDeposit').value)||0) : 0, createdAt: now, updatedAt: now };
+  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: specialOrderMode ? (parseFloat(el('leadQuote').value)||0) : 0, deposit: specialOrderMode ? (parseFloat(el('leadDeposit').value)||0) : 0, specialOrderStatus: specialOrderMode ? 'need_to_order' : null, createdAt: now, updatedAt: now };
   leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead); hideNewLeadForm(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead saved ✓');
 }
 
@@ -1357,7 +1360,10 @@ function renderLeadsList() {
   var search = (el('leadSearch')?.value || '').toLowerCase();
   var filtered = leadsStorage.filter(l => { var match = !search || (l.name||'').toLowerCase().includes(search) || (l.phone||'').includes(search); return match && (leadFilterStatus === 'all' || l.status === leadFilterStatus); });
   filtered.sort((a,b) => new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt));
-  el('leadsList').innerHTML = filtered.length ? filtered.map(l => '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div><span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>').join('') : '<div class="orders-empty-state">No leads found</div>';
+  el('leadsList').innerHTML = filtered.length ? filtered.map(l => {
+    var badge = l.specialOrderStatus ? '<span class="stock-badge" style="background:' + SO_COLORS[l.specialOrderStatus] + '20;color:' + SO_COLORS[l.specialOrderStatus] + ';margin-left:4px;">' + SO_LABELS[l.specialOrderStatus] + '</span>' : '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
+    return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div>' + badge + '</div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>';
+  }).join('') : '<div class="orders-empty-state">No leads found</div>';
 }
 
 function openLeadDetail(leadId) {
@@ -1368,7 +1374,35 @@ function openLeadDetail(leadId) {
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (lead.phone||'—') + '</div></div><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (lead.device||'—') + '</div></div></div>';
   if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + lead.email + '</div></div>';
   if (lead.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + lead.issue + '</div></div>';
-  if (lead.quote || lead.deposit) { var bal = (lead.quote||0) - (lead.deposit||0); html += '<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:0.05em;">Special Order</div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--muted);">Quote</span><span style="font-size:14px;font-weight:700;">$' + (lead.quote||0) + '</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--muted);">Deposit Paid</span><span style="font-size:14px;font-weight:700;">$' + (lead.deposit||0) + '</span></div><div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);padding-top:6px;margin-top:2px;"><span style="font-size:12px;color:var(--muted);">Balance Due</span><span style="font-size:18px;font-weight:800;color:' + (bal > 0 ? 'var(--accent)' : 'var(--green)') + ';">$' + bal + '</span></div></div>'; }
+  if (lead.specialOrderStatus || lead.quote || lead.deposit) {
+    var bal = (lead.quote||0) - (lead.deposit||0);
+    var soStage = lead.specialOrderStatus || 'need_to_order';
+    var soColor = SO_COLORS[soStage] || '#3b82f6';
+    var soIdx = SO_STAGES.indexOf(soStage);
+    var stepperHtml = SO_STAGES.map(function(s, i) {
+      var done = i < soIdx, active = i === soIdx;
+      var dot = done ? '✓' : (i + 1);
+      var bg = done ? '#10b981' : (active ? soColor : 'var(--surface2)');
+      var col = (done || active) ? '#fff' : 'var(--muted)';
+      var lbl = '<span style="font-size:10px;color:' + (active ? soColor : (done ? '#10b981' : 'var(--muted)')) + ';font-weight:' + (active?'700':'400') + ';margin-top:3px;display:block;text-align:center;">' + SO_LABELS[s].split(' · ')[0] + '</span>';
+      return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;"><div style="width:24px;height:24px;border-radius:50%;background:' + bg + ';color:' + col + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">' + dot + '</div>' + lbl + '</div>';
+    }).join('<div style="flex:1;height:2px;background:var(--border);margin-top:11px;max-width:20px;"></div>');
+    html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span style="font-size:10px;color:var(--muted);letter-spacing:0.05em;">SPECIAL ORDER</span><span class="stock-badge" style="background:' + soColor + '20;color:' + soColor + ';">' + SO_LABELS[soStage] + '</span></div>';
+    html += '<div style="display:flex;align-items:flex-start;margin-bottom:14px;">' + stepperHtml + '</div>';
+    if (soStage !== 'repair_done') {
+      var nextLabel = SO_LABELS[SO_STAGES[soIdx + 1]];
+      html += '<button onclick="advanceSpecialOrderStatus()" style="width:100%;padding:9px;background:' + soColor + ';border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px;">→ Mark: ' + nextLabel + '</button>';
+    } else {
+      html += '<div style="text-align:center;color:#10b981;font-size:13px;font-weight:600;margin-bottom:10px;">✓ Complete</div>';
+    }
+    if (lead.quote || lead.deposit) {
+      html += '<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--muted);">Quote</span><span style="font-size:14px;font-weight:700;">$' + (lead.quote||0) + '</span></div>';
+      html += '<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--muted);">Deposit Paid</span><span style="font-size:14px;font-weight:700;">$' + (lead.deposit||0) + '</span></div>';
+      html += '<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);padding-top:6px;margin-top:2px;"><span style="font-size:12px;color:var(--muted);">Balance Due</span><span style="font-size:18px;font-weight:800;color:' + (bal > 0 ? 'var(--accent)' : 'var(--green)') + ';">$' + bal + '</span></div>';
+    }
+    html += '</div>';
+  }
   if (lead.notes?.length) { html += '<div style="margin-top:16px;"><strong>Notes</strong>'; lead.notes.slice().reverse().forEach(n => html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;">' + n.text + '<div style="font-size:11px;color:var(--muted);">' + new Date(n.createdAt).toLocaleString() + '</div></div>'); html += '</div>'; }
   el('leadDetailContent').innerHTML = html; el('leadDetailModal').classList.remove('hidden');
 }
@@ -1400,6 +1434,22 @@ function saveFollowUpDate() {
 function markLeadBooked() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'booked'; lead.bookedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: lead.bookedAt }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Booked ✓'); }
 function markLeadClosed() { if (!currentLeadId || !confirm('Mark as closed/lost?')) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'closed_lost'; lead.closedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, closedAt: lead.closedAt }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Closed ✓'); }
 
+function advanceSpecialOrderStatus() {
+  if (!currentLeadId) return;
+  var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; });
+  if (!lead || !lead.specialOrderStatus) return;
+  var idx = SO_STAGES.indexOf(lead.specialOrderStatus);
+  if (idx < 0 || idx >= SO_STAGES.length - 1) return;
+  lead.specialOrderStatus = SO_STAGES[idx + 1];
+  lead.updatedAt = new Date().toISOString();
+  saveLeadsToStorage();
+  syncUpdateToSheet(currentLeadId, { specialOrderStatus: lead.specialOrderStatus });
+  updateFollowUpBadge();
+  renderLeadsList();
+  openLeadDetail(lead.id);
+  showToast(SO_LABELS[lead.specialOrderStatus] + ' ✓');
+}
+
 function editLead(leadId) {
   var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
   el('leadName').value = lead.name || ''; el('leadPhone').value = lead.phone || ''; el('leadEmail').value = lead.email || ''; el('leadDevice').value = lead.device || ''; el('leadIssue').value = lead.issue || '';
@@ -1425,8 +1475,12 @@ function getLeadsNeedingFollowUp() {
   });
   overdue.sort(function(a, b) { return new Date(a.followUpAt) - new Date(b.followUpAt); });
   uncontacted.sort(function(a, b) { return new Date(a.createdAt) - new Date(b.createdAt); });
+  var specialOrders = leadsStorage.filter(function(l) {
+    return l.specialOrderStatus && l.specialOrderStatus !== 'repair_done';
+  });
+  specialOrders.sort(function(a, b) { return new Date(a.updatedAt||a.createdAt) - new Date(b.updatedAt||b.createdAt); });
   var seen = new Set();
-  return overdue.concat(uncontacted).filter(function(l) { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
+  return specialOrders.concat(overdue).concat(uncontacted).filter(function(l) { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
 }
 
 function updateFollowUpBadge() {
@@ -1442,12 +1496,19 @@ function renderFollowUpTab() {
   if (!leads.length) { list.innerHTML = '<div class="orders-empty-state">No leads need follow-up right now</div>'; return; }
   var today = new Date(); today.setHours(23, 59, 59, 999);
   list.innerHTML = leads.map(function(l) {
-    var isOverdue = l.followUpAt && new Date(l.followUpAt) <= today;
-    var tag = isOverdue ? '<span class="stock-badge out">Overdue</span>' : '<span class="stock-badge low">Uncontacted</span>';
-    var sub = l.followUpAt ? 'Follow-up: ' + l.followUpAt : 'Created: ' + new Date(l.createdAt).toLocaleDateString();
+    var tag, sub;
+    if (l.specialOrderStatus) {
+      var soColor = SO_COLORS[l.specialOrderStatus] || '#3b82f6';
+      tag = '<span class="stock-badge" style="background:' + soColor + '20;color:' + soColor + ';">' + SO_LABELS[l.specialOrderStatus] + '</span>';
+      sub = 'Special Order · ' + (l.device || l.issue || '').substring(0, 50);
+    } else {
+      var isOverdue = l.followUpAt && new Date(l.followUpAt) <= today;
+      tag = isOverdue ? '<span class="stock-badge out">Overdue</span>' : '<span class="stock-badge low">Uncontacted</span>';
+      sub = l.followUpAt ? 'Follow-up: ' + l.followUpAt : 'Created: ' + new Date(l.createdAt).toLocaleDateString();
+    }
     return '<div class="inv-item" onclick="switchLeadSubTab(\'leads\');setTimeout(function(){openLeadDetail(\'' + l.id + '\')},50)" style="cursor:pointer;">' +
       '<div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div>' + tag + '</div>' +
-      '<div class="inv-item-meta">' + sub + (l.followUpNotes?' · '+l.followUpNotes:'') + '</div>' +
+      '<div class="inv-item-meta">' + sub + (l.followUpNotes && !l.specialOrderStatus?' · '+l.followUpNotes:'') + '</div>' +
     '</div>';
   }).join('');
 }
