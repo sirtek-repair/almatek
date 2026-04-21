@@ -383,9 +383,14 @@
         </div>
       </div>
       <div id="iphoneManualInputs" class="hidden">
-        <label class="field-label" for="partCostIphone">Part Cost — Mobile Sentrix</label>
+        <label class="field-label" for="partCostIphone">Part Cost</label>
         <input type="number" id="partCostIphone" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
         <p class="hint">Round up to whole dollar</p>
+        <div id="supplierRow1" style="margin-top:8px;margin-bottom:4px;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:0.05em;">SUPPLIER</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;" id="supplierBtns1"></div>
+        </div>
+        <input type="text" id="orderRef1" placeholder="Order # / date (for tax records)" style="width:100%;margin-top:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;" oninput="quoteOrderRef=this.value" />
       </div>
     </div>
 
@@ -399,9 +404,14 @@
     </div>
 
     <div id="freeSection" class="hidden">
-      <label class="field-label" for="partCost">Part Cost — Mobile Sentrix</label>
+      <label class="field-label" for="partCost">Part Cost</label>
       <input type="number" id="partCost" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
       <p class="hint">Round up to whole dollar</p>
+      <div id="supplierRow2" style="margin-top:8px;margin-bottom:4px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:0.05em;">SUPPLIER</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="supplierBtns2"></div>
+      </div>
+      <input type="text" id="orderRef2" placeholder="Order # / date (for tax records)" style="width:100%;margin-top:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;" oninput="quoteOrderRef=this.value" />
     </div>
   </div>
 
@@ -815,6 +825,22 @@ const SCREEN_PRICES = {
 };
 
 let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2='', mode1='select', mode2='select', secondOpen=false, mobileOpen=false, mobileFee=0;
+var SUPPLIERS = ['Mobile Sentrix','Bros Parts','Parts4Cells','Kimi Soho'];
+var quoteSupplier = '', quoteOrderRef = '';
+function renderSupplierBtns() {
+  ['supplierBtns1','supplierBtns2'].forEach(function(id) {
+    var el2 = el(id); if (!el2) return;
+    el2.innerHTML = SUPPLIERS.map(function(s) {
+      var active = quoteSupplier === s;
+      var style = active ? 'padding:5px 10px;background:var(--accent);border:none;color:#fff;border-radius:20px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:700;' : 'padding:5px 10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:20px;font-size:11px;font-family:inherit;cursor:pointer;';
+      return '<button type="button" onclick="setQuoteSupplier(\'' + s.replace(/'/g,"\\'") + '\')" style="' + style + '">' + s + '</button>';
+    }).join('');
+  });
+}
+function setQuoteSupplier(name) {
+  quoteSupplier = quoteSupplier === name ? '' : name;
+  renderSupplierBtns();
+}
 const el = id => document.getElementById(id);
 
 function fullPrice(cost, type) { return Math.ceil(cost * 1.2 + LABOR[type]); }
@@ -830,20 +856,21 @@ function getPrice2() {
 }
 
 function onRepairChange() {
-  type1 = el('repairType').value; cost1=0; model1=''; tier1=''; mode1='select'; resetMobile(); resetSecond();
+  type1 = el('repairType').value; cost1=0; model1=''; tier1=''; mode1='select'; quoteSupplier=''; quoteOrderRef=''; resetMobile(); resetSecond();
   ['costCard','quoteCard','mobileToggleRow','secondToggle'].forEach(id => el(id).classList.add('hidden'));
   ['iphoneSection','glassSection','freeSection'].forEach(id => el(id).classList.add('hidden'));
   if (!type1) return;
   el('costCard').classList.remove('hidden'); el('quoteCard').classList.add('hidden');
   if (type1 === 'iphone_screen') { el('iphoneSection').classList.remove('hidden'); setMode1('select'); el('partCostIphone').value = ''; el('modelSelect1').value = ''; el('tierOptions1').classList.add('hidden'); }
   else if (type1 === 'back_glass') { el('glassSection').classList.remove('hidden'); clearBtns('#glassSection'); }
-  else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; }
+  else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value=''; }
 }
 
 function setMode1(m) {
   mode1 = m; el('modeTab1Select').classList.toggle('active', m==='select'); el('modeTab1Manual').classList.toggle('active', m==='manual');
   el('iphoneSelectInputs').classList.toggle('hidden', m!=='select'); el('iphoneManualInputs').classList.toggle('hidden', m!=='manual');
   cost1=0; model1=''; tier1=''; el('partCostIphone').value = ''; el('tierOptions1').classList.add('hidden'); hideQuote();
+  if (m === 'manual') { renderSupplierBtns(); if(el('orderRef1')) el('orderRef1').value=''; }
 }
 function onModel1Change() { model1 = el('modelSelect1').value; tier1=''; hideQuote(); updateTierDisplay1(); }
 function updateTierDisplay1() {
@@ -948,7 +975,7 @@ function saveTicketFromQuote() {
   var repairLabel = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '');
   var initItems = price > 0 ? [{ label: repairLabel, price: price }] : [];
   var miles = parseFloat((el('milesInput') ? el('milesInput').value : '') || 0) || 0;
-  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', items: initItems, notes: [], createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
+  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', supplier: quoteSupplier || '', orderRef: quoteOrderRef || '', items: initItems, notes: [], createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage();
   closeAddToTicketModal(); updateTicketsBadge(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('tickets');
@@ -1216,7 +1243,10 @@ function placeCartOrder() {
   Promise.all(promises).then(function(results) {
     var errors = results.filter(function(r) { return r.error; });
     if (errors.length) { showToast(errors.length + ' item(s) failed'); }
-    else { showToast('Order placed — ' + orderCart.length + ' item' + (orderCart.length !== 1 ? 's' : '') + ' ✓'); }
+    else {
+      showToast('Order placed — ' + orderCart.length + ' item' + (orderCart.length !== 1 ? 's' : '') + ' ✓');
+      sheetsCall({ action: 'logCartOrder', supplier: supplier, items: orderCart.map(function(i) { return { name: i.name, qty: i.qty }; }), placedAt: new Date().toISOString(), placedBy: currentUser || 'staff' });
+    }
     orderCart = []; saveCartToStorage(); if (el('cartSupplier')) el('cartSupplier').value = '';
     if (btn) { btn.textContent = 'Place Order'; btn.disabled = false; }
     updateCartTabBadge(); renderCartTab(); renderNeedOrderList(); loadOrderRecords();
@@ -1707,6 +1737,18 @@ function openTicketDetail(ticketId) {
   html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (ticket.device||'—') + '</div></div></div>';
   if (ticket.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + ticket.email + '</div></div>';
   if (ticket.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + ticket.issue + '</div></div>';
+  // Supplier + order ref
+  var supplierRowStyle = 'width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;margin-bottom:6px;';
+  html += '<div style="background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:10px;">';
+  html += '<div style="font-size:10px;color:var(--muted);letter-spacing:0.05em;margin-bottom:8px;">SUPPLIER &amp; ORDER REF</div>';
+  var supplierBtnsHtml = SUPPLIERS.map(function(s) {
+    var active = (ticket.supplier || '') === s;
+    var sty = active ? 'padding:5px 10px;background:var(--accent);border:none;color:#fff;border-radius:20px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:700;' : 'padding:5px 10px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:20px;font-size:11px;font-family:inherit;cursor:pointer;';
+    return '<button type="button" onclick="setTicketSupplier(\'' + s.replace(/'/g,"\\'") + '\',\'' + ticket.id + '\')" style="' + sty + '">' + s + '</button>';
+  }).join('');
+  html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">' + supplierBtnsHtml + '</div>';
+  html += '<input type="text" id="ticketOrderRefInput" value="' + (ticket.orderRef||'').replace(/"/g,'&quot;') + '" placeholder="Order # / date (for tax records)" onchange="saveTicketOrderRef(this.value)" style="' + supplierRowStyle + '" />';
+  html += '</div>';
   // Stepper
   var stepperHtml = stages.map(function(s, i) {
     var done = i < stageIdx, active = i === stageIdx;
@@ -1865,6 +1907,19 @@ function setTicketTier(tier, ticketId) {
   }
   ticket.updatedAt = new Date().toISOString();
   saveTicketsToStorage(); renderTicketsList(); openTicketDetail(ticketId);
+}
+
+function setTicketSupplier(name, ticketId) {
+  var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
+  ticket.supplier = ticket.supplier === name ? '' : name;
+  ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); openTicketDetail(ticketId);
+}
+function saveTicketOrderRef(val) {
+  if (!currentTicketId) return;
+  var ticket = ticketsStorage.find(function(t) { return t.id === currentTicketId; }); if (!ticket) return;
+  ticket.orderRef = val; ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage();
 }
 
 function setTicketFlow2(ticketId, flow) {
