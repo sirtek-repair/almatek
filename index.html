@@ -175,15 +175,37 @@
     .orders-items-list { display: flex; flex-direction: column; gap: 10px; }
     .orders-empty-state { color: var(--muted); text-align: center; padding: 30px 20px; }
     .order-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-    .order-item-info { flex: 1; }
+    .order-item.in-cart { border-color: var(--accent); background: rgba(59,130,246,0.06); }
+    .order-item-info { flex: 1; min-width: 0; }
     .order-item-qty { display: flex; align-items: center; gap: 4px; }
     .order-item-qty input { width: 50px; padding: 4px 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; font-family: inherit; text-align: center; }
     .order-item-btn { padding: 8px 12px; background: var(--accent); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: inherit; }
     .order-item-btn:hover { opacity: 0.9; }
     .order-item-btn.remove { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
     .order-item-btn.receive { background: var(--green); }
+    .order-item-btn.added { background: rgba(59,130,246,0.15); color: var(--accent); border: 1px solid var(--accent); }
+    .cart-qty-ctrl { display: flex; align-items: center; gap: 0; }
+    .cart-qty-ctrl button { width: 28px; height: 28px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 16px; font-family: inherit; cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center; }
+    .cart-qty-ctrl button:first-child { border-radius: 6px 0 0 6px; }
+    .cart-qty-ctrl button:last-child  { border-radius: 0 6px 6px 0; }
+    .cart-qty-ctrl span { min-width: 32px; text-align: center; font-size: 14px; font-weight: 600; padding: 0 4px; background: var(--surface2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); height: 28px; line-height: 28px; }
+    .cart-bar { position: sticky; bottom: 0; left: 0; right: 0; background: var(--accent); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-top: 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.3); }
+    .cart-bar-label { font-size: 14px; font-weight: 700; color: #fff; }
+    .cart-bar-action { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.85); }
+    .cart-panel { position: fixed; inset: 0; z-index: 300; display: flex; flex-direction: column; justify-content: flex-end; }
+    .cart-panel-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+    .cart-panel-sheet { position: relative; background: var(--surface); border-radius: 18px 18px 0 0; padding: 20px 20px 32px; max-height: 80vh; display: flex; flex-direction: column; gap: 0; }
+    .cart-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .cart-panel-title { font-size: 16px; font-weight: 700; }
+    .cart-panel-close { background: var(--surface2); border: none; color: var(--muted); border-radius: 20px; padding: 4px 10px; font-size: 13px; cursor: pointer; font-family: inherit; }
+    .cart-panel-items { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .cart-panel-item { background: var(--surface2); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+    .cart-panel-item-info { flex: 1; min-width: 0; }
+    .cart-panel-item-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cart-panel-item-sub  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .cart-panel-footer { display: flex; flex-direction: column; gap: 10px; }
     .order-partial-notice { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 12px; color: #fbbf24; }
-    
+
     .need-sub-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
     .need-sub-btn { flex: 1; padding: 7px 8px; font-size: 12px; font-weight: 600; font-family: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; text-align: center; }
     .need-sub-btn.active { background: rgba(59,130,246,0.15); border-color: var(--accent); color: var(--text); }
@@ -486,22 +508,9 @@
 <!-- Orders Tab -->
 <div id="tabOrders" class="hidden">
 <div class="container">
-  <header style="padding:16px 0 4px;display:flex;justify-content:space-between;align-items:center;">
+  <header style="padding:16px 0 8px;display:flex;justify-content:space-between;align-items:center;">
     <h1 style="font-size:17px;">📋 Orders</h1>
-    <button onclick="showOrdersNewForm()" style="padding:8px 14px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">+ New Order</button>
   </header>
-  <div id="ordersNewForm" class="card hidden" style="margin-bottom:16px;">
-    <div class="field-label" style="margin-bottom:8px;">New Order</div>
-    <select id="ordersNewItem" style="width:100%;margin-bottom:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:inherit;"><option value="">Select inventory item…</option></select>
-    <div style="display:flex;gap:8px;margin-bottom:8px;">
-      <input type="number" id="ordersNewQty" placeholder="Qty" min="1" style="width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:inherit;" />
-      <input type="text" id="ordersNewSupplier" placeholder="Supplier (optional)" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:inherit;" />
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="submitOrdersNewOrder()" style="flex:1;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Place Order</button>
-      <button onclick="hideOrdersNewForm()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
-    </div>
-  </div>
   <div class="orders-tab-nav">
     <button class="orders-tab-btn active" onclick="switchOrdersView('needorder')">Need to Order</button>
     <button class="orders-tab-btn" onclick="switchOrdersView('ordered')">Ordered</button>
@@ -529,8 +538,31 @@
     <div id="ordersReceiveList" class="orders-items-list"></div>
   </div>
 
-  <div id="ordersNoData" class="orders-empty-state" style="text-align:center;padding:40px 20px;color:var(--muted);">No items to show</div>
+  <div id="ordersNoData" class="orders-empty-state hidden">No items to show</div>
+
+  <!-- Sticky cart bar -->
+  <div id="cartBar" class="cart-bar hidden" onclick="openCartPanel()">
+    <span class="cart-bar-label" id="cartBarLabel">🛒 0 items</span>
+    <span class="cart-bar-action">Review & Order →</span>
+  </div>
 </div>
+</div>
+
+<!-- Cart panel -->
+<div id="cartPanel" class="cart-panel hidden">
+  <div class="cart-panel-backdrop" onclick="closeCartPanel()"></div>
+  <div class="cart-panel-sheet">
+    <div class="cart-panel-header">
+      <span class="cart-panel-title">🛒 Order Cart</span>
+      <button class="cart-panel-close" onclick="closeCartPanel()">✕ Close</button>
+    </div>
+    <div class="cart-panel-items" id="cartPanelItems"></div>
+    <div class="cart-panel-footer">
+      <input type="text" id="cartSupplier" placeholder="Supplier (e.g. Mobile Sentrix)" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+      <button onclick="placeCartOrder()" style="width:100%;padding:14px;background:var(--accent);border:none;color:#fff;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Place Order</button>
+      <button onclick="clearCart()" style="width:100%;padding:10px;background:none;border:none;color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;">Clear cart</button>
+    </div>
+  </div>
 </div>
 
 <!-- Leads Tab -->
@@ -841,14 +873,15 @@ function submitNewOrder() { showToast('Order placed ✓'); toggleNewOrderForm();
 function showToast(msg) { var t = el('invToast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
 
 var ordersTabView = 'needorder', needSubTab = 'combined', allOrderRecords = [], ordersLoading2 = false;
+var orderCart = []; // [{ id, name, type, model, qty }]
 
 function initOrders() {
   switchOrdersView('needorder');
   renderNeedOrderList();
+  renderCartBar();
   if (!authd) return;
   if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
   loadOrderRecords();
-  populateOrdersNewForm();
 }
 
 function switchOrdersView(view) {
@@ -865,8 +898,7 @@ function switchOrdersView(view) {
 }
 
 function loadOrderRecords() {
-  if (ordersLoading2) return;
-  ordersLoading2 = true;
+  if (ordersLoading2) return; ordersLoading2 = true;
   atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(function(data) {
     ordersLoading2 = false;
     if (data.error) return;
@@ -876,6 +908,7 @@ function loadOrderRecords() {
   }).catch(function() { ordersLoading2 = false; });
 }
 
+// ---- Need to Order list (with cart buttons) ----
 function renderNeedOrderList() {
   var listEl = el('ordersNeedList'); if (!listEl) return;
   var search = (el('ordersSearchInput') ? el('ordersSearchInput').value : '').toLowerCase();
@@ -888,12 +921,14 @@ function renderNeedOrderList() {
     if (needSubTab === 'oos' && !isOOS) return false;
     if (needSubTab === 'low' && !isLow) return false;
     if (needSubTab === 'combined' && !isOOS && !isLow) return false;
-    var name = (r.fields['fldWzYeFcqm0qnxD8'] || '').toLowerCase();
-    if (search && !name.includes(search)) return false;
+    if (search && !(r.fields['fldWzYeFcqm0qnxD8'] || '').toLowerCase().includes(search)) return false;
     return true;
   });
-  el('ordersNoData').classList.toggle('hidden', items.length > 0);
-  if (!items.length) { listEl.innerHTML = authd ? '' : '<div class="orders-empty-state">Log in to see inventory</div>'; return; }
+  el('ordersNoData').classList.toggle('hidden', items.length > 0 || !authd);
+  if (!items.length) {
+    listEl.innerHTML = authd ? '<div class="orders-empty-state">No items need ordering</div>' : '<div class="orders-empty-state">Log in to see inventory</div>';
+    return;
+  }
   listEl.innerHTML = items.map(function(r) {
     var name = r.fields['fldWzYeFcqm0qnxD8'] || '—';
     var type = selName(r.fields['fldxQhVZSYmXNK6CW']) || '';
@@ -903,14 +938,96 @@ function renderNeedOrderList() {
     var stock = selName(r.fields['fldZEvcZT2JnX5kwh']);
     var isOOS = stock === 'O.O.S.';
     var badge = isOOS ? '<span class="stock-badge out">✕ O.O.S.</span>' : '<span class="stock-badge low">⚠ Low</span>';
-    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + name + '</div><div class="order-item-meta">' + [type, model].filter(Boolean).join(' · ') + '<br>Qty: ' + qty + (min ? ' · Min: ' + min : '') + '</div></div>' + badge + '</div>';
+    var cartItem = orderCart.find(function(c) { return c.id === r.id; });
+    var cartCtrl = cartItem
+      ? '<div class="cart-qty-ctrl"><button onclick="cartDecrement(\'' + r.id + '\')">−</button><span>' + cartItem.qty + '</span><button onclick="cartIncrement(\'' + r.id + '\')">+</button></div>'
+      : '<button class="order-item-btn" onclick="addToCart(\'' + r.id + '\',\'' + escQ(name) + '\',\'' + escQ(type) + '\',\'' + escQ(model) + '\')">+ Add</button>';
+    return '<div class="order-item' + (cartItem ? ' in-cart' : '') + '"><div class="order-item-info"><div class="order-item-name">' + name + '</div><div class="order-item-meta">' + [type, model].filter(Boolean).join(' · ') + ' · Qty: ' + qty + (min ? ' / Min: ' + min : '') + '</div></div><div style="display:flex;align-items:center;gap:8px;">' + badge + cartCtrl + '</div></div>';
   }).join('');
 }
 
+function escQ(s) { return (s || '').replace(/'/g, "\\'"); }
+
+// ---- Cart ----
+function addToCart(id, name, type, model) {
+  if (!orderCart.find(function(c) { return c.id === id; })) {
+    orderCart.push({ id: id, name: name, type: type, model: model, qty: 1 });
+  }
+  renderCartBar(); renderNeedOrderList();
+}
+function cartIncrement(id) {
+  var item = orderCart.find(function(c) { return c.id === id; });
+  if (item) { item.qty++; renderCartBar(); renderNeedOrderList(); if (!el('cartPanel').classList.contains('hidden')) renderCartPanel(); }
+}
+function cartDecrement(id) {
+  var idx = orderCart.findIndex(function(c) { return c.id === id; });
+  if (idx === -1) return;
+  orderCart[idx].qty--;
+  if (orderCart[idx].qty < 1) orderCart.splice(idx, 1);
+  renderCartBar(); renderNeedOrderList(); if (!el('cartPanel').classList.contains('hidden')) renderCartPanel();
+}
+function removeFromCart(id) {
+  orderCart = orderCart.filter(function(c) { return c.id !== id; });
+  renderCartBar(); renderNeedOrderList(); renderCartPanel();
+}
+function clearCart() { orderCart = []; renderCartBar(); renderNeedOrderList(); closeCartPanel(); }
+
+function renderCartBar() {
+  var bar = el('cartBar'); if (!bar) return;
+  if (!orderCart.length) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  var total = orderCart.reduce(function(s, c) { return s + c.qty; }, 0);
+  el('cartBarLabel').textContent = '🛒 ' + orderCart.length + ' item' + (orderCart.length !== 1 ? 's' : '') + ' (' + total + ' units)';
+}
+
+function openCartPanel() {
+  renderCartPanel();
+  el('cartPanel').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeCartPanel() {
+  el('cartPanel').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function renderCartPanel() {
+  var container = el('cartPanelItems'); if (!container) return;
+  if (!orderCart.length) { container.innerHTML = '<div class="orders-empty-state">Cart is empty</div>'; return; }
+  container.innerHTML = orderCart.map(function(item) {
+    return '<div class="cart-panel-item">' +
+      '<div class="cart-panel-item-info"><div class="cart-panel-item-name">' + item.name + '</div><div class="cart-panel-item-sub">' + [item.type, item.model].filter(Boolean).join(' · ') + '</div></div>' +
+      '<div class="cart-qty-ctrl"><button onclick="cartDecrement(\'' + item.id + '\')">−</button><span>' + item.qty + '</span><button onclick="cartIncrement(\'' + item.id + '\')">+</button></div>' +
+      '<button class="order-item-btn remove" onclick="removeFromCart(\'' + item.id + '\')" style="padding:6px 10px;">✕</button>' +
+    '</div>';
+  }).join('');
+}
+
+function placeCartOrder() {
+  if (!orderCart.length) { showToast('Cart is empty'); return; }
+  var supplier = (el('cartSupplier').value || '').trim();
+  var btn = el('cartPanel').querySelector('button[onclick="placeCartOrder()"]');
+  if (btn) { btn.textContent = 'Placing…'; btn.disabled = true; }
+  var promises = orderCart.map(function(item) {
+    var fields = { 'Item': [item.id], 'QTY': item.qty };
+    if (supplier) fields['Supplier'] = supplier;
+    return atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: fields }) });
+  });
+  Promise.all(promises).then(function(results) {
+    var errors = results.filter(function(r) { return r.error; });
+    if (errors.length) { showToast(errors.length + ' item(s) failed'); }
+    else { showToast('Order placed — ' + orderCart.length + ' item' + (orderCart.length !== 1 ? 's' : '') + ' ✓'); }
+    orderCart = []; if (el('cartSupplier')) el('cartSupplier').value = '';
+    closeCartPanel(); renderCartBar(); renderNeedOrderList(); loadOrderRecords();
+  }).catch(function() {
+    showToast('Network error — try again');
+    if (btn) { btn.textContent = 'Place Order'; btn.disabled = false; }
+  });
+}
+
+// ---- Ordered + Receive views ----
 function renderOrderedList() {
   var listEl = el('ordersOrderedList'); if (!listEl) return;
   var pending = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; });
-  el('ordersNoData').classList.toggle('hidden', pending.length > 0 || ordersTabView !== 'ordered');
   if (!pending.length) { listEl.innerHTML = '<div class="orders-empty-state">No pending orders</div>'; return; }
   listEl.innerHTML = pending.map(function(r) {
     var name = r.fields['fldF0TJARgHugOh83'] || '—';
@@ -924,7 +1041,6 @@ function renderOrderedList() {
 function renderReceiveList() {
   var listEl = el('ordersReceiveList'); if (!listEl) return;
   var pending = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; });
-  el('ordersNoData').classList.toggle('hidden', pending.length > 0 || ordersTabView !== 'receive');
   if (!pending.length) { listEl.innerHTML = '<div class="orders-empty-state">No orders awaiting receipt</div>'; return; }
   listEl.innerHTML = pending.map(function(r) {
     var name = r.fields['fldF0TJARgHugOh83'] || '—';
@@ -950,37 +1066,7 @@ function clearOrdersSearch() { if (el('ordersSearchInput')) el('ordersSearchInpu
 function switchNeedSubTab(tab, btn) {
   needSubTab = tab;
   document.querySelectorAll('.need-sub-btn').forEach(function(b) { b.classList.remove('active'); });
-  btn.classList.add('active');
-  renderNeedOrderList();
-}
-
-function populateOrdersNewForm() {
-  var sel = el('ordersNewItem'); if (!sel) return;
-  sel.innerHTML = '<option value="">Select inventory item…</option>' + allInvRecords.map(function(r) {
-    return '<option value="' + r.id + '">' + (r.fields['fldWzYeFcqm0qnxD8'] || r.id) + '</option>';
-  }).join('');
-}
-
-function showOrdersNewForm() {
-  if (!authd) { showToast('Log in as staff'); return; }
-  populateOrdersNewForm();
-  el('ordersNewForm').classList.remove('hidden');
-}
-function hideOrdersNewForm() { el('ordersNewForm').classList.add('hidden'); }
-function submitOrdersNewOrder() {
-  var itemId = el('ordersNewItem').value;
-  var qty = parseInt(el('ordersNewQty').value) || 0;
-  var supplier = el('ordersNewSupplier').value.trim();
-  if (!itemId || !qty) { showToast('Select item and quantity'); return; }
-  var fields = { 'Item': [itemId], 'QTY': qty };
-  if (supplier) fields['Supplier'] = supplier;
-  atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: fields }) }).then(function(data) {
-    if (data.error) { showToast('Error placing order'); return; }
-    showToast('Order placed ✓');
-    hideOrdersNewForm();
-    el('ordersNewQty').value = ''; el('ordersNewSupplier').value = '';
-    loadOrderRecords();
-  });
+  btn.classList.add('active'); renderNeedOrderList();
 }
 
 var TIER_TO_TYPE = { standard: 'Standard Screen', premium: 'Premium Screen' };
