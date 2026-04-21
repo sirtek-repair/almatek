@@ -1397,9 +1397,9 @@ function shareBookerResults() {
   var perR = el('perRepairAmt').textContent;
   var text = (name ? name + ' — ' : '') + (month ? month + ' · ' : '') + repairs + ' repairs\nPer Repair: ' + perR;
   if (isOwner) text += '\nRev Share: ' + el('revShareAmt').textContent;
-  if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied to clipboard ✓'); }); }
-  else if (navigator.share) { navigator.share({ title: 'Booker Pay', text: text }); }
-  else { showToast('Results: ' + text); }
+  if (navigator.share) { navigator.share({ title: 'Booker Pay', text: text }).catch(function() {}); }
+  else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied to clipboard ✓'); }); }
+  else { showToast('Share not supported on this device'); }
 }
 
 // Staff Management
