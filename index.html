@@ -1463,11 +1463,14 @@ function openLeadDetail(leadId) {
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span style="font-size:10px;color:var(--muted);letter-spacing:0.05em;">SPECIAL ORDER</span><span class="stock-badge" style="background:' + soColor + '20;color:' + soColor + ';">' + SO_LABELS[soStage] + '</span></div>';
     html += '<div style="display:flex;align-items:flex-start;margin-bottom:14px;">' + stepperHtml + '</div>';
     if (soStage !== 'repair_done') {
-      html += '<button onclick="advanceSpecialOrderStatus()" style="width:100%;padding:9px;background:' + soColor + ';border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px;">→ Mark: ' + SO_LABELS[SO_STAGES[soIdx + 1]] + '</button>';
+      html += '<button onclick="advanceSpecialOrderStatus(\'' + lead.id + '\')" style="width:100%;padding:9px;background:' + soColor + ';border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px;">→ Mark: ' + SO_LABELS[SO_STAGES[soIdx + 1]] + '</button>';
     } else {
       html += '<div style="text-align:center;color:#10b981;font-size:13px;font-weight:600;margin-bottom:10px;">✓ Complete</div>';
     }
     html += '</div>';
+  }
+  if (lead.quote && !lead.specialOrderStatus) {
+    html += '<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;color:#f59e0b;font-weight:600;">Track as Special Order?</span><button onclick="initSpecialOrderStatus(\'' + lead.id + '\')" style="padding:6px 12px;background:#f59e0b;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Start Flow</button></div>';
   }
   if (lead.quote || lead.deposit || lead.specialOrderStatus) {
     var qVal = lead.quote || 0, dVal = lead.deposit || 0, balVal = qVal - dVal;
@@ -1527,20 +1530,31 @@ function saveFollowUpDate() {
 function markLeadBooked() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'booked'; lead.bookedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: lead.bookedAt }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Booked ✓'); }
 function markLeadClosed() { if (!currentLeadId || !confirm('Mark as closed/lost?')) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'closed_lost'; lead.closedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, closedAt: lead.closedAt }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Closed ✓'); }
 
-function advanceSpecialOrderStatus() {
-  if (!currentLeadId) return;
-  var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; });
+function advanceSpecialOrderStatus(leadId) {
+  var lead = leadsStorage.find(function(l) { return l.id === leadId; });
   if (!lead) return;
   var idx = SO_STAGES.indexOf(lead.specialOrderStatus);
   if (idx < 0 || idx >= SO_STAGES.length - 1) return;
   lead.specialOrderStatus = SO_STAGES[idx + 1];
   lead.updatedAt = new Date().toISOString();
   saveLeadsToStorage();
-  syncUpdateToSheet(currentLeadId, { specialOrderStatus: lead.specialOrderStatus });
+  syncUpdateToSheet(leadId, { specialOrderStatus: lead.specialOrderStatus });
+  showToast(SO_LABELS[lead.specialOrderStatus] + ' ✓');
   updateFollowUpBadge();
   renderLeadsList();
-  openLeadDetail(lead.id);
-  showToast(SO_LABELS[lead.specialOrderStatus] + ' ✓');
+  openLeadDetail(leadId);
+}
+function initSpecialOrderStatus(leadId) {
+  var lead = leadsStorage.find(function(l) { return l.id === leadId; });
+  if (!lead) return;
+  lead.specialOrderStatus = 'need_to_order';
+  lead.updatedAt = new Date().toISOString();
+  saveLeadsToStorage();
+  syncUpdateToSheet(leadId, { specialOrderStatus: lead.specialOrderStatus });
+  showToast('Special order flow started ✓');
+  updateFollowUpBadge();
+  renderLeadsList();
+  openLeadDetail(leadId);
 }
 
 function editLead(leadId) {
