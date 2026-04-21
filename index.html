@@ -945,7 +945,10 @@ function saveTicketFromQuote() {
   var deposit = parseFloat((el('attDeposit').value || '0')) || 0;
   var now = new Date().toISOString();
   var initStatus = attFlow === 'in_stock' ? 'waiting_for_repair' : 'need_to_order';
-  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, tier: tier1 === 'premium' ? 'premium' : 'standard', items: [], notes: [], createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
+  var repairLabel = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '');
+  var initItems = price > 0 ? [{ label: repairLabel, price: price }] : [];
+  var miles = parseFloat((el('milesInput') ? el('milesInput').value : '') || 0) || 0;
+  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, tier: tier1 === 'premium' ? 'premium' : 'standard', items: initItems, notes: [], createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage();
   closeAddToTicketModal(); updateTicketsBadge(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('tickets');
@@ -1562,7 +1565,8 @@ function convertLeadToTicket() {
   if (!currentLeadId) return;
   var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; }); if (!lead) return;
   var now = new Date().toISOString();
-  var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, tier: lead.tier || 'standard', items: [], notes: (lead.notes || []).slice(), createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
+  var leadInitItems = lead.quote > 0 ? [{ label: lead.issue || lead.device || 'Repair', price: lead.quote }] : [];
+  var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, mobileFee: 0, mobileFeeMiles: 0, tier: lead.tier || 'standard', items: leadInitItems, notes: (lead.notes || []).slice(), createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage();
   lead.status = 'booked'; lead.bookedAt = now; lead.updatedAt = now;
   saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: now });
