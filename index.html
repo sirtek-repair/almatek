@@ -1447,9 +1447,8 @@ function openLeadDetail(leadId) {
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (lead.phone||'—') + '</div></div><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (lead.device||'—') + '</div></div></div>';
   if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + lead.email + '</div></div>';
   if (lead.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + lead.issue + '</div></div>';
-  if (lead.specialOrderStatus || lead.quote || lead.deposit) {
-    var bal = (lead.quote||0) - (lead.deposit||0);
-    var soStage = lead.specialOrderStatus || 'need_to_order';
+  if (lead.specialOrderStatus) {
+    var soStage = lead.specialOrderStatus;
     var soColor = SO_COLORS[soStage] || '#3b82f6';
     var soIdx = SO_STAGES.indexOf(soStage);
     var stepperHtml = SO_STAGES.map(function(s, i) {
@@ -1464,21 +1463,22 @@ function openLeadDetail(leadId) {
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span style="font-size:10px;color:var(--muted);letter-spacing:0.05em;">SPECIAL ORDER</span><span class="stock-badge" style="background:' + soColor + '20;color:' + soColor + ';">' + SO_LABELS[soStage] + '</span></div>';
     html += '<div style="display:flex;align-items:flex-start;margin-bottom:14px;">' + stepperHtml + '</div>';
     if (soStage !== 'repair_done') {
-      var nextLabel = SO_LABELS[SO_STAGES[soIdx + 1]];
-      html += '<button onclick="advanceSpecialOrderStatus()" style="width:100%;padding:9px;background:' + soColor + ';border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px;">→ Mark: ' + nextLabel + '</button>';
+      html += '<button onclick="advanceSpecialOrderStatus()" style="width:100%;padding:9px;background:' + soColor + ';border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px;">→ Mark: ' + SO_LABELS[SO_STAGES[soIdx + 1]] + '</button>';
     } else {
       html += '<div style="text-align:center;color:#10b981;font-size:13px;font-weight:600;margin-bottom:10px;">✓ Complete</div>';
     }
-    if (lead.quote || lead.deposit || lead.specialOrderStatus) {
-      var qVal = lead.quote || 0, dVal = lead.deposit || 0, balVal = qVal - dVal;
-      var inputStyle = 'width:100%;margin-bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;box-sizing:border-box;';
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
-      html += '<div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Quote</div><input type="number" id="detailQuoteInput" value="' + qVal + '" min="0" step="1" oninput="updateDetailBalance()" style="' + inputStyle + '" /></div>';
-      html += '<div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Deposit Paid</div><input type="number" id="detailDepositInput" value="' + dVal + '" min="0" step="1" oninput="updateDetailBalance()" style="' + inputStyle + '" /></div>';
-      html += '</div>';
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(59,130,246,0.2);padding-top:8px;margin-bottom:10px;"><span style="font-size:12px;color:var(--muted);">Balance Due</span><span id="detailBalanceAmt" style="font-size:18px;font-weight:800;color:' + (balVal > 0 ? 'var(--accent)' : 'var(--green)') + ';">$' + balVal + '</span></div>';
-      html += '<button onclick="saveLeadFinancials()" style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save Financials</button>';
-    }
+    html += '</div>';
+  }
+  if (lead.quote || lead.deposit || lead.specialOrderStatus) {
+    var qVal = lead.quote || 0, dVal = lead.deposit || 0, balVal = qVal - dVal;
+    var inputStyle = 'width:100%;margin-bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;box-sizing:border-box;';
+    html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
+    html += '<div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Quote</div><input type="number" id="detailQuoteInput" value="' + qVal + '" min="0" step="1" oninput="updateDetailBalance()" style="' + inputStyle + '" /></div>';
+    html += '<div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Deposit Paid</div><input type="number" id="detailDepositInput" value="' + dVal + '" min="0" step="1" oninput="updateDetailBalance()" style="' + inputStyle + '" /></div>';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(59,130,246,0.2);padding-top:8px;margin-bottom:10px;"><span style="font-size:12px;color:var(--muted);">Balance Due</span><span id="detailBalanceAmt" style="font-size:18px;font-weight:800;color:' + (balVal > 0 ? 'var(--accent)' : 'var(--green)') + ';">$' + balVal + '</span></div>';
+    html += '<button onclick="saveLeadFinancials()" style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save Financials</button>';
     html += '</div>';
   }
   if (lead.notes?.length) { html += '<div style="margin-top:16px;"><strong>Notes</strong>'; lead.notes.slice().reverse().forEach(n => html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;">' + n.text + '<div style="font-size:11px;color:var(--muted);">' + new Date(n.createdAt).toLocaleString() + '</div></div>'); html += '</div>'; }
@@ -1530,7 +1530,7 @@ function markLeadClosed() { if (!currentLeadId || !confirm('Mark as closed/lost?
 function advanceSpecialOrderStatus() {
   if (!currentLeadId) return;
   var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; });
-  if (!lead || !lead.specialOrderStatus) return;
+  if (!lead) return;
   var idx = SO_STAGES.indexOf(lead.specialOrderStatus);
   if (idx < 0 || idx >= SO_STAGES.length - 1) return;
   lead.specialOrderStatus = SO_STAGES[idx + 1];
