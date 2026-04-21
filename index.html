@@ -945,7 +945,7 @@ function saveTicketFromQuote() {
   var deposit = parseFloat((el('attDeposit').value || '0')) || 0;
   var now = new Date().toISOString();
   var initStatus = attFlow === 'in_stock' ? 'waiting_for_repair' : 'need_to_order';
-  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, tier: tier1 === 'premium' ? 'premium' : 'standard', notes: [], createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
+  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, tier: tier1 === 'premium' ? 'premium' : 'standard', items: [], notes: [], createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage();
   closeAddToTicketModal(); updateTicketsBadge(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('tickets');
@@ -1562,7 +1562,7 @@ function convertLeadToTicket() {
   if (!currentLeadId) return;
   var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; }); if (!lead) return;
   var now = new Date().toISOString();
-  var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, tier: lead.tier || 'standard', notes: (lead.notes || []).slice(), createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
+  var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, tier: lead.tier || 'standard', items: [], notes: (lead.notes || []).slice(), createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage();
   lead.status = 'booked'; lead.bookedAt = now; lead.updatedAt = now;
   saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: now });
@@ -1670,6 +1670,7 @@ function renderTicketsList() {
 function openTicketDetail(ticketId) {
   currentTicketId = ticketId;
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
+  if (!ticket.items) ticket.items = [];
   el('ticketDetailName').textContent = (ticket.name || 'Unnamed') + ' — Ticket';
   var stages = ticket.flow === 'in_stock' ? REPAIR_STAGES : SO_STAGES;
   var labels = ticket.flow === 'in_stock' ? REPAIR_LABELS : SO_LABELS;
@@ -1678,15 +1679,23 @@ function openTicketDetail(ticketId) {
   var color = colors[status] || '#3b82f6';
   var stageIdx = stages.indexOf(status);
   var flowLabel = ticket.flow === 'in_stock' ? '✅ In-Stock Repair' : '📦 Special Order';
-  var tierBadge = ticket.tier === 'premium' ? '<span class="stock-badge" style="background:#f59e0b20;color:#f59e0b;margin-left:6px;">⭐ Premium</span>' : '';
+  var isPremium = ticket.tier === 'premium';
   var html = '<div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">';
-  html += '<div><span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[status] || status) + '</span>' + tierBadge + '</div>';
+  html += '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[status] || status) + '</span>';
   html += '<span style="font-size:12px;color:var(--muted);">' + flowLabel + '</span></div>';
+  // Tier toggle
+  var stdStyle = isPremium ? 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:7px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
+  var premStyle = isPremium ? 'flex:1;padding:7px;background:#f59e0b;border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
+  html += '<div style="display:flex;gap:8px;margin-bottom:12px;">';
+  html += '<button type="button" onclick="setTicketTier(\'standard\',\'' + ticket.id + '\')" style="' + stdStyle + '">Standard</button>';
+  html += '<button type="button" onclick="setTicketTier(\'premium\',\'' + ticket.id + '\')" style="' + premStyle + '">⭐ Premium</button></div>';
+  // Customer info
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
   html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (ticket.phone||'—') + '</div></div>';
   html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (ticket.device||'—') + '</div></div></div>';
   if (ticket.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + ticket.email + '</div></div>';
   if (ticket.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + ticket.issue + '</div></div>';
+  // Stepper
   var stepperHtml = stages.map(function(s, i) {
     var done = i < stageIdx, active = i === stageIdx;
     var dot = done ? '✓' : (i + 1);
@@ -1704,11 +1713,36 @@ function openTicketDetail(ticketId) {
     html += '<div style="text-align:center;color:#10b981;font-size:13px;font-weight:600;">✓ Complete</div>';
   }
   html += '</div>';
-  var qVal = ticket.quote || 0, dVal = ticket.deposit || 0, balVal = qVal - dVal;
+  // Items section
+  var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
+  html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
+  html += '<div style="font-size:10px;color:var(--muted);letter-spacing:0.05em;margin-bottom:10px;">ITEMS</div>';
+  if (ticket.items.length) {
+    ticket.items.forEach(function(it, idx) {
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">';
+      html += '<span style="font-size:13px;flex:1;">' + (it.label || 'Item') + '</span>';
+      html += '<span style="font-size:13px;font-weight:700;margin-right:10px;">$' + (parseFloat(it.price)||0) + '</span>';
+      html += '<button onclick="removeTicketItem(' + idx + ')" style="background:none;border:none;color:#ef4444;font-size:16px;cursor:pointer;padding:0 2px;line-height:1;">×</button>';
+      html += '</div>';
+    });
+    html += '<div style="display:flex;justify-content:space-between;padding-top:8px;margin-bottom:2px;"><span style="font-size:11px;color:var(--muted);">Items Total</span><span style="font-size:13px;font-weight:700;">$' + itemsSum + '</span></div>';
+  } else {
+    html += '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">No items yet</div>';
+  }
+  html += '<div style="display:flex;gap:6px;margin-top:10px;">';
+  html += '<input type="text" id="ticketItemLabel" placeholder="Description" style="flex:2;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;" />';
+  html += '<input type="number" id="ticketItemPrice" placeholder="$" min="0" step="1" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;" />';
+  html += '<button onclick="addTicketItem()" style="padding:8px 12px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">＋ Add</button>';
+  html += '</div></div>';
+  // Financials
+  var dVal = ticket.deposit || 0;
+  var qVal = ticket.items.length ? itemsSum : (ticket.quote || 0);
+  var balVal = qVal - dVal;
   var inputStyle = 'width:100%;margin-bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;box-sizing:border-box;';
+  var quoteReadOnly = ticket.items.length ? 'readonly style="' + inputStyle + 'opacity:0.6;" ' : 'oninput="updateTicketBalance()" style="' + inputStyle + '"';
   html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
-  html += '<div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Quote</div><input type="number" id="ticketQuoteInput" value="' + qVal + '" min="0" step="1" oninput="updateTicketBalance()" style="' + inputStyle + '" /></div>';
+  html += '<div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Quote' + (ticket.items.length ? ' (from items)' : '') + '</div><input type="number" id="ticketQuoteInput" value="' + qVal + '" min="0" step="1" ' + quoteReadOnly + ' /></div>';
   html += '<div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Deposit Paid</div><input type="number" id="ticketDepositInput" value="' + dVal + '" min="0" step="1" oninput="updateTicketBalance()" style="' + inputStyle + '" /></div>';
   html += '</div>';
   html += '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(59,130,246,0.2);padding-top:8px;margin-bottom:10px;"><span style="font-size:12px;color:var(--muted);">Balance Due</span><span id="ticketBalanceAmt" style="font-size:18px;font-weight:800;color:' + (balVal > 0 ? 'var(--accent)' : 'var(--green)') + ';">$' + balVal + '</span></div>';
@@ -1749,10 +1783,42 @@ function updateTicketBalance() {
 function saveTicketFinancials() {
   if (!currentTicketId) return;
   var ticket = ticketsStorage.find(function(t) { return t.id === currentTicketId; }); if (!ticket) return;
-  ticket.quote = parseFloat(el('ticketQuoteInput')?.value || 0) || 0;
+  if (!ticket.items) ticket.items = [];
+  var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
+  ticket.quote = ticket.items.length ? itemsSum : (parseFloat(el('ticketQuoteInput')?.value || 0) || 0);
   ticket.deposit = parseFloat(el('ticketDepositInput')?.value || 0) || 0;
   ticket.updatedAt = new Date().toISOString();
   saveTicketsToStorage(); renderTicketsList(); openTicketDetail(ticket.id); showToast('Saved ✓');
+}
+
+function setTicketTier(tier, ticketId) {
+  var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
+  ticket.tier = tier; ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(ticketId);
+}
+
+function addTicketItem() {
+  if (!currentTicketId) return;
+  var label = (el('ticketItemLabel')?.value || '').trim();
+  var price = parseFloat(el('ticketItemPrice')?.value || 0) || 0;
+  if (!label && !price) { showToast('Enter a description or price'); return; }
+  var ticket = ticketsStorage.find(function(t) { return t.id === currentTicketId; }); if (!ticket) return;
+  if (!ticket.items) ticket.items = [];
+  ticket.items.push({ label: label || 'Item', price: price });
+  var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
+  ticket.quote = itemsSum;
+  ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(currentTicketId);
+}
+
+function removeTicketItem(idx) {
+  if (!currentTicketId) return;
+  var ticket = ticketsStorage.find(function(t) { return t.id === currentTicketId; }); if (!ticket || !ticket.items) return;
+  ticket.items.splice(idx, 1);
+  var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
+  ticket.quote = ticket.items.length ? itemsSum : ticket.quote;
+  ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(currentTicketId);
 }
 
 function addTicketNote() {
