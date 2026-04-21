@@ -410,7 +410,7 @@
     <div class="qa" id="quoteAmt">$—</div>
     <div class="qsub hidden" id="mobileSubline">includes mobile service fee</div>
     <div class="qsub hidden" id="quoteStockLine"></div>
-    <button onclick="showAddToLeadModal()" style="margin-top:16px;width:100%;padding:10px 0;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">＋ Add to Lead</button>
+    <button onclick="showAddToTicketModal()" style="margin-top:16px;width:100%;padding:10px 0;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">🎫 Add to Ticket</button>
   </div>
 
   <div id="mobileToggleRow" class="toggle-row hidden" onclick="onToggleMobile()">
@@ -588,6 +588,7 @@
 
   <div class="orders-tab-nav">
     <button class="orders-tab-btn active" id="leadSubBtnLeads" onclick="switchLeadSubTab('leads')">Leads</button>
+    <button class="orders-tab-btn" id="leadSubBtnTickets" onclick="switchLeadSubTab('tickets')">🎫 Tickets <span id="ticketsBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" id="leadSubBtnFollowUp" onclick="switchLeadSubTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
   </div>
 
@@ -604,21 +605,6 @@
     <div style="display:flex;gap:8px;margin-bottom:10px;">
       <button type="button" id="tierBtnStandard" onclick="toggleLeadTier('standard')" style="flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;">Standard</button>
       <button type="button" id="tierBtnPremium" onclick="toggleLeadTier('premium')" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;">⭐ Premium</button>
-    </div>
-    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Special Order?</label>
-    <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <button type="button" id="soToggleNo" onclick="toggleSpecialOrder(false)" style="flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;">No</button>
-      <button type="button" id="soToggleYes" onclick="toggleSpecialOrder(true)" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;">Yes — Special Order</button>
-    </div>
-    <div id="specialOrderFields" style="display:none;background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid var(--border);">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:0.05em;">Repair Quote</label>
-      <input type="number" id="leadQuote" placeholder="$0" min="0" step="1" style="width:100%;margin-bottom:8px;" oninput="updateLeadBalance()" />
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:0.05em;">Part Cost / Deposit Paid</label>
-      <input type="number" id="leadDeposit" placeholder="$0" min="0" step="1" style="width:100%;margin-bottom:8px;" oninput="updateLeadBalance()" />
-      <div id="leadBalanceRow" style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:8px;padding:10px 12px;">
-        <span style="font-size:12px;color:var(--muted);">Remaining Balance</span>
-        <span id="leadBalanceAmt" style="font-size:18px;font-weight:700;color:var(--text);">$—</span>
-      </div>
     </div>
     <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Follow-up Date (optional)</label>
     <input type="date" id="leadFollowUp" style="width:100%;margin-bottom:10px;" />
@@ -641,6 +627,9 @@
   <div id="leadsList"></div>
 
   </div><!-- end leadViewLeads -->
+  <div id="leadViewTickets" class="hidden">
+    <div id="ticketsList"></div>
+  </div>
   <div id="leadViewFollowUp" class="hidden">
     <div id="followUpList"></div>
   </div>
@@ -679,22 +668,51 @@
 </div>
 </div>
 
-<!-- Add to Lead Modal -->
-<div id="addToLeadModal" class="chpass-overlay hidden" onclick="closeAddToLeadModal()">
+<!-- Add to Ticket Modal -->
+<div id="addToTicketModal" class="chpass-overlay hidden" onclick="closeAddToTicketModal()">
   <div class="chpass-box" onclick="event.stopPropagation()" style="max-width:420px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-      <h3 style="margin:0;font-size:16px;">Add to Lead</h3>
-      <button onclick="closeAddToLeadModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+      <h3 style="margin:0;font-size:16px;">🎫 New Ticket</h3>
+      <button onclick="closeAddToTicketModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
     </div>
-    <div id="atlQuoteSummary" style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;"></div>
-    <input type="text" id="atlName" placeholder="Customer Name *" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
-    <input type="text" id="atlPhone" placeholder="Phone Number *" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
-    <input type="email" id="atlEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
-    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Follow-up Date (optional)</label>
-    <input type="date" id="atlFollowUp" style="width:100%;margin-bottom:14px;box-sizing:border-box;" />
+    <div id="attQuoteSummary" style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;"></div>
+    <div id="attFlowRow" style="margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--muted);letter-spacing:0.05em;margin-bottom:6px;">TICKET TYPE</div>
+      <div style="display:flex;gap:8px;">
+        <button type="button" id="attFlowInStock" onclick="setTicketFlow('in_stock')" style="flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;">✅ In-Stock Repair</button>
+        <button type="button" id="attFlowSpecial" onclick="setTicketFlow('special_order')" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;">📦 Special Order</button>
+      </div>
+    </div>
+    <input type="text" id="attName" placeholder="Customer Name *" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
+    <input type="text" id="attPhone" placeholder="Phone Number *" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
+    <input type="email" id="attEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Deposit Paid</div><input type="number" id="attDeposit" placeholder="$0" min="0" step="1" style="width:100%;box-sizing:border-box;" /></div>
+    </div>
     <div style="display:flex;gap:8px;">
-      <button onclick="saveLeadFromQuote()" style="flex:1;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Save Lead</button>
-      <button onclick="closeAddToLeadModal()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
+      <button onclick="saveTicketFromQuote()" style="flex:1;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Create Ticket</button>
+      <button onclick="closeAddToTicketModal()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ticket Detail Modal -->
+<div id="ticketDetailModal" class="chpass-overlay hidden" onclick="closeTicketDetail()">
+  <div class="chpass-box" onclick="event.stopPropagation()" style="max-width:500px;max-height:82vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 12px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <h3 style="margin:0;" id="ticketDetailName">Ticket</h3>
+      <button onclick="closeTicketDetail()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:16px;">
+      <div id="ticketDetailContent"></div>
+      <div style="margin-top:16px;">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Add Note</label>
+        <textarea id="ticketNoteText" rows="2" placeholder="Type a note..." style="width:100%;margin-bottom:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+        <button onclick="addTicketNote()" style="width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Add Note</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;">
+      <button onclick="deleteTicket(currentTicketId)" style="flex:1;padding:8px;background:none;border:1px solid #ef4444;color:#ef4444;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">🗑️ Delete</button>
     </div>
   </div>
 </div>
@@ -877,7 +895,28 @@ function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggle
 
 var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Swap', battery:'Battery', ipad:'iPad', android:'Android', laptop:'Laptop' };
 
-function showAddToLeadModal() {
+var attFlow = 'in_stock';
+function setTicketFlow(flow) {
+  attFlow = flow;
+  var inStock = flow === 'in_stock';
+  el('attFlowInStock').style.cssText = inStock ? 'flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;';
+  el('attFlowSpecial').style.cssText = inStock ? 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:8px;background:#f59e0b;border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;';
+}
+function detectTicketFlow() {
+  if (!allInvRecords || !allInvRecords.length) return 'special_order';
+  var matchModel = (model1 || '').toLowerCase();
+  var matchType = TIER_TO_TYPE[tier1] || '';
+  var match = allInvRecords.find(function(r) {
+    var f = r.fields || {};
+    var recModel = (f['fldV0jSP3xJuinS8t'] || '').toLowerCase();
+    var recType = selName(f['fldxQhVZSYmXNK6CW']);
+    return matchModel && recModel.includes(matchModel) && recType === matchType;
+  });
+  if (!match) return 'special_order';
+  var qty = parseFloat((match.fields || {})['fldvwFFYSxAJlcFpp'] || 0) || 0;
+  return qty > 0 ? 'in_stock' : 'special_order';
+}
+function showAddToTicketModal() {
   var price = getPrice1();
   var total = price + mobileFee;
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
@@ -886,29 +925,31 @@ function showAddToLeadModal() {
   rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair</span><span style="font-weight:600;">' + typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + '</span></div>');
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
-  el('atlQuoteSummary').innerHTML = rows.join('');
-  ['atlName','atlPhone','atlEmail','atlFollowUp'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
-  el('addToLeadModal').classList.remove('hidden');
-  setTimeout(function() { var n = el('atlName'); if (n) n.focus(); }, 50);
+  el('attQuoteSummary').innerHTML = rows.join('');
+  ['attName','attPhone','attEmail','attDeposit'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
+  var detectedFlow = detectTicketFlow();
+  attFlow = detectedFlow;
+  setTicketFlow(detectedFlow);
+  el('addToTicketModal').classList.remove('hidden');
+  setTimeout(function() { var n = el('attName'); if (n) n.focus(); }, 50);
 }
-
-function closeAddToLeadModal() { el('addToLeadModal').classList.add('hidden'); }
-
-function saveLeadFromQuote() {
-  var name = (el('atlName').value || '').trim(), phone = (el('atlPhone').value || '').trim();
+function closeAddToTicketModal() { el('addToTicketModal').classList.add('hidden'); }
+function saveTicketFromQuote() {
+  var name = (el('attName').value || '').trim(), phone = (el('attPhone').value || '').trim();
   if (!name || !phone) { showToast('Name and phone required'); return; }
   var price = getPrice1(), total = price + mobileFee;
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
   var deviceStr = model1 || typeLabel;
   var issueStr = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + (mobileFee > 0 ? ' · Mobile' : '');
-  var followUp = el('atlFollowUp').value || '';
+  var deposit = parseFloat((el('attDeposit').value || '0')) || 0;
   var now = new Date().toISOString();
-  var newLead = { id: 'lead_' + Date.now(), name: name, phone: phone, email: (el('atlEmail').value||'').trim(), device: deviceStr, issue: issueStr, status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: total, deposit: 0, specialOrderStatus: null, tier: tier1 === 'premium' ? 'premium' : 'standard', createdAt: now, updatedAt: now };
-  leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead);
-  closeAddToLeadModal(); updateFollowUpBadge();
-  switchTab('leads'); switchLeadSubTab('leads');
-  setTimeout(function() { openLeadDetail(newLead.id); }, 80);
-  showToast('Lead saved ✓');
+  var initStatus = attFlow === 'in_stock' ? 'waiting_for_repair' : 'need_to_order';
+  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, tier: tier1 === 'premium' ? 'premium' : 'standard', notes: [], createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
+  ticketsStorage.push(newTicket); saveTicketsToStorage();
+  closeAddToTicketModal(); updateTicketsBadge(); updateFollowUpBadge();
+  switchTab('leads'); switchLeadSubTab('tickets');
+  setTimeout(function() { openTicketDetail(newTicket.id); }, 80);
+  showToast('Ticket created ✓');
 }
 
 function onToggleMobile() {
@@ -952,13 +993,17 @@ function switchTab(tab) {
 var leadSubTab = 'leads';
 function switchLeadSubTab(tab) {
   leadSubTab = tab;
-  var isLeadsView = tab === 'leads';
-  el('leadViewLeads').classList.toggle('hidden', !isLeadsView);
-  el('leadViewFollowUp').classList.toggle('hidden', isLeadsView);
-  el('leadSubBtnLeads').classList.toggle('active', isLeadsView);
-  el('leadSubBtnFollowUp').classList.toggle('active', !isLeadsView);
-  var newLeadBtn = el('newLeadBtn'); if (newLeadBtn) newLeadBtn.style.display = isLeadsView ? '' : 'none';
-  if (!isLeadsView) renderFollowUpTab(); else if (typeof renderLeadsList === 'function') renderLeadsList();
+  var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup';
+  el('leadViewLeads').classList.toggle('hidden', !isLeads);
+  el('leadViewTickets').classList.toggle('hidden', !isTickets);
+  el('leadViewFollowUp').classList.toggle('hidden', !isFollowUp);
+  el('leadSubBtnLeads').classList.toggle('active', isLeads);
+  el('leadSubBtnTickets').classList.toggle('active', isTickets);
+  el('leadSubBtnFollowUp').classList.toggle('active', isFollowUp);
+  var newLeadBtn = el('newLeadBtn'); if (newLeadBtn) newLeadBtn.style.display = isLeads ? '' : 'none';
+  if (isFollowUp) renderFollowUpTab();
+  else if (isTickets) renderTicketsList();
+  else if (typeof renderLeadsList === 'function') renderLeadsList();
 }
 
 // Worker + Airtable config
@@ -1392,7 +1437,6 @@ function syncLeadToSheet(lead) { if (!USERS_SCRIPT_URL) return Promise.resolve()
 function syncUpdateToSheet(leadId, updates) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'updateLead', leadId: leadId, updates: updates }); }
 
 function showNewLeadForm() { el('newLeadForm').classList.remove('hidden'); el('newLeadBtn').style.display = 'none'; }
-var specialOrderMode = false;
 var leadTier = 'standard';
 function toggleLeadTier(val) {
   leadTier = val;
@@ -1403,23 +1447,15 @@ function toggleLeadTier(val) {
 var SO_STAGES = ['need_to_order','part_ordered','part_arrived','repair_done'];
 var SO_LABELS = { need_to_order:'Need to Order', part_ordered:'Part Ordered', part_arrived:'Part Arrived · Called CX', repair_done:'Repair Done · Called CX' };
 var SO_COLORS = { need_to_order:'#f59e0b', part_ordered:'#3b82f6', part_arrived:'#8b5cf6', repair_done:'#10b981' };
-function toggleSpecialOrder(val) {
-  specialOrderMode = val;
-  el('soToggleNo').style.cssText = val ? 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;' : 'flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;';
-  el('soToggleYes').style.cssText = val ? 'flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;' : 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;';
-  el('specialOrderFields').style.display = val ? 'block' : 'none';
-}
-function updateLeadBalance() {
-  var q = parseFloat((el('leadQuote') ? el('leadQuote').value : '') || 0) || 0;
-  var d = parseFloat((el('leadDeposit') ? el('leadDeposit').value : '') || 0) || 0;
-  if (el('leadBalanceAmt')) el('leadBalanceAmt').textContent = q > 0 ? '$' + (q - d) : '$—';
-}
-function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue','leadFollowUp','leadQuote','leadDeposit'].forEach(id => { var e = el(id); if (e) e.value = ''; }); if (el('leadBalanceAmt')) el('leadBalanceAmt').textContent = '$—'; toggleSpecialOrder(false); toggleLeadTier('standard'); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
+var REPAIR_STAGES = ['waiting_for_repair','in_repair','ready_for_pickup'];
+var REPAIR_LABELS = { waiting_for_repair:'Waiting for Repair', in_repair:'In Repair', ready_for_pickup:'Ready for Pickup' };
+var REPAIR_COLORS = { waiting_for_repair:'#f59e0b', in_repair:'#3b82f6', ready_for_pickup:'#10b981' };
+function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue','leadFollowUp'].forEach(id => { var e = el(id); if (e) e.value = ''; }); toggleLeadTier('standard'); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
 
 function createNewLead() {
   var name = el('leadName').value.trim(), phone = el('leadPhone').value.trim(); if (!name || !phone) { showToast('Name and phone required'); return; }
   var followUp = el('leadFollowUp') ? el('leadFollowUp').value : '';
-  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: specialOrderMode ? (parseFloat(el('leadQuote').value)||0) : 0, deposit: specialOrderMode ? (parseFloat(el('leadDeposit').value)||0) : 0, specialOrderStatus: specialOrderMode ? 'need_to_order' : null, tier: leadTier, createdAt: now, updatedAt: now };
+  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: 0, deposit: 0, tier: leadTier, createdAt: now, updatedAt: now };
   leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead); hideNewLeadForm(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead saved ✓');
 }
 
@@ -1434,7 +1470,7 @@ function renderLeadsList() {
   var filtered = leadsStorage.filter(l => { var match = !search || (l.name||'').toLowerCase().includes(search) || (l.phone||'').includes(search); return match && (leadFilterStatus === 'all' || l.status === leadFilterStatus); });
   filtered.sort((a,b) => new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt));
   el('leadsList').innerHTML = filtered.length ? filtered.map(l => {
-    var mainBadge = l.specialOrderStatus ? '<span class="stock-badge" style="background:' + SO_COLORS[l.specialOrderStatus] + '20;color:' + SO_COLORS[l.specialOrderStatus] + ';">' + SO_LABELS[l.specialOrderStatus] + '</span>' : '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
+    var mainBadge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
     var tierPip = l.tier === 'premium' ? '<span style="font-size:11px;margin-left:4px;" title="Premium">⭐</span>' : '';
     return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + tierPip + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div>' + mainBadge + '</div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
@@ -1449,32 +1485,7 @@ function openLeadDetail(leadId) {
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (lead.phone||'—') + '</div></div><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (lead.device||'—') + '</div></div></div>';
   if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + lead.email + '</div></div>';
   if (lead.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + lead.issue + '</div></div>';
-  if (lead.specialOrderStatus) {
-    var soStage = lead.specialOrderStatus;
-    var soColor = SO_COLORS[soStage] || '#3b82f6';
-    var soIdx = SO_STAGES.indexOf(soStage);
-    var stepperHtml = SO_STAGES.map(function(s, i) {
-      var done = i < soIdx, active = i === soIdx;
-      var dot = done ? '✓' : (i + 1);
-      var bg = done ? '#10b981' : (active ? soColor : 'var(--surface2)');
-      var col = (done || active) ? '#fff' : 'var(--muted)';
-      var lbl = '<span style="font-size:10px;color:' + (active ? soColor : (done ? '#10b981' : 'var(--muted)')) + ';font-weight:' + (active?'700':'400') + ';margin-top:3px;display:block;text-align:center;">' + SO_LABELS[s].split(' · ')[0] + '</span>';
-      return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;"><div style="width:24px;height:24px;border-radius:50%;background:' + bg + ';color:' + col + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">' + dot + '</div>' + lbl + '</div>';
-    }).join('<div style="flex:1;height:2px;background:var(--border);margin-top:11px;max-width:20px;"></div>');
-    html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span style="font-size:10px;color:var(--muted);letter-spacing:0.05em;">SPECIAL ORDER</span><span class="stock-badge" style="background:' + soColor + '20;color:' + soColor + ';">' + SO_LABELS[soStage] + '</span></div>';
-    html += '<div style="display:flex;align-items:flex-start;margin-bottom:14px;">' + stepperHtml + '</div>';
-    if (soStage !== 'repair_done') {
-      html += '<button onclick="advanceSpecialOrderStatus(\'' + lead.id + '\')" style="width:100%;padding:9px;background:' + soColor + ';border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px;">→ Mark: ' + SO_LABELS[SO_STAGES[soIdx + 1]] + '</button>';
-    } else {
-      html += '<div style="text-align:center;color:#10b981;font-size:13px;font-weight:600;margin-bottom:10px;">✓ Complete</div>';
-    }
-    html += '</div>';
-  }
-  if (lead.quote && !lead.specialOrderStatus) {
-    html += '<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;color:#f59e0b;font-weight:600;">Track as Special Order?</span><button onclick="initSpecialOrderStatus(\'' + lead.id + '\')" style="padding:6px 12px;background:#f59e0b;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">Start Flow</button></div>';
-  }
-  if (lead.quote || lead.deposit || lead.specialOrderStatus) {
+  if (lead.quote || lead.deposit) {
     var qVal = lead.quote || 0, dVal = lead.deposit || 0, balVal = qVal - dVal;
     var inputStyle = 'width:100%;margin-bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;box-sizing:border-box;';
     html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
@@ -1532,32 +1543,6 @@ function saveFollowUpDate() {
 function markLeadBooked() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'booked'; lead.bookedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: lead.bookedAt }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Booked ✓'); }
 function markLeadClosed() { if (!currentLeadId || !confirm('Mark as closed/lost?')) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'closed_lost'; lead.closedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, closedAt: lead.closedAt }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Closed ✓'); }
 
-function advanceSpecialOrderStatus(leadId) {
-  var lead = leadsStorage.find(function(l) { return l.id === leadId; });
-  if (!lead) return;
-  var idx = SO_STAGES.indexOf(lead.specialOrderStatus);
-  if (idx < 0 || idx >= SO_STAGES.length - 1) return;
-  lead.specialOrderStatus = SO_STAGES[idx + 1];
-  lead.updatedAt = new Date().toISOString();
-  saveLeadsToStorage();
-  syncUpdateToSheet(leadId, { specialOrderStatus: lead.specialOrderStatus });
-  showToast(SO_LABELS[lead.specialOrderStatus] + ' ✓');
-  updateFollowUpBadge();
-  renderLeadsList();
-  openLeadDetail(leadId);
-}
-function initSpecialOrderStatus(leadId) {
-  var lead = leadsStorage.find(function(l) { return l.id === leadId; });
-  if (!lead) return;
-  lead.specialOrderStatus = 'need_to_order';
-  lead.updatedAt = new Date().toISOString();
-  saveLeadsToStorage();
-  syncUpdateToSheet(leadId, { specialOrderStatus: lead.specialOrderStatus });
-  showToast('Special order flow started ✓');
-  updateFollowUpBadge();
-  renderLeadsList();
-  openLeadDetail(leadId);
-}
 
 function editLead(leadId) {
   var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
@@ -1584,17 +1569,19 @@ function getLeadsNeedingFollowUp() {
   });
   overdue.sort(function(a, b) { return new Date(a.followUpAt) - new Date(b.followUpAt); });
   uncontacted.sort(function(a, b) { return new Date(a.createdAt) - new Date(b.createdAt); });
-  var specialOrders = leadsStorage.filter(function(l) {
-    return l.specialOrderStatus && l.specialOrderStatus !== 'repair_done';
-  });
-  specialOrders.sort(function(a, b) { return new Date(a.updatedAt||a.createdAt) - new Date(b.updatedAt||b.createdAt); });
   var seen = new Set();
-  return specialOrders.concat(overdue).concat(uncontacted).filter(function(l) { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
+  return overdue.concat(uncontacted).filter(function(l) { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
+}
+function getTicketsNeedingFollowUp() {
+  if (!ticketsStorage || !ticketsStorage.length) return [];
+  return ticketsStorage.filter(function(t) {
+    return t.status === 'ready_for_pickup' || t.status === 'part_arrived';
+  });
 }
 
 function updateFollowUpBadge() {
   var badge = el('followUpBadge'); if (!badge) return;
-  var count = getLeadsNeedingFollowUp().length;
+  var count = getLeadsNeedingFollowUp().length + getTicketsNeedingFollowUp().length;
   badge.textContent = count;
   badge.classList.toggle('hidden', count === 0);
 }
@@ -1602,27 +1589,171 @@ function updateFollowUpBadge() {
 function renderFollowUpTab() {
   var list = el('followUpList'); if (!list) return;
   var leads = getLeadsNeedingFollowUp();
-  if (!leads.length) { list.innerHTML = '<div class="orders-empty-state">No leads need follow-up right now</div>'; return; }
+  var tickets = getTicketsNeedingFollowUp();
+  if (!leads.length && !tickets.length) { list.innerHTML = '<div class="orders-empty-state">No follow-ups needed right now</div>'; return; }
   var today = new Date(); today.setHours(23, 59, 59, 999);
-  list.innerHTML = leads.map(function(l) {
-    var tag, sub;
-    if (l.specialOrderStatus) {
-      var soColor = SO_COLORS[l.specialOrderStatus] || '#3b82f6';
-      tag = '<span class="stock-badge" style="background:' + soColor + '20;color:' + soColor + ';">' + SO_LABELS[l.specialOrderStatus] + '</span>';
-      sub = 'Special Order · ' + (l.device || l.issue || '').substring(0, 50);
-    } else {
-      var isOverdue = l.followUpAt && new Date(l.followUpAt) <= today;
-      tag = isOverdue ? '<span class="stock-badge out">Overdue</span>' : '<span class="stock-badge low">Uncontacted</span>';
-      sub = l.followUpAt ? 'Follow-up: ' + l.followUpAt : 'Created: ' + new Date(l.createdAt).toLocaleDateString();
-    }
+  var ticketHtml = tickets.map(function(t) {
+    var stages = t.flow === 'in_stock' ? REPAIR_STAGES : SO_STAGES;
+    var labels = t.flow === 'in_stock' ? REPAIR_LABELS : SO_LABELS;
+    var colors = t.flow === 'in_stock' ? REPAIR_COLORS : SO_COLORS;
+    var color = colors[t.status] || '#3b82f6';
+    var tag = '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">🎫 ' + (labels[t.status] || t.status) + '</span>';
+    var sub = (t.flow === 'in_stock' ? 'In-Stock Repair' : 'Special Order') + ' · ' + (t.device || t.issue || '').substring(0, 40);
+    return '<div class="inv-item" onclick="switchLeadSubTab(\'tickets\');setTimeout(function(){openTicketDetail(\'' + t.id + '\')},50)" style="cursor:pointer;">' +
+      '<div class="inv-item-top"><div><div class="inv-item-name">' + (t.name||'Unnamed') + '</div><div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div>' + tag + '</div>' +
+      '<div class="inv-item-meta">' + sub + '</div>' +
+    '</div>';
+  }).join('');
+  var leadHtml = leads.map(function(l) {
+    var isOverdue = l.followUpAt && new Date(l.followUpAt) <= today;
+    var tag = isOverdue ? '<span class="stock-badge out">Overdue</span>' : '<span class="stock-badge low">Uncontacted</span>';
+    var sub = l.followUpAt ? 'Follow-up: ' + l.followUpAt : 'Created: ' + new Date(l.createdAt).toLocaleDateString();
     return '<div class="inv-item" onclick="switchLeadSubTab(\'leads\');setTimeout(function(){openLeadDetail(\'' + l.id + '\')},50)" style="cursor:pointer;">' +
       '<div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div>' + tag + '</div>' +
-      '<div class="inv-item-meta">' + sub + (l.followUpNotes && !l.specialOrderStatus?' · '+l.followUpNotes:'') + '</div>' +
+      '<div class="inv-item-meta">' + sub + (l.followUpNotes?' · '+l.followUpNotes:'') + '</div>' +
+    '</div>';
+  }).join('');
+  list.innerHTML = ticketHtml + leadHtml;
+}
+
+loadLeadsFromStorage();
+
+var ticketsStorage = [];
+function loadTicketsFromStorage() { try { ticketsStorage = JSON.parse(localStorage.getItem('almatek_tickets') || '[]'); } catch(e) { ticketsStorage = []; } updateTicketsBadge(); updateFollowUpBadge(); }
+function saveTicketsToStorage() { localStorage.setItem('almatek_tickets', JSON.stringify(ticketsStorage)); }
+loadTicketsFromStorage();
+
+var currentTicketId = null;
+
+function updateTicketsBadge() {
+  var badge = el('ticketsBadge'); if (!badge) return;
+  var active = ticketsStorage.filter(function(t) { return t.status !== 'repair_done' && t.status !== 'ready_for_pickup'; });
+  badge.textContent = active.length;
+  badge.classList.toggle('hidden', active.length === 0);
+}
+
+function renderTicketsList() {
+  var container = el('ticketsList'); if (!container) return;
+  if (!ticketsStorage.length) { container.innerHTML = '<div class="orders-empty-state">No tickets yet — create one from the Quote tab</div>'; return; }
+  var sorted = ticketsStorage.slice().sort(function(a, b) { return new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt); });
+  container.innerHTML = sorted.map(function(t) {
+    var stages = t.flow === 'in_stock' ? REPAIR_STAGES : SO_STAGES;
+    var labels = t.flow === 'in_stock' ? REPAIR_LABELS : SO_LABELS;
+    var colors = t.flow === 'in_stock' ? REPAIR_COLORS : SO_COLORS;
+    var color = colors[t.status] || '#3b82f6';
+    var flowIcon = t.flow === 'in_stock' ? '✅' : '📦';
+    var badge = '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[t.status] || t.status) + '</span>';
+    var tierPip = t.tier === 'premium' ? '<span style="font-size:11px;margin-left:4px;">⭐</span>' : '';
+    return '<div class="inv-item" onclick="openTicketDetail(\'' + t.id + '\')" style="cursor:pointer;">' +
+      '<div class="inv-item-top"><div><div class="inv-item-name">' + (t.name||'Unnamed') + tierPip + ' <span style="font-size:11px;color:var(--muted);">' + flowIcon + '</span></div>' +
+      '<div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div>' + badge + '</div>' +
+      (t.issue ? '<div class="inv-item-meta">' + t.issue.substring(0,60) + '</div>' : '') +
     '</div>';
   }).join('');
 }
 
-loadLeadsFromStorage();
+function openTicketDetail(ticketId) {
+  currentTicketId = ticketId;
+  var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
+  el('ticketDetailName').textContent = (ticket.name || 'Unnamed') + ' — Ticket';
+  var stages = ticket.flow === 'in_stock' ? REPAIR_STAGES : SO_STAGES;
+  var labels = ticket.flow === 'in_stock' ? REPAIR_LABELS : SO_LABELS;
+  var colors = ticket.flow === 'in_stock' ? REPAIR_COLORS : SO_COLORS;
+  var status = ticket.status;
+  var color = colors[status] || '#3b82f6';
+  var stageIdx = stages.indexOf(status);
+  var flowLabel = ticket.flow === 'in_stock' ? '✅ In-Stock Repair' : '📦 Special Order';
+  var tierBadge = ticket.tier === 'premium' ? '<span class="stock-badge" style="background:#f59e0b20;color:#f59e0b;margin-left:6px;">⭐ Premium</span>' : '';
+  var html = '<div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">';
+  html += '<div><span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[status] || status) + '</span>' + tierBadge + '</div>';
+  html += '<span style="font-size:12px;color:var(--muted);">' + flowLabel + '</span></div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
+  html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (ticket.phone||'—') + '</div></div>';
+  html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (ticket.device||'—') + '</div></div></div>';
+  if (ticket.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + ticket.email + '</div></div>';
+  if (ticket.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + ticket.issue + '</div></div>';
+  var stepperHtml = stages.map(function(s, i) {
+    var done = i < stageIdx, active = i === stageIdx;
+    var dot = done ? '✓' : (i + 1);
+    var bg = done ? '#10b981' : (active ? color : 'var(--surface2)');
+    var col = (done || active) ? '#fff' : 'var(--muted)';
+    var lbl = '<span style="font-size:9px;color:' + (active ? color : (done ? '#10b981' : 'var(--muted)')) + ';font-weight:' + (active?'700':'400') + ';margin-top:3px;display:block;text-align:center;line-height:1.2;">' + (labels[s]||s).split(' · ')[0] + '</span>';
+    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;"><div style="width:24px;height:24px;border-radius:50%;background:' + bg + ';color:' + col + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">' + dot + '</div>' + lbl + '</div>';
+  }).join('<div style="flex:1;height:2px;background:var(--border);margin-top:11px;max-width:20px;"></div>');
+  html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
+  html += '<div style="display:flex;align-items:flex-start;margin-bottom:14px;">' + stepperHtml + '</div>';
+  var lastStage = stages[stages.length - 1];
+  if (status !== lastStage) {
+    html += '<button onclick="advanceTicketStatus(\'' + ticket.id + '\')" style="width:100%;padding:9px;background:' + color + ';border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">→ Mark: ' + (labels[stages[stageIdx + 1]] || '') + '</button>';
+  } else {
+    html += '<div style="text-align:center;color:#10b981;font-size:13px;font-weight:600;">✓ Complete</div>';
+  }
+  html += '</div>';
+  var qVal = ticket.quote || 0, dVal = ticket.deposit || 0, balVal = qVal - dVal;
+  var inputStyle = 'width:100%;margin-bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;box-sizing:border-box;';
+  html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
+  html += '<div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Quote</div><input type="number" id="ticketQuoteInput" value="' + qVal + '" min="0" step="1" oninput="updateTicketBalance()" style="' + inputStyle + '" /></div>';
+  html += '<div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Deposit Paid</div><input type="number" id="ticketDepositInput" value="' + dVal + '" min="0" step="1" oninput="updateTicketBalance()" style="' + inputStyle + '" /></div>';
+  html += '</div>';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(59,130,246,0.2);padding-top:8px;margin-bottom:10px;"><span style="font-size:12px;color:var(--muted);">Balance Due</span><span id="ticketBalanceAmt" style="font-size:18px;font-weight:800;color:' + (balVal > 0 ? 'var(--accent)' : 'var(--green)') + ';">$' + balVal + '</span></div>';
+  html += '<button onclick="saveTicketFinancials()" style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save Financials</button>';
+  html += '</div>';
+  if (ticket.notes && ticket.notes.length) {
+    html += '<div style="margin-top:16px;"><strong>Notes</strong>';
+    ticket.notes.slice().reverse().forEach(function(n) { html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;">' + n.text + '<div style="font-size:11px;color:var(--muted);">' + new Date(n.createdAt).toLocaleString() + '</div></div>'; });
+    html += '</div>';
+  }
+  el('ticketDetailContent').innerHTML = html;
+  if (el('ticketNoteText')) el('ticketNoteText').value = '';
+  el('ticketDetailModal').classList.remove('hidden');
+}
+
+function closeTicketDetail() { el('ticketDetailModal').classList.add('hidden'); currentTicketId = null; if (el('ticketNoteText')) el('ticketNoteText').value = ''; }
+
+function advanceTicketStatus(ticketId) {
+  var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
+  var stages = ticket.flow === 'in_stock' ? REPAIR_STAGES : SO_STAGES;
+  var labels = ticket.flow === 'in_stock' ? REPAIR_LABELS : SO_LABELS;
+  var idx = stages.indexOf(ticket.status);
+  if (idx < 0 || idx >= stages.length - 1) return;
+  ticket.status = stages[idx + 1];
+  ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); updateTicketsBadge(); updateFollowUpBadge();
+  showToast((labels[ticket.status] || ticket.status) + ' ✓');
+  renderTicketsList(); openTicketDetail(ticketId);
+}
+
+function updateTicketBalance() {
+  var q = parseFloat(el('ticketQuoteInput')?.value || 0) || 0;
+  var d = parseFloat(el('ticketDepositInput')?.value || 0) || 0;
+  var bal = q - d, amtEl = el('ticketBalanceAmt');
+  if (amtEl) { amtEl.textContent = '$' + bal; amtEl.style.color = bal > 0 ? 'var(--accent)' : 'var(--green)'; }
+}
+
+function saveTicketFinancials() {
+  if (!currentTicketId) return;
+  var ticket = ticketsStorage.find(function(t) { return t.id === currentTicketId; }); if (!ticket) return;
+  ticket.quote = parseFloat(el('ticketQuoteInput')?.value || 0) || 0;
+  ticket.deposit = parseFloat(el('ticketDepositInput')?.value || 0) || 0;
+  ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(ticket.id); showToast('Saved ✓');
+}
+
+function addTicketNote() {
+  if (!currentTicketId) return;
+  var note = el('ticketNoteText').value.trim(); if (!note) return;
+  var ticket = ticketsStorage.find(function(t) { return t.id === currentTicketId; }); if (!ticket) return;
+  ticket.notes.push({ text: note, createdAt: new Date().toISOString() });
+  ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); closeTicketDetail(); renderTicketsList(); showToast('Note added');
+}
+
+function deleteTicket(ticketId) {
+  if (!confirm('Delete this ticket?')) return;
+  ticketsStorage = ticketsStorage.filter(function(t) { return t.id !== ticketId; });
+  saveTicketsToStorage(); closeTicketDetail(); renderTicketsList(); updateTicketsBadge(); updateFollowUpBadge(); showToast('Ticket deleted ✓');
+}
 
 // Booker Pay Calculator
 var payStructure = 'standard';
