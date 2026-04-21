@@ -597,6 +597,11 @@
     <input type="email" id="leadEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;" />
     <input type="text" id="leadDevice" placeholder="Device" style="width:100%;margin-bottom:10px;" />
     <textarea id="leadIssue" placeholder="Issue / Notes" rows="2" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Service Tier</label>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button type="button" id="tierBtnStandard" onclick="toggleLeadTier('standard')" style="flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;">Standard</button>
+      <button type="button" id="tierBtnPremium" onclick="toggleLeadTier('premium')" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;">⭐ Premium</button>
+    </div>
     <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Special Order?</label>
     <div style="display:flex;gap:8px;margin-bottom:10px;">
       <button type="button" id="soToggleNo" onclick="toggleSpecialOrder(false)" style="flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;">No</button>
@@ -1329,6 +1334,13 @@ function syncUpdateToSheet(leadId, updates) { if (!USERS_SCRIPT_URL) return Prom
 
 function showNewLeadForm() { el('newLeadForm').classList.remove('hidden'); el('newLeadBtn').style.display = 'none'; }
 var specialOrderMode = false;
+var leadTier = 'standard';
+function toggleLeadTier(val) {
+  leadTier = val;
+  var isPremium = val === 'premium';
+  el('tierBtnStandard').style.cssText = isPremium ? 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;' : 'flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;';
+  el('tierBtnPremium').style.cssText = isPremium ? 'flex:1;padding:8px;background:#f59e0b;border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;' : 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;';
+}
 var SO_STAGES = ['need_to_order','part_ordered','part_arrived','repair_done'];
 var SO_LABELS = { need_to_order:'Need to Order', part_ordered:'Part Ordered', part_arrived:'Part Arrived · Called CX', repair_done:'Repair Done · Called CX' };
 var SO_COLORS = { need_to_order:'#f59e0b', part_ordered:'#3b82f6', part_arrived:'#8b5cf6', repair_done:'#10b981' };
@@ -1343,12 +1355,12 @@ function updateLeadBalance() {
   var d = parseFloat((el('leadDeposit') ? el('leadDeposit').value : '') || 0) || 0;
   if (el('leadBalanceAmt')) el('leadBalanceAmt').textContent = q > 0 ? '$' + (q - d) : '$—';
 }
-function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue','leadFollowUp','leadQuote','leadDeposit'].forEach(id => { var e = el(id); if (e) e.value = ''; }); if (el('leadBalanceAmt')) el('leadBalanceAmt').textContent = '$—'; toggleSpecialOrder(false); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
+function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue','leadFollowUp','leadQuote','leadDeposit'].forEach(id => { var e = el(id); if (e) e.value = ''; }); if (el('leadBalanceAmt')) el('leadBalanceAmt').textContent = '$—'; toggleSpecialOrder(false); toggleLeadTier('standard'); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
 
 function createNewLead() {
   var name = el('leadName').value.trim(), phone = el('leadPhone').value.trim(); if (!name || !phone) { showToast('Name and phone required'); return; }
   var followUp = el('leadFollowUp') ? el('leadFollowUp').value : '';
-  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: specialOrderMode ? (parseFloat(el('leadQuote').value)||0) : 0, deposit: specialOrderMode ? (parseFloat(el('leadDeposit').value)||0) : 0, specialOrderStatus: specialOrderMode ? 'need_to_order' : null, createdAt: now, updatedAt: now };
+  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: specialOrderMode ? (parseFloat(el('leadQuote').value)||0) : 0, deposit: specialOrderMode ? (parseFloat(el('leadDeposit').value)||0) : 0, specialOrderStatus: specialOrderMode ? 'need_to_order' : null, tier: leadTier, createdAt: now, updatedAt: now };
   leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead); hideNewLeadForm(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead saved ✓');
 }
 
@@ -1363,15 +1375,17 @@ function renderLeadsList() {
   var filtered = leadsStorage.filter(l => { var match = !search || (l.name||'').toLowerCase().includes(search) || (l.phone||'').includes(search); return match && (leadFilterStatus === 'all' || l.status === leadFilterStatus); });
   filtered.sort((a,b) => new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt));
   el('leadsList').innerHTML = filtered.length ? filtered.map(l => {
-    var badge = l.specialOrderStatus ? '<span class="stock-badge" style="background:' + SO_COLORS[l.specialOrderStatus] + '20;color:' + SO_COLORS[l.specialOrderStatus] + ';margin-left:4px;">' + SO_LABELS[l.specialOrderStatus] + '</span>' : '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
-    return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div>' + badge + '</div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>';
+    var mainBadge = l.specialOrderStatus ? '<span class="stock-badge" style="background:' + SO_COLORS[l.specialOrderStatus] + '20;color:' + SO_COLORS[l.specialOrderStatus] + ';">' + SO_LABELS[l.specialOrderStatus] + '</span>' : '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
+    var tierPip = l.tier === 'premium' ? '<span style="font-size:11px;margin-left:4px;" title="Premium">⭐</span>' : '';
+    return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + tierPip + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div>' + mainBadge + '</div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
 }
 
 function openLeadDetail(leadId) {
   currentLeadId = leadId; var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
   el('detailLeadName').textContent = lead.name || 'Unnamed';
-  var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;"><span class="stock-badge" style="background:' + getStatusColor(lead.status) + '20;color:' + getStatusColor(lead.status) + '">' + getStatusLabel(lead.status) + '</span><div><button onclick="closeLeadDetail();editLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px;">✏️ Edit</button><button onclick="deleteLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Delete</button></div></div>';
+  var tierBadge = lead.tier === 'premium' ? '<span class="stock-badge" style="background:#f59e0b20;color:#f59e0b;margin-left:6px;">⭐ Premium</span>' : '';
+  var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;"><div><span class="stock-badge" style="background:' + getStatusColor(lead.status) + '20;color:' + getStatusColor(lead.status) + '">' + getStatusLabel(lead.status) + '</span>' + tierBadge + '</div><div><button onclick="closeLeadDetail();editLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px;">✏️ Edit</button><button onclick="deleteLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Delete</button></div></div>';
   html += '<a href="https://qrr.to/207b6c1c" target="_blank" rel="noopener" style="display:block;width:100%;padding:10px 14px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);border-radius:8px;text-align:center;font-size:13px;font-weight:600;text-decoration:none;margin-bottom:14px;box-sizing:border-box;">📅 Square Appointments</a>';
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (lead.phone||'—') + '</div></div><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (lead.device||'—') + '</div></div></div>';
   if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + lead.email + '</div></div>';
