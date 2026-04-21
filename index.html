@@ -486,6 +486,22 @@
 <!-- Orders Tab -->
 <div id="tabOrders" class="hidden">
 <div class="container">
+  <header style="padding:16px 0 4px;display:flex;justify-content:space-between;align-items:center;">
+    <h1 style="font-size:17px;">📋 Orders</h1>
+    <button onclick="showOrdersNewForm()" style="padding:8px 14px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">+ New Order</button>
+  </header>
+  <div id="ordersNewForm" class="card hidden" style="margin-bottom:16px;">
+    <div class="field-label" style="margin-bottom:8px;">New Order</div>
+    <select id="ordersNewItem" style="width:100%;margin-bottom:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:inherit;"><option value="">Select inventory item…</option></select>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <input type="number" id="ordersNewQty" placeholder="Qty" min="1" style="width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:inherit;" />
+      <input type="text" id="ordersNewSupplier" placeholder="Supplier (optional)" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:inherit;" />
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="submitOrdersNewOrder()" style="flex:1;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Place Order</button>
+      <button onclick="hideOrdersNewForm()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
+    </div>
+  </div>
   <div class="orders-tab-nav">
     <button class="orders-tab-btn active" onclick="switchOrdersView('needorder')">Need to Order</button>
     <button class="orders-tab-btn" onclick="switchOrdersView('ordered')">Ordered</button>
@@ -824,12 +840,148 @@ function submitNewOrder() { showToast('Order placed ✓'); toggleNewOrderForm();
 
 function showToast(msg) { var t = el('invToast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
 
-var ordersState = { view: 'needorder' }, needSubTab = 'combined', allOrderRecords = [];
-function initOrders() { switchOrdersView('needorder'); }
-function switchOrdersView(view) { ordersState.view = view; document.querySelectorAll('.orders-view').forEach(v => v.classList.remove('active')); document.querySelectorAll('.orders-tab-btn').forEach(b => b.classList.remove('active')); if (view === 'needorder') { el('ordersNeedView').classList.add('active'); document.querySelectorAll('.orders-tab-btn')[0].classList.add('active'); } }
-function filterOrdersItems() {}
-function clearOrdersSearch() { el('ordersSearchInput').value = ''; }
-function switchNeedSubTab(tab, btn) { needSubTab = tab; document.querySelectorAll('.need-sub-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+var ordersTabView = 'needorder', needSubTab = 'combined', allOrderRecords = [], ordersLoading2 = false;
+
+function initOrders() {
+  switchOrdersView('needorder');
+  renderNeedOrderList();
+  if (!authd) return;
+  if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
+  loadOrderRecords();
+  populateOrdersNewForm();
+}
+
+function switchOrdersView(view) {
+  ordersTabView = view;
+  var ids = { needorder: 'ordersNeedView', ordered: 'ordersOrderedView', receive: 'ordersReceiveView' };
+  Object.keys(ids).forEach(function(v, i) {
+    var viewEl = el(ids[v]); if (viewEl) viewEl.classList.toggle('hidden', v !== view);
+    var btns = document.querySelectorAll('.orders-tab-btn');
+    if (btns[i]) btns[i].classList.toggle('active', v === view);
+  });
+  if (view === 'needorder') renderNeedOrderList();
+  else if (view === 'ordered') renderOrderedList();
+  else if (view === 'receive') renderReceiveList();
+}
+
+function loadOrderRecords() {
+  if (ordersLoading2) return;
+  ordersLoading2 = true;
+  atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(function(data) {
+    ordersLoading2 = false;
+    if (data.error) return;
+    allOrderRecords = data.records || [];
+    if (ordersTabView === 'ordered') renderOrderedList();
+    else if (ordersTabView === 'receive') renderReceiveList();
+  }).catch(function() { ordersLoading2 = false; });
+}
+
+function renderNeedOrderList() {
+  var listEl = el('ordersNeedList'); if (!listEl) return;
+  var search = (el('ordersSearchInput') ? el('ordersSearchInput').value : '').toLowerCase();
+  var items = allInvRecords.filter(function(r) {
+    var stock = selName(r.fields['fldZEvcZT2JnX5kwh']);
+    var qty = r.fields['fldvwFFYSxAJlcFpp'] || 0;
+    var min = r.fields['fldB16jlPFHm11tfW'] || 0;
+    var isOOS = stock === 'O.O.S.';
+    var isLow = stock === 'In Stock' && min > 0 && qty <= min;
+    if (needSubTab === 'oos' && !isOOS) return false;
+    if (needSubTab === 'low' && !isLow) return false;
+    if (needSubTab === 'combined' && !isOOS && !isLow) return false;
+    var name = (r.fields['fldWzYeFcqm0qnxD8'] || '').toLowerCase();
+    if (search && !name.includes(search)) return false;
+    return true;
+  });
+  el('ordersNoData').classList.toggle('hidden', items.length > 0);
+  if (!items.length) { listEl.innerHTML = authd ? '' : '<div class="orders-empty-state">Log in to see inventory</div>'; return; }
+  listEl.innerHTML = items.map(function(r) {
+    var name = r.fields['fldWzYeFcqm0qnxD8'] || '—';
+    var type = selName(r.fields['fldxQhVZSYmXNK6CW']) || '';
+    var model = r.fields['fldV0jSP3xJuinS8t'] || '';
+    var qty = r.fields['fldvwFFYSxAJlcFpp'] || 0;
+    var min = r.fields['fldB16jlPFHm11tfW'] || 0;
+    var stock = selName(r.fields['fldZEvcZT2JnX5kwh']);
+    var isOOS = stock === 'O.O.S.';
+    var badge = isOOS ? '<span class="stock-badge out">✕ O.O.S.</span>' : '<span class="stock-badge low">⚠ Low</span>';
+    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + name + '</div><div class="order-item-meta">' + [type, model].filter(Boolean).join(' · ') + '<br>Qty: ' + qty + (min ? ' · Min: ' + min : '') + '</div></div>' + badge + '</div>';
+  }).join('');
+}
+
+function renderOrderedList() {
+  var listEl = el('ordersOrderedList'); if (!listEl) return;
+  var pending = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; });
+  el('ordersNoData').classList.toggle('hidden', pending.length > 0 || ordersTabView !== 'ordered');
+  if (!pending.length) { listEl.innerHTML = '<div class="orders-empty-state">No pending orders</div>'; return; }
+  listEl.innerHTML = pending.map(function(r) {
+    var name = r.fields['fldF0TJARgHugOh83'] || '—';
+    var qty = r.fields['fldbKVKkNgZtShHwh'] || '?';
+    var supplier = r.fields['fldVq43gyw9HVLYNI'] || '';
+    var date = r.fields['fldeHBNhXCrqAJrjp'] ? new Date(r.fields['fldeHBNhXCrqAJrjp']).toLocaleDateString() : '';
+    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + name + '</div><div class="order-item-meta">Qty: ' + qty + (supplier ? ' · ' + supplier : '') + (date ? ' · ' + date : '') + '</div></div><span class="order-status pending">⏳ Ordered</span></div>';
+  }).join('');
+}
+
+function renderReceiveList() {
+  var listEl = el('ordersReceiveList'); if (!listEl) return;
+  var pending = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; });
+  el('ordersNoData').classList.toggle('hidden', pending.length > 0 || ordersTabView !== 'receive');
+  if (!pending.length) { listEl.innerHTML = '<div class="orders-empty-state">No orders awaiting receipt</div>'; return; }
+  listEl.innerHTML = pending.map(function(r) {
+    var name = r.fields['fldF0TJARgHugOh83'] || '—';
+    var qty = r.fields['fldbKVKkNgZtShHwh'] || 1;
+    var supplier = r.fields['fldVq43gyw9HVLYNI'] || '';
+    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + name + '</div><div class="order-item-meta">Qty: ' + qty + (supplier ? ' · ' + supplier : '') + '</div></div><button class="order-item-btn receive" onclick="receiveOrder(\'' + r.id + '\')">Receive</button></div>';
+  }).join('');
+}
+
+function receiveOrder(orderId) {
+  if (!confirm('Mark this order as received?')) return;
+  atFetch(AT_BASE + '/' + AT_ORDERS + '/' + orderId, { method: 'PATCH', body: JSON.stringify({ fields: { 'fldwGKyfgOuue1eyE': true } }) }).then(function(data) {
+    if (data.error) { showToast('Error marking received'); return; }
+    showToast('Order received ✓');
+    allOrderRecords = allOrderRecords.map(function(r) { return r.id === orderId ? Object.assign({}, r, { fields: Object.assign({}, r.fields, { 'fldwGKyfgOuue1eyE': true }) }) : r; });
+    renderReceiveList(); renderOrderedList();
+    invLoaded = false; allInvRecords = []; loadInventoryPage(null, true);
+  });
+}
+
+function filterOrdersItems() { renderNeedOrderList(); }
+function clearOrdersSearch() { if (el('ordersSearchInput')) el('ordersSearchInput').value = ''; renderNeedOrderList(); }
+function switchNeedSubTab(tab, btn) {
+  needSubTab = tab;
+  document.querySelectorAll('.need-sub-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderNeedOrderList();
+}
+
+function populateOrdersNewForm() {
+  var sel = el('ordersNewItem'); if (!sel) return;
+  sel.innerHTML = '<option value="">Select inventory item…</option>' + allInvRecords.map(function(r) {
+    return '<option value="' + r.id + '">' + (r.fields['fldWzYeFcqm0qnxD8'] || r.id) + '</option>';
+  }).join('');
+}
+
+function showOrdersNewForm() {
+  if (!authd) { showToast('Log in as staff'); return; }
+  populateOrdersNewForm();
+  el('ordersNewForm').classList.remove('hidden');
+}
+function hideOrdersNewForm() { el('ordersNewForm').classList.add('hidden'); }
+function submitOrdersNewOrder() {
+  var itemId = el('ordersNewItem').value;
+  var qty = parseInt(el('ordersNewQty').value) || 0;
+  var supplier = el('ordersNewSupplier').value.trim();
+  if (!itemId || !qty) { showToast('Select item and quantity'); return; }
+  var fields = { 'Item': [itemId], 'QTY': qty };
+  if (supplier) fields['Supplier'] = supplier;
+  atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: fields }) }).then(function(data) {
+    if (data.error) { showToast('Error placing order'); return; }
+    showToast('Order placed ✓');
+    hideOrdersNewForm();
+    el('ordersNewQty').value = ''; el('ordersNewSupplier').value = '';
+    loadOrderRecords();
+  });
+}
 
 var TIER_TO_TYPE = { standard: 'Standard Screen', premium: 'Premium Screen' };
 function showStockBadge(slot, model, tier) {
