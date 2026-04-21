@@ -39,6 +39,10 @@
     .tier-btn.active { background: rgba(59,130,246,0.15); border-color: var(--accent); color: var(--text); }
     .tier-btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .tier-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+    .factory-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; padding: 6px 10px; background: var(--surface2); border-radius: 8px; border-left: 3px solid var(--accent); display: none; }
+    .factory-label.oled { border-left-color: #a855f7; color: #c084fc; }
+    .factory-label.lcd  { border-left-color: #3b82f6; color: #60a5fa; }
+    .addr-row { margin-top: 12px; }
     .stock-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 10px 12px; background: var(--surface2); border-radius: 10px; }
     .stock-row .stock-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
     .stock-row .stock-badge.in  { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
@@ -325,6 +329,7 @@
           <optgroup label="iPhone 8 & SE"><option>iPhone 8 Plus</option><option>iPhone 8 / SE (2nd &amp; 3rd Gen)</option><option>iPhone SE (2nd Gen)</option><option>iPhone SE (3rd Gen)</option><option>iPhone 7 Plus</option><option>iPhone 7</option><option>iPhone 6S</option><option>iPhone 6 Plus</option><option>iPhone 6</option><option>iPhone 5S / SE (1st Gen)</option><option>iPhone SE (1st Gen)</option><option>iPhone 5C</option><option>iPhone 5</option><option>iPhone 4S</option><option>iPhone 4</option></optgroup>
         </select>
         <div class="tier-options hidden" id="tierOptions1">
+          <div class="factory-label" id="factoryLabel1"></div>
           <div class="tier-option" id="tierBox1Prem" onclick="setTier1('premium')"><div class="tier-option-header"><span class="tier-option-label">Premium</span><span class="tier-option-price" id="tierPrice1Prem">$—</span></div><div class="stock-row hidden" id="stockRow1Prem"><span class="stock-badge" id="stockBadge1Prem"></span><span class="stock-detail" id="stockDetail1Prem"></span></div></div>
           <div class="tier-option" id="tierBox1Std" onclick="setTier1('standard')"><div class="tier-option-header"><span class="tier-option-label">Standard</span><span class="tier-option-price" id="tierPrice1Std">$—</span></div><div class="stock-row hidden" id="stockRow1Std"><span class="stock-badge" id="stockBadge1Std"></span><span class="stock-detail" id="stockDetail1Std"></span></div></div>
         </div>
@@ -366,6 +371,13 @@
   <div id="mobileCard" class="mobile-fee-card hidden">
     <div class="miles-row"><label class="field-label" for="milesInput">Distance (miles)</label><input type="number" id="milesInput" placeholder="0" min="0" step="0.1" oninput="onMilesChange()" style="max-width:130px;" /></div>
     <div id="feeBadge" class="fee-badge hidden"><span id="feeBadgeLabel">Mobile service fee</span><span id="feeAmt"></span></div>
+    <div class="addr-row">
+      <label class="field-label" for="cxAddrInput">Customer Address</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="cxAddrInput" placeholder="e.g. 123 Main St, City, State" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+        <button onclick="shareCxAddress()" style="padding:10px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">📍 Share</button>
+      </div>
+    </div>
   </div>
 
   <div id="secondToggle" class="toggle-row hidden" onclick="onToggle2nd()">
@@ -397,6 +409,7 @@
           <label class="field-label" for="modelSelect2">iPhone Model</label>
           <select id="modelSelect2" onchange="onModel2Change()"><option value="">— Select model —</option></select>
           <div class="tier-options hidden" id="tierOptions2">
+            <div class="factory-label" id="factoryLabel2"></div>
             <div class="tier-option" id="tierBox2Prem" onclick="setTier2('premium')"><div class="tier-option-header"><span class="tier-option-label">Premium</span><span class="tier-option-price" id="tierPrice2Prem">$—</span></div><div class="stock-row hidden" id="stockRow2Prem"><span class="stock-badge" id="stockBadge2Prem"></span><span class="stock-detail" id="stockDetail2Prem"></span></div></div>
             <div class="tier-option" id="tierBox2Std" onclick="setTier2('standard')"><div class="tier-option-header"><span class="tier-option-label">Standard</span><span class="tier-option-price" id="tierPrice2Std">$—</span></div><div class="stock-row hidden" id="stockRow2Std"><span class="stock-badge" id="stockBadge2Std"></span><span class="stock-detail" id="stockDetail2Std"></span></div></div>
           </div>
@@ -654,6 +667,10 @@ function updateTierDisplay1() {
   const p = SCREEN_PRICES[model1] || {}; el('tierOptions1').classList.remove('hidden');
   if (p.premium) { el('tierBox1Prem').classList.remove('na'); el('tierPrice1Prem').textContent = '$' + p.premium; } else { el('tierBox1Prem').classList.add('na'); el('tierPrice1Prem').textContent = 'N/A'; }
   if (p.standard) { el('tierBox1Std').classList.remove('na'); el('tierPrice1Std').textContent = '$' + p.standard; } else { el('tierBox1Std').classList.add('na'); el('tierPrice1Std').textContent = 'N/A'; }
+  var lbl1 = el('factoryLabel1');
+  if (p.premium) { lbl1.textContent = 'Factory Screen: OLED'; lbl1.className = 'factory-label oled'; lbl1.style.display = 'block'; }
+  else if (p.standard) { lbl1.textContent = 'Factory Screen: LCD'; lbl1.className = 'factory-label lcd'; lbl1.style.display = 'block'; }
+  else { lbl1.style.display = 'none'; }
   showStockBadge('1Prem', model1, 'premium'); showStockBadge('1Std', model1, 'standard');
   if (p.premium) { setTier1('premium'); } else if (p.standard) { setTier1('standard'); }
 }
@@ -670,6 +687,10 @@ function updateTierDisplay2() {
   const p = SCREEN_PRICES[model2] || {}; el('tierOptions2').classList.remove('hidden');
   if (p.premium) { el('tierBox2Prem').classList.remove('na'); el('tierPrice2Prem').textContent = '$' + p.premium; } else { el('tierBox2Prem').classList.add('na'); el('tierPrice2Prem').textContent = 'N/A'; }
   if (p.standard) { el('tierBox2Std').classList.remove('na'); el('tierPrice2Std').textContent = '$' + p.standard; } else { el('tierBox2Std').classList.add('na'); el('tierPrice2Std').textContent = 'N/A'; }
+  var lbl2 = el('factoryLabel2');
+  if (p.premium) { lbl2.textContent = 'Factory Screen: OLED'; lbl2.className = 'factory-label oled'; lbl2.style.display = 'block'; }
+  else if (p.standard) { lbl2.textContent = 'Factory Screen: LCD'; lbl2.className = 'factory-label lcd'; lbl2.style.display = 'block'; }
+  else { lbl2.style.display = 'none'; }
   showStockBadge('2Prem', model2, 'premium'); showStockBadge('2Std', model2, 'standard');
   if (p.premium) { setTier2('premium'); } else if (p.standard) { setTier2('standard'); }
 }
@@ -797,7 +818,40 @@ function clearOrdersSearch() { el('ordersSearchInput').value = ''; }
 function switchNeedSubTab(tab, btn) { needSubTab = tab; document.querySelectorAll('.need-sub-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
 
 var TIER_TO_TYPE = { standard: 'Standard Screen', premium: 'Premium Screen' };
-function showStockBadge(slot, model, tier) { var rowEl = el('stockRow' + slot); if (!rowEl) return; rowEl.classList.add('hidden'); }
+function showStockBadge(slot, model, tier) {
+  var rowEl = el('stockRow' + slot);
+  if (!rowEl) return;
+  if (!authd || !allInvRecords.length) { rowEl.classList.add('hidden'); return; }
+  var typeStr = TIER_TO_TYPE[tier];
+  var rec = allInvRecords.find(function(r) {
+    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === model.toLowerCase()
+      && selName(r.fields['fldxQhVZSYmXNK6CW']) === typeStr;
+  });
+  if (!rec) { rowEl.classList.add('hidden'); return; }
+  var qty = rec.fields['fldvwFFYSxAJlcFpp'] || 0;
+  var min = rec.fields['fldB16jlPFHm11tfW'] || 0;
+  var stockName = selName(rec.fields['fldZEvcZT2JnX5kwh']);
+  var isIn = stockName === 'In Stock', isLow = isIn && min > 0 && qty <= min;
+  var cls = isLow ? 'low' : (isIn ? 'in' : 'out');
+  var badge = isLow ? '⚠ Low Stock' : (isIn ? '✓ In Stock' : '✕ O.O.S.');
+  el('stockBadge' + slot).className = 'stock-badge ' + cls;
+  el('stockBadge' + slot).textContent = badge;
+  el('stockDetail' + slot).textContent = isIn ? 'Qty: ' + qty : '';
+  rowEl.classList.remove('hidden');
+}
+
+function shareCxAddress() {
+  var addr = (el('cxAddrInput').value || '').trim();
+  if (!addr) { alert('Enter a customer address first.'); return; }
+  var url = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(addr);
+  if (navigator.share) {
+    navigator.share({ title: 'Customer Address', text: 'Navigate to: ' + addr, url: url }).catch(function(){});
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('Maps link copied to clipboard!');
+  }
+}
 
 function isAuth() { return authd; }
 var authd = !!authPass;
