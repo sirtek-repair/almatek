@@ -287,6 +287,8 @@
   <button class="tab-btn" id="tabOrdBtn" onclick="switchTab('orders')">📋 Orders</button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
   <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 Leads</button>
+  <button class="tab-btn hidden" id="tabFollowUpBtn" onclick="switchTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+  <button class="tab-btn hidden" id="tabCartBtn" onclick="switchTab('cart')">🛒 Cart <span id="cartTabBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
   <button class="tab-btn hidden" id="tabBookerBtn" onclick="switchTab('booker')">📊 Booker</button>
   <button class="tab-btn hidden" id="tabStaffBtn" onclick="switchTab('staff')">👥 Staff</button>
 </div>
@@ -541,29 +543,7 @@
 
   <div id="ordersNoData" class="orders-empty-state hidden">No items to show</div>
 
-  <!-- Sticky cart bar -->
-  <div id="cartBar" class="cart-bar hidden" onclick="openCartPanel()">
-    <span class="cart-bar-label" id="cartBarLabel">🛒 0 items</span>
-    <span class="cart-bar-action">Review & Order →</span>
-  </div>
 </div>
-</div>
-
-<!-- Cart panel -->
-<div id="cartPanel" class="cart-panel hidden">
-  <div class="cart-panel-backdrop" onclick="closeCartPanel()"></div>
-  <div class="cart-panel-sheet">
-    <div class="cart-panel-header">
-      <span class="cart-panel-title">🛒 Order Cart</span>
-      <button class="cart-panel-close" onclick="closeCartPanel()">✕ Close</button>
-    </div>
-    <div class="cart-panel-items" id="cartPanelItems"></div>
-    <div class="cart-panel-footer">
-      <input type="text" id="cartSupplier" placeholder="Supplier (e.g. Mobile Sentrix)" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
-      <button onclick="placeCartOrder()" style="width:100%;padding:14px;background:var(--accent);border:none;color:#fff;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Place Order</button>
-      <button onclick="clearCart()" style="width:100%;padding:10px;background:none;border:none;color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;">Clear cart</button>
-    </div>
-  </div>
 </div>
 
 <!-- Leads Tab -->
@@ -581,6 +561,8 @@
     <input type="email" id="leadEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;" />
     <input type="text" id="leadDevice" placeholder="Device" style="width:100%;margin-bottom:10px;" />
     <textarea id="leadIssue" placeholder="Issue / Notes" rows="2" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Follow-up Date (optional)</label>
+    <input type="date" id="leadFollowUp" style="width:100%;margin-bottom:10px;" />
     <div style="display:flex;gap:8px;">
       <button onclick="createNewLead()" id="saveLeadBtn" style="flex:1;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Save Lead</button>
       <button onclick="hideNewLeadForm()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
@@ -617,7 +599,40 @@
         <button onclick="markLeadBooked()" style="flex:1;padding:8px;background:#10b981;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">💰 Booked</button>
         <button onclick="markLeadClosed()" style="flex:1;padding:8px;background:#ef4444;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">❌ Closed Lost</button>
       </div>
+      <div id="followUpPickerRow" class="hidden" style="margin-top:14px;padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Schedule Follow-up</label>
+        <input type="date" id="followUpDateInput" style="width:100%;margin-bottom:8px;" />
+        <textarea id="followUpNotesInput" rows="2" placeholder="Notes (optional)" style="width:100%;margin-bottom:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+        <div style="display:flex;gap:8px;">
+          <button onclick="saveFollowUpDate()" style="flex:1;padding:8px;background:#8b5cf6;border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save</button>
+          <button onclick="el('followUpPickerRow').classList.add('hidden')" style="flex:1;padding:8px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;cursor:pointer;">Cancel</button>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
+</div>
+
+<!-- Follow-up Tab -->
+<div id="tabFollowUp" class="hidden">
+<div class="container">
+  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">📅 Follow-up Needed</h1></header>
+  <div id="followUpList"></div>
+</div>
+</div>
+
+<!-- Cart Tab -->
+<div id="tabCart" class="hidden">
+<div class="container">
+  <header style="padding:16px 0 20px;display:flex;justify-content:space-between;align-items:center;">
+    <h1 style="font-size:17px;">🛒 Order Cart</h1>
+    <button onclick="clearCart()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Clear All</button>
+  </header>
+  <div id="cartTabItems"></div>
+  <div id="cartTabEmpty" class="orders-empty-state hidden">Cart is empty — add items from the Orders tab</div>
+  <div id="cartTabFooter" class="hidden" style="margin-top:16px;">
+    <input type="text" id="cartSupplier" placeholder="Supplier (e.g. Mobile Sentrix)" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+    <button onclick="placeCartOrder()" style="width:100%;padding:14px;background:var(--accent);border:none;color:#fff;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Place Order</button>
   </div>
 </div>
 </div>
@@ -634,7 +649,7 @@
     <div id="avgProfitRow" class="gap" style="margin-top:14px;"><label class="field-label" for="bookerAvgProfit">Avg Profit Per Repair ($)</label><input type="number" id="bookerAvgProfit" value="110" min="0" step="1" oninput="calcBookerPay()" /><p class="hint">Default $110 — adjust if needed</p></div>
     <div id="flatRevshareRow" class="gap hidden" style="margin-top:14px;"><label class="field-label" for="flatRevshare">Rev Share % (optional)</label><input type="number" id="flatRevshare" value="0" min="0" max="100" step="0.5" oninput="calcBookerPay()" /><p class="hint">Leave 0 if not applicable yet</p></div>
   </div>
-  <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total"><div class="bt-label">Booker Payout</div><div class="bt-amt" id="bookerPayoutAmt">$—</div></div><div class="owner-take" id="ownerTakeRow"><span class="ot-label">💰 Your Take</span><span class="ot-amt" id="ownerTakeAmt">$—</span></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">📤 Share Results</button></div></div>
+  <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total" style="margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:10px;"><div class="bt-label">Per Repair Payout</div><div class="bt-amt" id="perRepairAmt">$—</div></div><div class="booker-total"><div class="bt-label">Rev Share Payout</div><div class="bt-amt" id="revShareAmt">$—</div></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">📤 Share Results</button></div></div>
 </div>
 </div>
 
@@ -807,10 +822,10 @@ function resetSecond() { secondOpen=false; type2=''; cost2=0; el('secondSw').cla
 function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b=>b.classList.remove('active')); }
 
 function switchTab(tab) {
-  const isQuote = tab === 'quote', isOrders = tab === 'orders', isInventory = tab === 'inventory', isLeads = tab === 'leads', isBooker = tab === 'booker', isStaff = tab === 'staff';
-  el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff);
-  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff);
-  if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) setPayStructure(isOwner ? payStructure : currentUserStructure); else if (isLeads) { if (typeof renderLeadsList === 'function') renderLeadsList(); }
+  const isQuote = tab==='quote', isOrders = tab==='orders', isInventory = tab==='inventory', isLeads = tab==='leads', isFollowUp = tab==='followup', isCart = tab==='cart', isBooker = tab==='booker', isStaff = tab==='staff';
+  el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabFollowUp').classList.toggle('hidden', !isFollowUp); el('tabCart').classList.toggle('hidden', !isCart); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff);
+  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabFollowUpBtn').classList.toggle('active', isFollowUp); el('tabCartBtn').classList.toggle('active', isCart); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff);
+  if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) setPayStructure(isOwner ? payStructure : currentUserStructure); else if (isLeads) { if (typeof renderLeadsList === 'function') renderLeadsList(); } else if (isFollowUp) renderFollowUpTab(); else if (isCart) renderCartTab();
 }
 
 // Worker + Airtable config
@@ -820,7 +835,7 @@ const OWNER_PASS = 'rellow4Life$', WORKER_TOKEN = 'sirtek2026';
 var authPass = localStorage.getItem('almatek_pass') || '', apiPass = WORKER_TOKEN, isOwner = authPass === OWNER_PASS, currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
 
 var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '', USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
-function sheetsCall(payload) { if (!USERS_SCRIPT_URL) return Promise.reject('not-configured'); var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)); return fetch(url).then(r => r.json()); }
+function sheetsCall(payload) { if (!USERS_SCRIPT_URL) return Promise.resolve({}); var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)); return fetch(url).then(r => r.json()); }
 
 let allInvRecords = [], activeFilter = 'all', invLoaded = false;
 function selName(v) { return v ? (typeof v === 'object' ? (v.name || '') : v) : ''; }
@@ -828,7 +843,12 @@ function selName(v) { return v ? (typeof v === 'object' ? (v.name || '') : v) : 
 function atFetch(path, opts) { opts = opts || {}; return fetch(WORKER_URL + '/v0/' + path, Object.assign({}, opts, { headers: Object.assign({ 'X-Auth': apiPass, 'Content-Type': 'application/json' }, opts.headers || {}) })).then(r => r.json()); }
 
 function initInventory() { if (!invLoaded) loadInventory(); loadOrders(); }
-function loadInventory() { el('invLoading').classList.remove('hidden'); el('invList').innerHTML = ''; allInvRecords = []; loadInventoryPage(null, false); }
+function loadInventory() {
+  if (!authd) { el('invLoading').classList.add('hidden'); el('invList').innerHTML = '<div class="orders-empty-state" style="padding:40px 20px;">🔒 Log in to view inventory</div>'; return; }
+  var cached = sessionStorage.getItem('almatek_inv_cache');
+  if (cached) { try { allInvRecords = JSON.parse(cached); invLoaded = true; el('invLoading').classList.add('hidden'); renderInventory(); return; } catch(e) { sessionStorage.removeItem('almatek_inv_cache'); } }
+  el('invLoading').classList.remove('hidden'); el('invList').innerHTML = ''; allInvRecords = []; loadInventoryPage(null, false);
+}
 function loadInventoryPage(offset, quiet) {
   var url = AT_BASE + '/' + AT_INV + '?returnFieldsByFieldId=true&fields[]=fldWzYeFcqm0qnxD8&fields[]=fldQa2ViIJ7aeicZJ&fields[]=fldZEvcZT2JnX5kwh&fields[]=fldvwFFYSxAJlcFpp&fields[]=fldxQhVZSYmXNK6CW&fields[]=fldB16jlPFHm11tfW&fields[]=fldV0jSP3xJuinS8t&pageSize=100';
   if (offset) url += '&offset=' + encodeURIComponent(offset);
@@ -837,7 +857,7 @@ function loadInventoryPage(offset, quiet) {
       if (!quiet) el('invLoading').innerHTML = 'Auth error: ' + (data.error.message||'Invalid token') + '. <button onclick="showApiPassModal()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;">Set Token</button>';
       return;
     }
-    allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } else { if (model1) updateTierDisplay1(); if (model2) updateTierDisplay2(); } }
+    allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; try { sessionStorage.setItem('almatek_inv_cache', JSON.stringify(allInvRecords)); } catch(e) {} if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } else { if (model1) updateTierDisplay1(); if (model2) updateTierDisplay2(); } }
   });
 }
 
@@ -859,10 +879,10 @@ function showReceive(id) { el('receive-' + id).classList.remove('hidden'); el('r
 function hideReceive(id) { el('receive-' + id).classList.add('hidden'); el('rqty-' + id).value = ''; }
 function confirmReceive(id) {
   var qty = parseInt(el('rqty-' + id).value); if (!qty || qty < 1) return;
-  atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': qty, 'date recieved': new Date().toISOString() } }) }).then(data => { if (data.error) { showToast('Error'); return; } hideReceive(id); showToast('Received ' + qty + ' ✓'); invLoaded = false; allInvRecords = []; loadInventory(); loadOrders(); });
+  atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': qty, 'date recieved': new Date().toISOString() } }) }).then(data => { if (data.error) { showToast('Error'); return; } hideReceive(id); showToast('Received ' + qty + ' ✓'); sessionStorage.removeItem('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); loadOrders(); });
 }
-function markUsed(id, name) { atFetch(AT_BASE + '/' + AT_SOLD, { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' marked used ✓'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
-function removeItem(id, name) { if (!confirm('Remove 1 unit?')) return; atFetch(AT_BASE + '/tblFoAyBRZ0KLuYQl', { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' removed ✓'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
+function markUsed(id, name) { atFetch(AT_BASE + '/' + AT_SOLD, { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' marked used ✓'); sessionStorage.removeItem('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
+function removeItem(id, name) { if (!confirm('Remove 1 unit?')) return; atFetch(AT_BASE + '/tblFoAyBRZ0KLuYQl', { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' removed ✓'); sessionStorage.removeItem('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
 
 var ordersLoaded = false, DEMO_ORDERS = [{ id:'o1', fields:{ 'fldF0TJARgHugOh83':'Order: iPhone 16 Pro Max Screen', 'fldbKVKkNgZtShHwh':3, 'fldVq43gyw9HVLYNI':'Mobilink', 'fldeHBNhXCrqAJrjp':'2026-03-28', 'fldwGKyfgOuue1eyE':true } }];
 function loadOrders() { if (!isAuth()) { renderOrders(DEMO_ORDERS); return; } el('ordersLoading').classList.remove('hidden'); atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(data => { el('ordersLoading').classList.add('hidden'); if (data.error) return; renderOrders(data.records || []); }); }
@@ -874,12 +894,12 @@ function submitNewOrder() { showToast('Order placed ✓'); toggleNewOrderForm();
 function showToast(msg) { var t = el('invToast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
 
 var ordersTabView = 'needorder', needSubTab = 'combined', allOrderRecords = [], ordersLoading2 = false;
-var orderCart = []; // [{ id, name, type, model, qty }]
+var orderCart = (function() { try { return JSON.parse(localStorage.getItem('almatek_order_cart') || '[]'); } catch(e) { return []; } })();
+function saveCartToStorage() { try { localStorage.setItem('almatek_order_cart', JSON.stringify(orderCart)); } catch(e) {} }
 
 function initOrders() {
   switchOrdersView('needorder');
   renderNeedOrderList();
-  renderCartBar();
   if (!authd) return;
   if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
   loadOrderRecords();
@@ -954,59 +974,56 @@ function addToCart(id, name, type, model) {
   if (!orderCart.find(function(c) { return c.id === id; })) {
     orderCart.push({ id: id, name: name, type: type, model: model, qty: 1 });
   }
-  renderCartBar(); renderNeedOrderList();
+  saveCartToStorage(); updateCartTabBadge(); renderNeedOrderList();
 }
 function cartIncrement(id) {
   var item = orderCart.find(function(c) { return c.id === id; });
-  if (item) { item.qty++; renderCartBar(); renderNeedOrderList(); if (!el('cartPanel').classList.contains('hidden')) renderCartPanel(); }
+  if (item) { item.qty++; saveCartToStorage(); updateCartTabBadge(); renderNeedOrderList(); renderCartTab(); }
 }
 function cartDecrement(id) {
   var idx = orderCart.findIndex(function(c) { return c.id === id; });
   if (idx === -1) return;
   orderCart[idx].qty--;
   if (orderCart[idx].qty < 1) orderCart.splice(idx, 1);
-  renderCartBar(); renderNeedOrderList(); if (!el('cartPanel').classList.contains('hidden')) renderCartPanel();
+  saveCartToStorage(); updateCartTabBadge(); renderNeedOrderList(); renderCartTab();
 }
 function removeFromCart(id) {
   orderCart = orderCart.filter(function(c) { return c.id !== id; });
-  renderCartBar(); renderNeedOrderList(); renderCartPanel();
+  saveCartToStorage(); updateCartTabBadge(); renderNeedOrderList(); renderCartTab();
 }
-function clearCart() { orderCart = []; renderCartBar(); renderNeedOrderList(); closeCartPanel(); }
+function clearCart() { orderCart = []; saveCartToStorage(); updateCartTabBadge(); renderNeedOrderList(); renderCartTab(); }
 
-function renderCartBar() {
-  var bar = el('cartBar'); if (!bar) return;
-  if (!orderCart.length) { bar.classList.add('hidden'); return; }
-  bar.classList.remove('hidden');
-  var total = orderCart.reduce(function(s, c) { return s + c.qty; }, 0);
-  el('cartBarLabel').textContent = '🛒 ' + orderCart.length + ' item' + (orderCart.length !== 1 ? 's' : '') + ' (' + total + ' units)';
-}
-
-function openCartPanel() {
-  renderCartPanel();
-  el('cartPanel').classList.remove('hidden');
-  document.body.style.overflow = 'hidden';
-}
-function closeCartPanel() {
-  el('cartPanel').classList.add('hidden');
-  document.body.style.overflow = '';
+function updateCartTabBadge() {
+  var badge = el('cartTabBadge'); if (!badge) return;
+  var count = orderCart.length;
+  badge.textContent = count;
+  badge.classList.toggle('hidden', count === 0);
 }
 
-function renderCartPanel() {
-  var container = el('cartPanelItems'); if (!container) return;
-  if (!orderCart.length) { container.innerHTML = '<div class="orders-empty-state">Cart is empty</div>'; return; }
-  container.innerHTML = orderCart.map(function(item) {
-    return '<div class="cart-panel-item">' +
-      '<div class="cart-panel-item-info"><div class="cart-panel-item-name">' + item.name + '</div><div class="cart-panel-item-sub">' + [item.type, item.model].filter(Boolean).join(' · ') + '</div></div>' +
+function renderCartTab() {
+  var items = el('cartTabItems'), empty = el('cartTabEmpty'), footer = el('cartTabFooter');
+  if (!items) return;
+  if (!orderCart.length) {
+    items.innerHTML = '';
+    if (empty) empty.classList.remove('hidden');
+    if (footer) footer.classList.add('hidden');
+    return;
+  }
+  if (empty) empty.classList.add('hidden');
+  if (footer) footer.classList.remove('hidden');
+  items.innerHTML = orderCart.map(function(item) {
+    return '<div class="cart-panel-item" style="background:var(--surface2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
+      '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;">' + item.name + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">' + [item.type, item.model].filter(Boolean).join(' · ') + '</div></div>' +
       '<div class="cart-qty-ctrl"><button onclick="cartDecrement(\'' + item.id + '\')">−</button><span>' + item.qty + '</span><button onclick="cartIncrement(\'' + item.id + '\')">+</button></div>' +
-      '<button class="order-item-btn remove" onclick="removeFromCart(\'' + item.id + '\')" style="padding:6px 10px;">✕</button>' +
+      '<button onclick="removeFromCart(\'' + item.id + '\')" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px;">✕</button>' +
     '</div>';
   }).join('');
 }
 
 function placeCartOrder() {
   if (!orderCart.length) { showToast('Cart is empty'); return; }
-  var supplier = (el('cartSupplier').value || '').trim();
-  var btn = el('cartPanel').querySelector('button[onclick="placeCartOrder()"]');
+  var supplier = (el('cartSupplier') ? el('cartSupplier').value.trim() : '');
+  var btn = document.querySelector('#tabCart button[onclick="placeCartOrder()"]');
   if (btn) { btn.textContent = 'Placing…'; btn.disabled = true; }
   var promises = orderCart.map(function(item) {
     var fields = { 'Item': [item.id], 'QTY': item.qty };
@@ -1017,8 +1034,9 @@ function placeCartOrder() {
     var errors = results.filter(function(r) { return r.error; });
     if (errors.length) { showToast(errors.length + ' item(s) failed'); }
     else { showToast('Order placed — ' + orderCart.length + ' item' + (orderCart.length !== 1 ? 's' : '') + ' ✓'); }
-    orderCart = []; if (el('cartSupplier')) el('cartSupplier').value = '';
-    closeCartPanel(); renderCartBar(); renderNeedOrderList(); loadOrderRecords();
+    orderCart = []; saveCartToStorage(); if (el('cartSupplier')) el('cartSupplier').value = '';
+    if (btn) { btn.textContent = 'Place Order'; btn.disabled = false; }
+    updateCartTabBadge(); renderCartTab(); renderNeedOrderList(); loadOrderRecords();
   }).catch(function() {
     showToast('Network error — try again');
     if (btn) { btn.textContent = 'Place Order'; btn.disabled = false; }
@@ -1197,11 +1215,15 @@ function updateAuthBtn() {
   btn.textContent = label;
   btn.className = authd ? (isOwner ? 'owner-badge' : 'staff-badge') : 'demo-badge';
   if (btnInv) btnInv.textContent = authd ? label : '🔒 Log In';
+  el('tabFollowUpBtn').classList.toggle('hidden', !authd);
+  el('tabCartBtn').classList.toggle('hidden', !authd);
   el('tabBookerBtn').classList.toggle('hidden', !authd);
   el('tabStaffBtn').classList.toggle('hidden', !isOwner);
   var chp = el('chpassBtn'); if (chp) chp.style.display = (authd && !isOwner) ? 'inline' : 'none';
   el('suppliersDropdown').style.display = authd ? 'block' : 'none';
   el('supplierDemo').style.display = authd ? 'none' : 'inline';
+  updateFollowUpBadge();
+  updateCartTabBadge();
 }
 
 function toggleSuppliers(e) { e.stopPropagation(); el('suppliersMenu').classList.toggle('hidden'); }
@@ -1215,24 +1237,23 @@ if (authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
 // ============================================
 // LEADS MANAGEMENT
 // ============================================
-var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '';
-function sheetsCall(payload) { if (!USERS_SCRIPT_URL) return Promise.resolve({}); return fetch(USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload))).then(function(r) { return r.json(); }); }
 
 var leadsStorage = [], leadFilterStatus = 'all', currentLeadId = null;
 
-function loadLeadsFromStorage() { var saved = localStorage.getItem('almatek_leads'); leadsStorage = saved ? JSON.parse(saved) : []; renderLeadsList(); }
+function loadLeadsFromStorage() { var saved = localStorage.getItem('almatek_leads'); leadsStorage = saved ? JSON.parse(saved) : []; renderLeadsList(); updateFollowUpBadge(); }
 function saveLeadsToStorage() { localStorage.setItem('almatek_leads', JSON.stringify(leadsStorage)); }
 
 function syncLeadToSheet(lead) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'createLead', lead: lead }); }
 function syncUpdateToSheet(leadId, updates) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'updateLead', leadId: leadId, updates: updates }); }
 
 function showNewLeadForm() { el('newLeadForm').classList.remove('hidden'); el('newLeadBtn').style.display = 'none'; }
-function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue'].forEach(id => el(id).value = ''); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
+function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue','leadFollowUp'].forEach(id => { var e = el(id); if (e) e.value = ''; }); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
 
 function createNewLead() {
   var name = el('leadName').value.trim(), phone = el('leadPhone').value.trim(); if (!name || !phone) { showToast('Name and phone required'); return; }
-  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: 'new', followUpAt: '', followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], createdAt: now, updatedAt: now };
-  leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead); hideNewLeadForm(); renderLeadsList(); showToast('Lead saved ✓');
+  var followUp = el('leadFollowUp') ? el('leadFollowUp').value : '';
+  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], createdAt: now, updatedAt: now };
+  leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead); hideNewLeadForm(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead saved ✓');
 }
 
 function filterLeads() { renderLeadsList(); }
@@ -1257,13 +1278,32 @@ function openLeadDetail(leadId) {
   el('leadDetailContent').innerHTML = html; el('leadDetailModal').classList.remove('hidden');
 }
 
-function closeLeadDetail() { el('leadDetailModal').classList.add('hidden'); currentLeadId = null; el('newNoteText').value = ''; }
+function closeLeadDetail() { el('leadDetailModal').classList.add('hidden'); currentLeadId = null; el('newNoteText').value = ''; var fup = el('followUpPickerRow'); if (fup) fup.classList.add('hidden'); }
 function addLeadNote() { if (!currentLeadId) return; var note = el('newNoteText').value.trim(); if (!note) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.notes.push({ text: note, createdAt: new Date().toISOString() }); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { notes: lead.notes }); closeLeadDetail(); renderLeadsList(); showToast('Note added'); }
 
-function markLeadContacted() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'contacted'; lead.lastContactedAt = new Date().toISOString(); lead.contactAttempts = (lead.contactAttempts||0) + 1; lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, lastContactedAt: lead.lastContactedAt, contactAttempts: lead.contactAttempts }); closeLeadDetail(); renderLeadsList(); showToast('Contacted ✓'); }
-function showFollowUpPicker() { if (!currentLeadId) return; var date = prompt('Follow-up date (YYYY-MM-DD):'); if (!date) return; var notes = prompt('Notes (optional):'); var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'follow_up_scheduled'; lead.followUpAt = date; lead.followUpNotes = notes || ''; lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, followUpAt: lead.followUpAt, followUpNotes: lead.followUpNotes }); closeLeadDetail(); renderLeadsList(); showToast('Follow-up scheduled ✓'); }
-function markLeadBooked() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'booked'; lead.bookedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: lead.bookedAt }); closeLeadDetail(); renderLeadsList(); showToast('Booked ✓'); }
-function markLeadClosed() { if (!currentLeadId || !confirm('Mark as closed/lost?')) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'closed_lost'; lead.closedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, closedAt: lead.closedAt }); closeLeadDetail(); renderLeadsList(); showToast('Closed ✓'); }
+function markLeadContacted() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'contacted'; lead.lastContactedAt = new Date().toISOString(); lead.contactAttempts = (lead.contactAttempts||0) + 1; lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, lastContactedAt: lead.lastContactedAt, contactAttempts: lead.contactAttempts }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Contacted ✓'); }
+function showFollowUpPicker() {
+  if (!currentLeadId) return;
+  var row = el('followUpPickerRow'); if (!row) return;
+  var lead = leadsStorage.find(l => l.id === currentLeadId);
+  if (lead && lead.followUpAt) { var d = el('followUpDateInput'); if (d) d.value = lead.followUpAt.split('T')[0]; }
+  row.classList.toggle('hidden');
+}
+function saveFollowUpDate() {
+  if (!currentLeadId) return;
+  var date = el('followUpDateInput') ? el('followUpDateInput').value : '';
+  var notes = el('followUpNotesInput') ? el('followUpNotesInput').value.trim() : '';
+  if (!date) { showToast('Pick a date'); return; }
+  var lead = leadsStorage.find(l => l.id === currentLeadId);
+  lead.status = 'follow_up_scheduled'; lead.followUpAt = date; lead.followUpNotes = notes; lead.updatedAt = new Date().toISOString();
+  saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, followUpAt: date, followUpNotes: notes });
+  el('followUpPickerRow').classList.add('hidden');
+  if (el('followUpDateInput')) el('followUpDateInput').value = '';
+  if (el('followUpNotesInput')) el('followUpNotesInput').value = '';
+  closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Follow-up scheduled ✓');
+}
+function markLeadBooked() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'booked'; lead.bookedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: lead.bookedAt }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Booked ✓'); }
+function markLeadClosed() { if (!currentLeadId || !confirm('Mark as closed/lost?')) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'closed_lost'; lead.closedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, closedAt: lead.closedAt }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Closed ✓'); }
 
 function editLead(leadId) {
   var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
@@ -1276,15 +1316,89 @@ function updateExistingLead() {
   lead.name = el('leadName').value.trim(); lead.phone = el('leadPhone').value.trim(); lead.email = el('leadEmail').value.trim(); lead.device = el('leadDevice').value.trim(); lead.issue = el('leadIssue').value.trim(); lead.updatedAt = new Date().toISOString();
   saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { name: lead.name, phone: lead.phone, email: lead.email, device: lead.device, issue: lead.issue }); hideNewLeadForm(); renderLeadsList(); showToast('Lead updated ✓');
 }
-function deleteLead(leadId) { if (!confirm('Delete this lead?')) return; leadsStorage = leadsStorage.filter(l => l.id !== leadId); saveLeadsToStorage(); if (USERS_SCRIPT_URL) sheetsCall({ action: 'deleteLead', leadId: leadId }); closeLeadDetail(); renderLeadsList(); showToast('Lead deleted ✓'); }
+function deleteLead(leadId) { if (!confirm('Delete this lead?')) return; leadsStorage = leadsStorage.filter(l => l.id !== leadId); saveLeadsToStorage(); if (USERS_SCRIPT_URL) sheetsCall({ action: 'deleteLead', leadId: leadId }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead deleted ✓'); }
+
+function getLeadsNeedingFollowUp() {
+  if (!leadsStorage || !leadsStorage.length) return [];
+  var today = new Date(); today.setHours(23, 59, 59, 999);
+  var twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+  var overdue = leadsStorage.filter(function(l) {
+    return l.followUpAt && new Date(l.followUpAt) <= today && l.status !== 'booked' && l.status !== 'closed_lost';
+  });
+  var uncontacted = leadsStorage.filter(function(l) {
+    return l.status === 'new' && new Date(l.createdAt) <= twoDaysAgo && !l.followUpAt;
+  });
+  overdue.sort(function(a, b) { return new Date(a.followUpAt) - new Date(b.followUpAt); });
+  uncontacted.sort(function(a, b) { return new Date(a.createdAt) - new Date(b.createdAt); });
+  var seen = new Set();
+  return overdue.concat(uncontacted).filter(function(l) { if (seen.has(l.id)) return false; seen.add(l.id); return true; });
+}
+
+function updateFollowUpBadge() {
+  var badge = el('followUpBadge'); if (!badge) return;
+  var count = getLeadsNeedingFollowUp().length;
+  badge.textContent = count;
+  badge.classList.toggle('hidden', count === 0);
+}
+
+function renderFollowUpTab() {
+  var list = el('followUpList'); if (!list) return;
+  var leads = getLeadsNeedingFollowUp();
+  if (!leads.length) { list.innerHTML = '<div class="orders-empty-state">No leads need follow-up right now</div>'; return; }
+  var today = new Date(); today.setHours(23, 59, 59, 999);
+  list.innerHTML = leads.map(function(l) {
+    var isOverdue = l.followUpAt && new Date(l.followUpAt) <= today;
+    var tag = isOverdue ? '<span class="stock-badge out">Overdue</span>' : '<span class="stock-badge low">Uncontacted</span>';
+    var sub = l.followUpAt ? 'Follow-up: ' + l.followUpAt : 'Created: ' + new Date(l.createdAt).toLocaleDateString();
+    return '<div class="inv-item" onclick="switchTab(\'leads\');setTimeout(function(){openLeadDetail(\'' + l.id + '\')},50)" style="cursor:pointer;">' +
+      '<div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div>' + tag + '</div>' +
+      '<div class="inv-item-meta">' + sub + (l.followUpNotes?' · '+l.followUpNotes:'') + '</div>' +
+    '</div>';
+  }).join('');
+}
 
 loadLeadsFromStorage();
 
 // Booker Pay Calculator
 var payStructure = 'standard';
-function setPayStructure(type) { payStructure = type; el('structBtnStandard').classList.toggle('active', type === 'standard'); el('structBtnFlat').classList.toggle('active', type === 'flat'); }
-function calcBookerPay() { var repairs = parseInt(el('bookerRepairs').value) || 0; if (repairs <= 0) { el('bookerResult').classList.add('hidden'); return; } el('bookerPayoutAmt').textContent = '$' + (repairs * 25); el('bookerResult').classList.remove('hidden'); }
-function shareBookerResults() { showToast('Results ready to share'); }
+function setPayStructure(type) {
+  payStructure = type;
+  el('structBtnStandard').classList.toggle('active', type === 'standard');
+  el('structBtnFlat').classList.toggle('active', type === 'flat');
+  el('payStructureRow').style.display = isOwner ? '' : 'none';
+  el('avgProfitRow').style.display = type === 'standard' ? '' : 'none';
+  el('flatRevshareRow').classList.toggle('hidden', type !== 'flat');
+  calcBookerPay();
+}
+function calcBookerPay() {
+  var repairs = parseInt(el('bookerRepairs').value) || 0;
+  if (repairs <= 0) { el('bookerResult').classList.add('hidden'); return; }
+  var name = el('bookerName').value.trim(), month = el('bookerMonth').value;
+  el('bookerModelTag').textContent = [name, month].filter(Boolean).join(' · ');
+  var perRepair = 0, revShare = 0;
+  if (payStructure === 'standard') {
+    var avgProfit = parseFloat(el('bookerAvgProfit').value) || 110;
+    perRepair = repairs * 25;
+    revShare = Math.round(repairs * avgProfit * 0.05 * 100) / 100;
+    el('bookerBreakdown').innerHTML = repairs + ' repairs × $25 per repair + 5% of avg $' + avgProfit + ' profit each';
+  } else {
+    var revPct = parseFloat(el('flatRevshare').value) || 0;
+    perRepair = repairs * 25;
+    revShare = revPct > 0 ? Math.round(repairs * (parseFloat(el('bookerAvgProfit').value) || 110) * (revPct / 100) * 100) / 100 : 0;
+    el('bookerBreakdown').innerHTML = repairs + ' repairs × $25 flat rate' + (revPct > 0 ? ' + ' + revPct + '% rev share' : '');
+  }
+  el('perRepairAmt').textContent = '$' + perRepair.toFixed(2).replace(/\.00$/, '');
+  el('revShareAmt').textContent = revShare > 0 ? '$' + revShare.toFixed(2).replace(/\.00$/, '') : '$0';
+  el('bookerResult').classList.remove('hidden');
+}
+function shareBookerResults() {
+  var name = el('bookerName').value.trim(), month = el('bookerMonth').value, repairs = el('bookerRepairs').value;
+  var perR = el('perRepairAmt').textContent, revS = el('revShareAmt').textContent;
+  var text = (name ? name + ' — ' : '') + (month ? month + ' · ' : '') + repairs + ' repairs\nPer Repair: ' + perR + '\nRev Share: ' + revS;
+  if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied to clipboard ✓'); }); }
+  else if (navigator.share) { navigator.share({ title: 'Booker Pay', text: text }); }
+  else { showToast('Results: ' + text); }
+}
 
 // Staff Management
 function renderStaffTab() {
