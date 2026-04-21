@@ -7,6 +7,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
   <title>AlmaTek</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="AlmaTek" />
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -307,10 +311,10 @@
   <button class="tab-btn active" id="tabQuoteBtn" onclick="switchTab('quote')">💰 Quote</button>
   <button class="tab-btn" id="tabOrdBtn" onclick="switchTab('orders')">📋 Orders</button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
-  <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 Leads</button>
-  <button class="tab-btn hidden" id="tabFollowUpBtn" onclick="switchTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
-  <button class="tab-btn hidden" id="tabCartBtn" onclick="switchTab('cart')">🛒 Cart <span id="cartTabBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
-  <button class="tab-btn hidden" id="tabBookerBtn" onclick="switchTab('booker')">📊 Booker</button>
+  <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 LeadTek</button>
+  <button class="tab-btn" id="tabFollowUpBtn" onclick="switchTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+  <button class="tab-btn" id="tabCartBtn" onclick="switchTab('cart')">🛒 Cart <span id="cartTabBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+  <button class="tab-btn" id="tabBookerBtn" onclick="switchTab('booker')">📊 Booker</button>
   <button class="tab-btn hidden" id="tabStaffBtn" onclick="switchTab('staff')">👥 Staff</button>
 </div>
 
@@ -320,7 +324,6 @@
 
   <header>
     <h1>AlmaTek</h1>
-    <p>Staff Use Only</p>
     <div class="header-links" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;">
       <div class="hlink-dropdown" id="suppliersDropdown" style="display:none;">
         <button class="hlink" id="suppliersBtn" onclick="toggleSuppliers(event)">Parts ▾</button>
@@ -497,6 +500,11 @@
 
 <!-- Inventory Tab -->
 <div id="tabInventory" class="hidden">
+<div class="container">
+<header style="text-align:center;padding:16px 0 20px;">
+  <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
+</header>
+</div>
 <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
     <input class="inv-search" id="invSearch" placeholder="Search inventory..." oninput="filterInventory()" style="margin-bottom:0;flex:1;" />
     <button id="authBtnInv" onclick="onAuthBtnClick()" style="padding:8px 12px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;white-space:nowrap;font-family:inherit;">🔒 Log In</button>
@@ -532,8 +540,8 @@
 <!-- Orders Tab -->
 <div id="tabOrders" class="hidden">
 <div class="container">
-  <header style="padding:16px 0 8px;display:flex;justify-content:space-between;align-items:center;">
-    <h1 style="font-size:17px;">📋 repair <em>orders</em></h1>
+  <header style="text-align:center;padding:16px 0 20px;">
+    <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
   </header>
   <div class="orders-tab-nav">
     <button class="orders-tab-btn active" onclick="switchOrdersView('needorder')">Need to Order</button>
@@ -571,7 +579,7 @@
 <div id="tabLeads" class="hidden">
 <div class="container">
   <header style="padding:16px 0 20px;">
-    <h1 style="font-size:17px;">👤 lead <em>management</em></h1>
+    <h1 style="font-size:26px;font-family:Georgia,serif;font-weight:normal;text-transform:none;letter-spacing:0.01em;"><span class="brand">LeadTek</span></h1>
     <button id="newLeadBtn" onclick="showNewLeadForm()" style="margin-top:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
   </header>
 
@@ -582,6 +590,21 @@
     <input type="email" id="leadEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;" />
     <input type="text" id="leadDevice" placeholder="Device" style="width:100%;margin-bottom:10px;" />
     <textarea id="leadIssue" placeholder="Issue / Notes" rows="2" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Special Order?</label>
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button type="button" id="soToggleNo" onclick="toggleSpecialOrder(false)" style="flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;">No</button>
+      <button type="button" id="soToggleYes" onclick="toggleSpecialOrder(true)" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;">Yes — Special Order</button>
+    </div>
+    <div id="specialOrderFields" style="display:none;background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid var(--border);">
+      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:0.05em;">Repair Quote</label>
+      <input type="number" id="leadQuote" placeholder="$0" min="0" step="1" style="width:100%;margin-bottom:8px;" oninput="updateLeadBalance()" />
+      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:0.05em;">Part Cost / Deposit Paid</label>
+      <input type="number" id="leadDeposit" placeholder="$0" min="0" step="1" style="width:100%;margin-bottom:8px;" oninput="updateLeadBalance()" />
+      <div id="leadBalanceRow" style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);border-radius:8px;padding:10px 12px;">
+        <span style="font-size:12px;color:var(--muted);">Remaining Balance</span>
+        <span id="leadBalanceAmt" style="font-size:18px;font-weight:700;color:var(--text);">$—</span>
+      </div>
+    </div>
     <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Follow-up Date (optional)</label>
     <input type="date" id="leadFollowUp" style="width:100%;margin-bottom:10px;" />
     <div style="display:flex;gap:8px;">
@@ -637,7 +660,9 @@
 <!-- Follow-up Tab -->
 <div id="tabFollowUp" class="hidden">
 <div class="container">
-  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">📅 follow-up <em>needed</em></h1></header>
+  <header style="text-align:center;padding:16px 0 20px;">
+    <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
+  </header>
   <div id="followUpList"></div>
 </div>
 </div>
@@ -645,10 +670,12 @@
 <!-- Cart Tab -->
 <div id="tabCart" class="hidden">
 <div class="container">
-  <header style="padding:16px 0 20px;display:flex;justify-content:space-between;align-items:center;">
-    <h1 style="font-size:17px;">🛒 order <em>cart</em></h1>
-    <button onclick="clearCart()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Clear All</button>
+  <header style="text-align:center;padding:16px 0 20px;">
+    <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
   </header>
+  <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+    <button onclick="clearCart()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Clear All</button>
+  </div>
   <div id="cartTabItems"></div>
   <div id="cartTabEmpty" class="orders-empty-state hidden">Cart is empty — add items from the Orders tab</div>
   <div id="cartTabFooter" class="hidden" style="margin-top:16px;">
@@ -661,7 +688,9 @@
 <!-- Booker Pay Calculator Tab -->
 <div id="tabBooker" class="hidden">
 <div class="container">
-  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">📊 booker <em>pay</em> calculator</h1></header>
+  <header style="text-align:center;padding:16px 0 20px;">
+    <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
+  </header>
   <div class="card">
     <div class="gap"><label class="field-label" for="bookerName">Booker Name</label><input type="text" id="bookerName" placeholder="Name" oninput="calcBookerPay()" /></div>
     <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerMonth">Month</label><select id="bookerMonth" onchange="calcBookerPay()"><option value="">— select month —</option><option>january</option><option>february</option><option>march</option><option>april</option><option>may</option><option>june</option><option>july</option><option>august</option><option>september</option><option>october</option><option>november</option><option>december</option></select></div>
@@ -677,7 +706,10 @@
 <!-- Staff Management Tab -->
 <div id="tabStaff" class="hidden">
 <div class="container">
-  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">👥 staff <em>management</em></h1><button onclick="showApiPassModal()" style="margin-top:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">🔑 Set Worker Token</button></header>
+  <header style="text-align:center;padding:16px 0 20px;">
+    <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
+    <button onclick="showApiPassModal()" style="margin-top:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">🔑 Set Worker Token</button>
+  </header>
   <div id="staffSetupSection" class="card"><div class="staff-section-title">Connect Google Sheet</div><p style="font-size:12px;color:var(--muted);margin:0 0 12px;">Paste your Google Apps Script web app URL below.</p><div class="staff-add-row" style="flex-direction:column;gap:8px;"><input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;" /><button class="staff-add-btn" onclick="saveScriptSetup()">Connect</button></div><div id="setupErr" class="chpass-err"></div></div>
   <div id="staffMainSection" class="hidden"><div style="text-align:right;margin-bottom:8px;"><button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Reset Google Sheet connection</button></div><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
   <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
@@ -737,12 +769,12 @@ const el = id => document.getElementById(id);
 function fullPrice(cost, type) { return Math.ceil(cost * 1.2 + LABOR[type]); }
 function getPrice1() {
   if (type1 === 'iphone_screen') { if (mode1 === 'select') { if (!model1 || !tier1) return 0; return SCREEN_PRICES[model1]?.[tier1] || 0; } else { return cost1 > 0 ? fullPrice(cost1, 'iphone_screen') : 0; } }
-  if (type1 === 'back_glass') { return cost1 > 0 ? cost1 : 0; }
+  if (type1 === 'back_glass') { return cost1 > 0 ? fullPrice(cost1, 'back_glass') : 0; }
   return cost1 > 0 ? fullPrice(cost1, type1) : 0;
 }
 function getPrice2() {
   if (type2 === 'iphone_screen') { if (mode2 === 'select') { if (!model2 || !tier2) return 0; return SCREEN_PRICES[model2]?.[tier2] || 0; } else { return cost2 > 0 ? fullPrice(cost2, 'iphone_screen') : 0; } }
-  if (type2 === 'back_glass') { return cost2 > 0 ? cost2 : 0; }
+  if (type2 === 'back_glass') { return cost2 > 0 ? fullPrice(cost2, 'back_glass') : 0; }
   return cost2 > 0 ? fullPrice(cost2, type2) : 0;
 }
 
@@ -1251,9 +1283,6 @@ function updateAuthBtn() {
   btn.textContent = label;
   btn.className = authd ? (isOwner ? 'owner-badge' : 'staff-badge') : 'demo-badge';
   if (btnInv) btnInv.textContent = authd ? label : '🔒 Log In';
-  el('tabFollowUpBtn').classList.toggle('hidden', !authd);
-  el('tabCartBtn').classList.toggle('hidden', !authd);
-  el('tabBookerBtn').classList.toggle('hidden', !authd);
   el('tabStaffBtn').classList.toggle('hidden', !isOwner);
   var chp = el('chpassBtn'); if (chp) chp.style.display = (authd && !isOwner) ? 'inline' : 'none';
   el('suppliersDropdown').style.display = authd ? 'block' : 'none';
@@ -1283,12 +1312,24 @@ function syncLeadToSheet(lead) { if (!USERS_SCRIPT_URL) return Promise.resolve()
 function syncUpdateToSheet(leadId, updates) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'updateLead', leadId: leadId, updates: updates }); }
 
 function showNewLeadForm() { el('newLeadForm').classList.remove('hidden'); el('newLeadBtn').style.display = 'none'; }
-function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue','leadFollowUp'].forEach(id => { var e = el(id); if (e) e.value = ''; }); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
+var specialOrderMode = false;
+function toggleSpecialOrder(val) {
+  specialOrderMode = val;
+  el('soToggleNo').style.cssText = val ? 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;' : 'flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;';
+  el('soToggleYes').style.cssText = val ? 'flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;' : 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;';
+  el('specialOrderFields').style.display = val ? 'block' : 'none';
+}
+function updateLeadBalance() {
+  var q = parseFloat((el('leadQuote') ? el('leadQuote').value : '') || 0) || 0;
+  var d = parseFloat((el('leadDeposit') ? el('leadDeposit').value : '') || 0) || 0;
+  if (el('leadBalanceAmt')) el('leadBalanceAmt').textContent = q > 0 ? '$' + (q - d) : '$—';
+}
+function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue','leadFollowUp','leadQuote','leadDeposit'].forEach(id => { var e = el(id); if (e) e.value = ''; }); if (el('leadBalanceAmt')) el('leadBalanceAmt').textContent = '$—'; toggleSpecialOrder(false); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
 
 function createNewLead() {
   var name = el('leadName').value.trim(), phone = el('leadPhone').value.trim(); if (!name || !phone) { showToast('Name and phone required'); return; }
   var followUp = el('leadFollowUp') ? el('leadFollowUp').value : '';
-  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], createdAt: now, updatedAt: now };
+  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: specialOrderMode ? (parseFloat(el('leadQuote').value)||0) : 0, deposit: specialOrderMode ? (parseFloat(el('leadDeposit').value)||0) : 0, createdAt: now, updatedAt: now };
   leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead); hideNewLeadForm(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead saved ✓');
 }
 
@@ -1309,7 +1350,11 @@ function openLeadDetail(leadId) {
   currentLeadId = leadId; var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
   el('detailLeadName').textContent = lead.name || 'Unnamed';
   var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;"><span class="stock-badge" style="background:' + getStatusColor(lead.status) + '20;color:' + getStatusColor(lead.status) + '">' + getStatusLabel(lead.status) + '</span><div><button onclick="closeLeadDetail();editLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px;">✏️ Edit</button><button onclick="deleteLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Delete</button></div></div>';
-  html += '<div><strong>Phone</strong><br>' + (lead.phone||'—') + '</div><div><strong>Email</strong><br>' + (lead.email||'—') + '</div><div><strong>Device</strong><br>' + (lead.device||'—') + '</div><div><strong>Issue</strong><br>' + (lead.issue||'—') + '</div>';
+  html += '<a href="https://qrr.to/207b6c1c" target="_blank" rel="noopener" style="display:block;width:100%;padding:10px 14px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);border-radius:8px;text-align:center;font-size:13px;font-weight:600;text-decoration:none;margin-bottom:14px;box-sizing:border-box;">📅 Square Appointments</a>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (lead.phone||'—') + '</div></div><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (lead.device||'—') + '</div></div></div>';
+  if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + lead.email + '</div></div>';
+  if (lead.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + lead.issue + '</div></div>';
+  if (lead.quote || lead.deposit) { var bal = (lead.quote||0) - (lead.deposit||0); html += '<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:0.05em;">Special Order</div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--muted);">Quote</span><span style="font-size:14px;font-weight:700;">$' + (lead.quote||0) + '</span></div><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--muted);">Deposit Paid</span><span style="font-size:14px;font-weight:700;">$' + (lead.deposit||0) + '</span></div><div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);padding-top:6px;margin-top:2px;"><span style="font-size:12px;color:var(--muted);">Balance Due</span><span style="font-size:18px;font-weight:800;color:' + (bal > 0 ? 'var(--accent)' : 'var(--green)') + ';">$' + bal + '</span></div></div>'; }
   if (lead.notes?.length) { html += '<div style="margin-top:16px;"><strong>Notes</strong>'; lead.notes.slice().reverse().forEach(n => html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;">' + n.text + '<div style="font-size:11px;color:var(--muted);">' + new Date(n.createdAt).toLocaleString() + '</div></div>'); html += '</div>'; }
   el('leadDetailContent').innerHTML = html; el('leadDetailModal').classList.remove('hidden');
 }
