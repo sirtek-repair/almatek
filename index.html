@@ -649,7 +649,7 @@
     <div id="avgProfitRow" class="gap" style="margin-top:14px;"><label class="field-label" for="bookerAvgProfit">Avg Profit Per Repair ($)</label><input type="number" id="bookerAvgProfit" value="110" min="0" step="1" oninput="calcBookerPay()" /><p class="hint">Default $110 — adjust if needed</p></div>
     <div id="flatRevshareRow" class="gap hidden" style="margin-top:14px;"><label class="field-label" for="flatRevshare">Rev Share % (optional)</label><input type="number" id="flatRevshare" value="0" min="0" max="100" step="0.5" oninput="calcBookerPay()" /><p class="hint">Leave 0 if not applicable yet</p></div>
   </div>
-  <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total" style="margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:10px;"><div class="bt-label">Per Repair Payout</div><div class="bt-amt" id="perRepairAmt">$—</div></div><div class="booker-total"><div class="bt-label">Rev Share Payout</div><div class="bt-amt" id="revShareAmt">$—</div></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">📤 Share Results</button></div></div>
+  <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total" style="margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:10px;"><div class="bt-label">Per Repair Payout</div><div class="bt-amt" id="perRepairAmt">$—</div></div><div id="revShareResultRow" class="booker-total hidden"><div class="bt-label">Rev Share Payout</div><div class="bt-amt" id="revShareAmt">$—</div></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">📤 Share Results</button></div></div>
 </div>
 </div>
 
@@ -1367,7 +1367,7 @@ function setPayStructure(type) {
   el('structBtnFlat').classList.toggle('active', type === 'flat');
   el('payStructureRow').style.display = isOwner ? '' : 'none';
   el('avgProfitRow').style.display = type === 'standard' ? '' : 'none';
-  el('flatRevshareRow').classList.toggle('hidden', type !== 'flat');
+  el('flatRevshareRow').classList.toggle('hidden', !isOwner || type !== 'flat');
   calcBookerPay();
 }
 function calcBookerPay() {
@@ -1388,13 +1388,15 @@ function calcBookerPay() {
     el('bookerBreakdown').innerHTML = repairs + ' repairs × $25 flat rate' + (revPct > 0 ? ' + ' + revPct + '% rev share' : '');
   }
   el('perRepairAmt').textContent = '$' + perRepair.toFixed(2).replace(/\.00$/, '');
-  el('revShareAmt').textContent = revShare > 0 ? '$' + revShare.toFixed(2).replace(/\.00$/, '') : '$0';
+  el('revShareResultRow').classList.toggle('hidden', !isOwner);
+  if (isOwner) el('revShareAmt').textContent = revShare > 0 ? '$' + revShare.toFixed(2).replace(/\.00$/, '') : '$0';
   el('bookerResult').classList.remove('hidden');
 }
 function shareBookerResults() {
   var name = el('bookerName').value.trim(), month = el('bookerMonth').value, repairs = el('bookerRepairs').value;
-  var perR = el('perRepairAmt').textContent, revS = el('revShareAmt').textContent;
-  var text = (name ? name + ' — ' : '') + (month ? month + ' · ' : '') + repairs + ' repairs\nPer Repair: ' + perR + '\nRev Share: ' + revS;
+  var perR = el('perRepairAmt').textContent;
+  var text = (name ? name + ' — ' : '') + (month ? month + ' · ' : '') + repairs + ' repairs\nPer Repair: ' + perR;
+  if (isOwner) text += '\nRev Share: ' + el('revShareAmt').textContent;
   if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied to clipboard ✓'); }); }
   else if (navigator.share) { navigator.share({ title: 'Booker Pay', text: text }); }
   else { showToast('Results: ' + text); }
