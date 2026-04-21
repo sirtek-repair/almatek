@@ -615,6 +615,22 @@
 const LABOR = { iphone_screen:80, back_glass:100, back_glass_swap:100, battery:65, ipad:85, android:85, laptop:85 };
 const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', android:'Android Repair', laptop:'MacBook / Laptop' };
 
+const FACTORY_SCREEN_TYPE = {
+  'iPhone Air':'oled','iPhone 17 Pro Max':'oled','iPhone 17 Pro':'oled','iPhone 17':'oled',
+  'iPhone 16e':'oled','iPhone 16 Pro Max':'oled','iPhone 16 Pro':'oled','iPhone 16 Plus':'oled','iPhone 16':'oled',
+  'iPhone 15 Pro Max':'oled','iPhone 15 Pro':'oled','iPhone 15 Plus':'oled','iPhone 15':'oled',
+  'iPhone 14 Pro Max':'oled','iPhone 14 Pro':'oled','iPhone 14 Plus':'oled','iPhone 14':'oled',
+  'iPhone 13 Pro Max':'oled','iPhone 13 Pro':'oled','iPhone 13':'oled','iPhone 13 Mini':'oled',
+  'iPhone 12 Pro Max':'oled','iPhone 12 Pro':'oled','iPhone 12':'oled','iPhone 12 Mini':'oled',
+  'iPhone 11 Pro Max':'oled','iPhone 11 Pro':'oled',
+  'iPhone XS Max':'oled','iPhone XS':'oled','iPhone X':'oled',
+  'iPhone XR':'lcd','iPhone 11':'lcd',
+  'iPhone 8 Plus':'lcd','iPhone 8 / SE (2nd & 3rd Gen)':'lcd','iPhone SE (2nd Gen)':'lcd','iPhone SE (3rd Gen)':'lcd',
+  'iPhone 7 Plus':'lcd','iPhone 7':'lcd','iPhone 6S':'lcd','iPhone 6 Plus':'lcd','iPhone 6':'lcd',
+  'iPhone 5S / SE (1st Gen)':'lcd','iPhone SE (1st Gen)':'lcd','iPhone 5C':'lcd','iPhone 5':'lcd',
+  'iPhone 4S':'lcd','iPhone 4':'lcd'
+};
+
 const SCREEN_PRICES = {
   'iPhone Air':{standard:null,premium:327},'iPhone 17 Pro Max':{standard:199,premium:289},'iPhone 17 Pro':{standard:196,premium:251},'iPhone 17':{standard:148,premium:242},
   'iPhone 16e':{standard:108,premium:145},'iPhone 16 Pro Max':{standard:null,premium:282},'iPhone 16 Pro':{standard:181,premium:242},'iPhone 16 Plus':{standard:139,premium:225},'iPhone 16':{standard:134,premium:220},
@@ -667,9 +683,8 @@ function updateTierDisplay1() {
   const p = SCREEN_PRICES[model1] || {}; el('tierOptions1').classList.remove('hidden');
   if (p.premium) { el('tierBox1Prem').classList.remove('na'); el('tierPrice1Prem').textContent = '$' + p.premium; } else { el('tierBox1Prem').classList.add('na'); el('tierPrice1Prem').textContent = 'N/A'; }
   if (p.standard) { el('tierBox1Std').classList.remove('na'); el('tierPrice1Std').textContent = '$' + p.standard; } else { el('tierBox1Std').classList.add('na'); el('tierPrice1Std').textContent = 'N/A'; }
-  var lbl1 = el('factoryLabel1');
-  if (p.premium) { lbl1.textContent = 'Factory Screen: OLED'; lbl1.className = 'factory-label oled'; lbl1.style.display = 'block'; }
-  else if (p.standard) { lbl1.textContent = 'Factory Screen: LCD'; lbl1.className = 'factory-label lcd'; lbl1.style.display = 'block'; }
+  var lbl1 = el('factoryLabel1'), ftype1 = FACTORY_SCREEN_TYPE[model1];
+  if (ftype1) { lbl1.textContent = 'Factory Screen: ' + ftype1.toUpperCase(); lbl1.className = 'factory-label ' + ftype1; lbl1.style.display = 'block'; }
   else { lbl1.style.display = 'none'; }
   showStockBadge('1Prem', model1, 'premium'); showStockBadge('1Std', model1, 'standard');
   if (p.premium) { setTier1('premium'); } else if (p.standard) { setTier1('standard'); }
@@ -687,9 +702,8 @@ function updateTierDisplay2() {
   const p = SCREEN_PRICES[model2] || {}; el('tierOptions2').classList.remove('hidden');
   if (p.premium) { el('tierBox2Prem').classList.remove('na'); el('tierPrice2Prem').textContent = '$' + p.premium; } else { el('tierBox2Prem').classList.add('na'); el('tierPrice2Prem').textContent = 'N/A'; }
   if (p.standard) { el('tierBox2Std').classList.remove('na'); el('tierPrice2Std').textContent = '$' + p.standard; } else { el('tierBox2Std').classList.add('na'); el('tierPrice2Std').textContent = 'N/A'; }
-  var lbl2 = el('factoryLabel2');
-  if (p.premium) { lbl2.textContent = 'Factory Screen: OLED'; lbl2.className = 'factory-label oled'; lbl2.style.display = 'block'; }
-  else if (p.standard) { lbl2.textContent = 'Factory Screen: LCD'; lbl2.className = 'factory-label lcd'; lbl2.style.display = 'block'; }
+  var lbl2 = el('factoryLabel2'), ftype2 = FACTORY_SCREEN_TYPE[model2];
+  if (ftype2) { lbl2.textContent = 'Factory Screen: ' + ftype2.toUpperCase(); lbl2.className = 'factory-label ' + ftype2; lbl2.style.display = 'block'; }
   else { lbl2.style.display = 'none'; }
   showStockBadge('2Prem', model2, 'premium'); showStockBadge('2Std', model2, 'standard');
   if (p.premium) { setTier2('premium'); } else if (p.standard) { setTier2('standard'); }
@@ -774,7 +788,7 @@ function loadInventoryPage(offset, quiet) {
       if (!quiet) el('invLoading').innerHTML = 'Auth error: ' + (data.error.message||'Invalid token') + '. <button onclick="showApiPassModal()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;">Set Token</button>';
       return;
     }
-    allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } }
+    allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } else { if (model1) updateTierDisplay1(); if (model2) updateTierDisplay2(); } }
   });
 }
 
@@ -873,7 +887,7 @@ function tryAuth() {
     authPass = input; localStorage.setItem('almatek_pass', input);
     authd = true; isOwner = true;
     el('authOverlay').classList.add('hidden');
-    updateAuthBtn();
+    updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
     return;
   }
   el('authError').textContent = 'Checking…';
@@ -899,7 +913,7 @@ function onStaffLoginSuccess(pass, name, structure, sheetApiPass) {
   localStorage.setItem('almatek_user_structure', currentUserStructure);
   authd = true; isOwner = false;
   el('authOverlay').classList.add('hidden');
-  updateAuthBtn();
+  updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
 }
 function updateAuthBtn() {
   var btn = el('authBtn'), btnInv = el('authBtnInv');
@@ -910,6 +924,8 @@ function updateAuthBtn() {
   el('tabBookerBtn').classList.toggle('hidden', !authd);
   el('tabStaffBtn').classList.toggle('hidden', !isOwner);
   var chp = el('chpassBtn'); if (chp) chp.style.display = (authd && !isOwner) ? 'inline' : 'none';
+  el('suppliersDropdown').style.display = authd ? 'block' : 'none';
+  el('supplierDemo').style.display = authd ? 'none' : 'inline';
 }
 
 function toggleSuppliers(e) { e.stopPropagation(); el('suppliersMenu').classList.toggle('hidden'); }
@@ -918,6 +934,7 @@ document.addEventListener('click', () => el('suppliersMenu')?.classList.add('hid
 function copyLink(btn, url, label) { navigator.clipboard?.writeText(url).then(() => { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = label; }, 1800); }); }
 
 updateAuthBtn();
+if (authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
 
 // ============================================
 // LEADS MANAGEMENT
