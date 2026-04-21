@@ -1724,23 +1724,24 @@ function openTicketDetail(ticketId) {
   // Items section
   var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
   html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
-  html += '<div style="font-size:10px;color:var(--muted);letter-spacing:0.05em;margin-bottom:10px;">ITEMS</div>';
+  html += '<div style="font-size:10px;color:var(--muted);letter-spacing:0.05em;margin-bottom:10px;">REPAIRS / ITEMS</div>';
+  var rowInputStyle = 'background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;font-family:inherit;';
   if (ticket.items.length) {
     ticket.items.forEach(function(it, idx) {
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">';
-      html += '<span style="font-size:13px;flex:1;">' + (it.label || 'Item') + '</span>';
-      html += '<span style="font-size:13px;font-weight:700;margin-right:10px;">$' + (parseFloat(it.price)||0) + '</span>';
-      html += '<button onclick="removeTicketItem(' + idx + ')" style="background:none;border:none;color:#ef4444;font-size:16px;cursor:pointer;padding:0 2px;line-height:1;">×</button>';
+      html += '<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);">';
+      html += '<input type="text" value="' + (it.label||'').replace(/"/g,'&quot;') + '" placeholder="Description" onchange="updateTicketItemField(' + idx + ',\'label\',this.value)" style="flex:2;' + rowInputStyle + '" />';
+      html += '<input type="number" value="' + (parseFloat(it.price)||0) + '" min="0" step="1" onchange="updateTicketItemField(' + idx + ',\'price\',this.value)" style="flex:1;' + rowInputStyle + '" />';
+      html += '<button onclick="removeTicketItem(' + idx + ')" style="background:none;border:none;color:#ef4444;font-size:18px;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0;">×</button>';
       html += '</div>';
     });
-    html += '<div style="display:flex;justify-content:space-between;padding-top:8px;margin-bottom:2px;"><span style="font-size:11px;color:var(--muted);">Items Total</span><span style="font-size:13px;font-weight:700;">$' + itemsSum + '</span></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding-top:8px;margin-bottom:2px;"><span style="font-size:11px;color:var(--muted);">Total</span><span style="font-size:13px;font-weight:700;">$' + itemsSum + '</span></div>';
   } else {
-    html += '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">No items yet</div>';
+    html += '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">No repairs added yet</div>';
   }
   html += '<div style="display:flex;gap:6px;margin-top:10px;">';
-  html += '<input type="text" id="ticketItemLabel" placeholder="Description" style="flex:2;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;" />';
-  html += '<input type="number" id="ticketItemPrice" placeholder="$" min="0" step="1" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;" />';
-  html += '<button onclick="addTicketItem()" style="padding:8px 12px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">＋ Add</button>';
+  html += '<input type="text" id="ticketItemLabel" placeholder="Repair / description" style="flex:2;' + rowInputStyle + '" />';
+  html += '<input type="number" id="ticketItemPrice" placeholder="$" min="0" step="1" style="flex:1;' + rowInputStyle + '" />';
+  html += '<button onclick="addTicketItem()" style="padding:7px 12px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">＋ Add</button>';
   html += '</div></div>';
   // Financials
   var dVal = ticket.deposit || 0;
@@ -1835,6 +1836,16 @@ function removeTicketItem(idx) {
   ticket.items.splice(idx, 1);
   var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
   ticket.quote = ticket.items.length ? itemsSum : ticket.quote;
+  ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(currentTicketId);
+}
+
+function updateTicketItemField(idx, field, val) {
+  if (!currentTicketId) return;
+  var ticket = ticketsStorage.find(function(t) { return t.id === currentTicketId; }); if (!ticket || !ticket.items || !ticket.items[idx]) return;
+  ticket.items[idx][field] = field === 'price' ? (parseFloat(val) || 0) : val;
+  var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
+  ticket.quote = itemsSum;
   ticket.updatedAt = new Date().toISOString();
   saveTicketsToStorage(); renderTicketsList(); openTicketDetail(currentTicketId);
 }
