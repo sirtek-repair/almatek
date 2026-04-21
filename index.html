@@ -99,8 +99,9 @@
     .savings-row { text-align: center; margin-top: 14px; }
     .savings-pill { display: inline-block; background: rgba(16,185,129,0.15); border: 1px solid var(--green); color: var(--green); font-size: 13px; font-weight: 700; padding: 6px 18px; border-radius: 100px; }
 
-    .tab-bar { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 4px; margin-bottom: 20px; }
-    .tab-btn { flex: 1; padding: 10px; font-size: 13px; font-weight: 400; font-family: inherit; background: none; border: none; border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .tab-bar { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 4px; margin-bottom: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; gap: 2px; }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn { flex: 0 0 auto; padding: 9px 12px; font-size: 12px; font-weight: 400; font-family: inherit; background: none; border: none; border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
     .tab-btn.active { background: var(--accent); color: #fff; }
 
     .inv-search { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-size: 15px; font-family: inherit; outline: none; margin-bottom: 12px; }
@@ -169,6 +170,13 @@
     .auth-box .auth-submit { width: 100%; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 400; font-family: inherit; cursor: pointer; border: none; background: var(--accent); color: #fff; }
     .auth-error { color: #ef4444; font-size: 13px; margin-top: 8px; min-height: 18px; }
     .auth-dismiss { background: none; border: none; color: var(--muted); font-size: 13px; cursor: pointer; margin-top: 12px; font-family: inherit; text-decoration: underline; }
+    .auth-setup-toggle { background: none; border: none; color: var(--muted); font-size: 11px; cursor: pointer; margin-top: 16px; font-family: inherit; opacity: 0.6; display: block; width: 100%; }
+    .auth-setup-toggle:hover { opacity: 1; }
+    .auth-setup-box { margin-top: 12px; text-align: left; background: var(--surface2); border-radius: 10px; padding: 12px; }
+    .auth-setup-box label { font-size: 10px; color: var(--muted); letter-spacing: 0.05em; display: block; margin-bottom: 6px; }
+    .auth-setup-box input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; color: var(--text); font-size: 12px; font-family: inherit; outline: none; letter-spacing: normal; text-align: left; margin-bottom: 8px; }
+    .auth-setup-box input:focus { border-color: var(--accent); }
+    .auth-setup-box button { padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 400; font-family: inherit; cursor: pointer; border: none; background: var(--accent); color: #fff; }
     .demo-badge { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.35); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-family: inherit; }
     .staff-badge { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); color: var(--green); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-family: inherit; }
     .demo-price { font-style: italic; }
@@ -286,6 +294,12 @@
     <button class="auth-submit" onclick="tryAuth()">Unlock</button>
     <div class="auth-error" id="authError"></div>
     <button class="auth-dismiss" onclick="el('authOverlay').classList.add('hidden')">Continue in Demo Mode</button>
+    <button class="auth-setup-toggle" onclick="toggleAuthSetup()">⚙ connection setup</button>
+    <div id="authSetupBox" class="auth-setup-box hidden">
+      <label>Google Script URL</label>
+      <input type="url" id="authSetupUrl" placeholder="https://script.google.com/macros/..." autocomplete="off" />
+      <button onclick="saveAuthSetup()">Save</button>
+    </div>
   </div>
 </div>
 
@@ -1180,6 +1194,20 @@ function onAuthBtnClick() {
       updateAuthBtn();
     }
   } else { el('authInput').value = ''; el('authError').textContent = ''; el('authOverlay').classList.remove('hidden'); setTimeout(function() { el('authInput').focus(); }, 100); }
+}
+
+function toggleAuthSetup() {
+  var box = el('authSetupBox'); box.classList.toggle('hidden');
+  if (!box.classList.contains('hidden')) { el('authSetupUrl').value = USERS_SCRIPT_URL; el('authSetupUrl').focus(); }
+}
+function saveAuthSetup() {
+  var url = (el('authSetupUrl').value || '').trim();
+  if (!url || !url.startsWith('https://')) { el('authSetupUrl').style.borderColor = '#ef4444'; return; }
+  USERS_SCRIPT_URL = url; localStorage.setItem('almatek_script_url', url);
+  el('authSetupBox').classList.add('hidden');
+  el('authError').textContent = 'Connection configured ✓';
+  el('authError').style.color = 'var(--green)';
+  setTimeout(function() { el('authError').textContent = ''; el('authError').style.color = ''; }, 2000);
 }
 
 function tryAuth() {
