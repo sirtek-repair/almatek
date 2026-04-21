@@ -1680,9 +1680,17 @@ function openTicketDetail(ticketId) {
   var stageIdx = stages.indexOf(status);
   var flowLabel = ticket.flow === 'in_stock' ? '✅ In-Stock Repair' : '📦 Special Order';
   var isPremium = ticket.tier === 'premium';
-  var html = '<div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">';
+  var isInStock = ticket.flow === 'in_stock';
+  var html = '<div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">';
   html += '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[status] || status) + '</span>';
-  html += '<span style="font-size:12px;color:var(--muted);">' + flowLabel + '</span></div>';
+  html += '</div>';
+  // Flow toggle
+  var inStockFlowStyle = isInStock ? 'flex:1;padding:7px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
+  var soFlowStyle = isInStock ? 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:7px;background:#f59e0b;border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
+  html += '<div style="margin-bottom:8px;"><div style="font-size:10px;color:var(--muted);letter-spacing:0.05em;margin-bottom:5px;">FLOW</div><div style="display:flex;gap:8px;">';
+  html += '<button type="button" onclick="setTicketFlow2(\'' + ticket.id + '\',\'in_stock\')" style="' + inStockFlowStyle + '">✅ In-Stock</button>';
+  html += '<button type="button" onclick="setTicketFlow2(\'' + ticket.id + '\',\'special_order\')" style="' + soFlowStyle + '">📦 Special Order</button>';
+  html += '</div></div>';
   // Tier toggle
   var stdStyle = isPremium ? 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:7px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
   var premStyle = isPremium ? 'flex:1;padding:7px;background:#f59e0b;border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
@@ -1795,6 +1803,16 @@ function setTicketTier(tier, ticketId) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
   ticket.tier = tier; ticket.updatedAt = new Date().toISOString();
   saveTicketsToStorage(); renderTicketsList(); openTicketDetail(ticketId);
+}
+
+function setTicketFlow2(ticketId, flow) {
+  var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
+  if (ticket.flow === flow) return;
+  ticket.flow = flow;
+  ticket.status = flow === 'in_stock' ? REPAIR_STAGES[0] : SO_STAGES[0];
+  ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(ticketId);
+  showToast(flow === 'in_stock' ? 'Switched to In-Stock flow' : 'Switched to Special Order flow');
 }
 
 function addTicketItem() {
