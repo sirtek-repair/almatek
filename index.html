@@ -948,7 +948,7 @@ function saveTicketFromQuote() {
   var repairLabel = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '');
   var initItems = price > 0 ? [{ label: repairLabel, price: price }] : [];
   var miles = parseFloat((el('milesInput') ? el('milesInput').value : '') || 0) || 0;
-  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, tier: tier1 === 'premium' ? 'premium' : 'standard', items: initItems, notes: [], createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
+  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', items: initItems, notes: [], createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage();
   closeAddToTicketModal(); updateTicketsBadge(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('tickets');
@@ -1846,7 +1846,23 @@ function saveTicketMobileFee(milesStr) {
 
 function setTicketTier(tier, ticketId) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
-  ticket.tier = tier; ticket.updatedAt = new Date().toISOString();
+  ticket.tier = tier;
+  // Re-price the first item if this is an iPhone screen repair with a known model
+  if (ticket.repairType === 'iphone_screen' && ticket.repairModel && SCREEN_PRICES[ticket.repairModel]) {
+    var newPrice = SCREEN_PRICES[ticket.repairModel][tier] || 0;
+    if (!ticket.items) ticket.items = [];
+    var tierLabel = tier === 'premium' ? 'Premium' : 'Standard';
+    var typeLabel = ATL_TYPE_LABELS['iphone_screen'] || 'iPhone Screen';
+    if (ticket.items.length > 0) {
+      ticket.items[0].price = newPrice;
+      ticket.items[0].label = typeLabel + ' · ' + tierLabel;
+    } else if (newPrice > 0) {
+      ticket.items.push({ label: typeLabel + ' · ' + tierLabel, price: newPrice });
+    }
+    var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
+    ticket.quote = itemsSum + (ticket.mobileFee || 0);
+  }
+  ticket.updatedAt = new Date().toISOString();
   saveTicketsToStorage(); renderTicketsList(); openTicketDetail(ticketId);
 }
 
