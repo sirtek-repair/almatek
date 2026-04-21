@@ -1847,17 +1847,18 @@ function saveTicketMobileFee(milesStr) {
 function setTicketTier(tier, ticketId) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
   ticket.tier = tier;
-  // Re-price the first item if this is an iPhone screen repair with a known model
-  if (ticket.repairType === 'iphone_screen' && ticket.repairModel && SCREEN_PRICES[ticket.repairModel]) {
-    var newPrice = SCREEN_PRICES[ticket.repairModel][tier] || 0;
+  var modelKey = ticket.repairModel || ticket.device || '';
+  var prices = SCREEN_PRICES[modelKey];
+  if (prices && prices[tier] != null) {
+    var newPrice = prices[tier];
     if (!ticket.items) ticket.items = [];
     var tierLabel = tier === 'premium' ? 'Premium' : 'Standard';
-    var typeLabel = ATL_TYPE_LABELS['iphone_screen'] || 'iPhone Screen';
+    var itemLabel = (ATL_TYPE_LABELS['iphone_screen'] || 'iPhone Screen') + ' · ' + tierLabel;
     if (ticket.items.length > 0) {
       ticket.items[0].price = newPrice;
-      ticket.items[0].label = typeLabel + ' · ' + tierLabel;
-    } else if (newPrice > 0) {
-      ticket.items.push({ label: typeLabel + ' · ' + tierLabel, price: newPrice });
+      ticket.items[0].label = itemLabel;
+    } else {
+      ticket.items.push({ label: itemLabel, price: newPrice });
     }
     var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
     ticket.quote = itemsSum + (ticket.mobileFee || 0);
