@@ -391,15 +391,16 @@
     <div class="switch" id="mobileSw"></div>
   </div>
   <div id="mobileCard" class="mobile-fee-card hidden">
-    <div class="miles-row"><label class="field-label" for="milesInput">Distance (miles)</label><input type="number" id="milesInput" placeholder="0" min="0" step="0.1" oninput="onMilesChange()" style="max-width:130px;" /></div>
-    <div id="feeBadge" class="fee-badge hidden"><span id="feeBadgeLabel">Mobile service fee</span><span id="feeAmt"></span></div>
     <div class="addr-row">
       <label class="field-label" for="cxAddrInput">Customer Address</label>
       <div style="display:flex;gap:8px;align-items:center;">
-        <input type="text" id="cxAddrInput" placeholder="e.g. 123 Main St, City, State" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+        <input type="text" id="cxAddrInput" placeholder="e.g. 123 Main St, Brooklyn, NY" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit;outline:none;" oninput="onCxAddrInput()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
         <button onclick="shareCxAddress()" style="padding:10px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">📍 Share</button>
       </div>
+      <div id="addrStatus" style="font-size:12px;color:var(--muted);margin-top:6px;min-height:16px;"></div>
     </div>
+    <div class="miles-row" style="margin-top:10px;"><label class="field-label" for="milesInput">Distance (miles)</label><input type="number" id="milesInput" placeholder="0" min="0" step="0.1" oninput="onMilesChange()" style="max-width:130px;" /></div>
+    <div id="feeBadge" class="fee-badge hidden"><span id="feeBadgeLabel">Mobile service fee</span><span id="feeAmt"></span></div>
   </div>
 
   <div id="secondToggle" class="toggle-row hidden" onclick="onToggle2nd()">
@@ -783,7 +784,7 @@ function onMilesChange() {
   if (miles <= 0) { mobileFee=0; el('feeBadge').classList.add('hidden'); } else { mobileFee = miles<=3 ? 15 : Math.ceil(15 + (miles-3)*9); el('feeAmt').textContent = isAuth() ? '$'+mobileFee : ''; el('feeBadge').classList.remove('hidden'); }
   tryRenderQuote();
 }
-function resetMobile() { mobileOpen=false; mobileFee=0; el('mobileSw').classList.remove('on'); el('mobileToggleRow').classList.remove('active'); el('mobileCard').classList.add('hidden'); el('feeBadge').classList.add('hidden'); if(el('milesInput')) el('milesInput').value=''; }
+function resetMobile() { mobileOpen=false; mobileFee=0; el('mobileSw').classList.remove('on'); el('mobileToggleRow').classList.remove('active'); el('mobileCard').classList.add('hidden'); el('feeBadge').classList.add('hidden'); if(el('milesInput')) el('milesInput').value=''; if(el('cxAddrInput')) el('cxAddrInput').value=''; if(el('addrStatus')) el('addrStatus').textContent=''; }
 
 function onToggle2nd() { secondOpen = !secondOpen; el('secondSw').classList.toggle('on', secondOpen); el('secondToggle').classList.toggle('active', secondOpen); el('secondCard').classList.toggle('hidden', !secondOpen); if (!secondOpen) el('dealResult').classList.add('hidden'); }
 function on2ndRepairChange() {
@@ -1095,7 +1096,7 @@ function showStockBadge(slot, model, tier) {
 function shareCxAddress() {
   var addr = (el('cxAddrInput').value || '').trim();
   if (!addr) { alert('Enter a customer address first.'); return; }
-  var url = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(addr);
+  var url = 'https://www.google.com/maps/dir/?api=1&origin=304+Quincy+St+Brooklyn+NY+11216&destination=' + encodeURIComponent(addr);
   if (navigator.share) {
     navigator.share({ title: 'Customer Address', text: 'Navigate to: ' + addr, url: url }).catch(function(){});
   } else {
@@ -1103,6 +1104,43 @@ function shareCxAddress() {
     ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
     showToast('Maps link copied to clipboard!');
   }
+}
+
+var SHOP_LAT = 40.6869713, SHOP_LNG = -73.9489195;
+var addrDebounce = null;
+
+function onCxAddrInput() {
+  clearTimeout(addrDebounce);
+  var addr = (el('cxAddrInput').value || '').trim();
+  if (!addr) { el('addrStatus').textContent = ''; el('milesInput').value = ''; mobileFee = 0; el('feeBadge').classList.add('hidden'); tryRenderQuote(); return; }
+  el('addrStatus').textContent = 'Calculating distance…';
+  addrDebounce = setTimeout(function() { geocodeCxAddr(addr); }, 700);
+}
+
+function geocodeCxAddr(addr) {
+  fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(addr) + '&format=json&limit=1&countrycodes=us', { headers: { 'Accept': 'application/json', 'User-Agent': 'AlmaTek-RepairApp/1.0' } })
+    .then(function(r) { return r.json(); })
+    .then(function(results) {
+      if (!results || !results.length) { el('addrStatus').textContent = 'Address not found — enter miles manually'; return; }
+      var lat = parseFloat(results[0].lat), lon = parseFloat(results[0].lon);
+      var miles = haversineMiles(SHOP_LAT, SHOP_LNG, lat, lon);
+      miles = Math.round(miles * 10) / 10;
+      el('milesInput').value = miles;
+      var fee = miles <= 3 ? 15 : Math.ceil(15 + (miles - 3) * 9);
+      el('addrStatus').textContent = miles + ' mi from shop · ' + (isAuth() ? '$' + fee + ' fee' : 'fee calculated');
+      onMilesChange();
+    })
+    .catch(function() { el('addrStatus').textContent = 'Could not calculate — enter miles manually'; });
+}
+
+function haversineMiles(lat1, lon1, lat2, lon2) {
+  var R = 3958.8;
+  var dLat = (lat2 - lat1) * Math.PI / 180;
+  var dLon = (lon2 - lon1) * Math.PI / 180;
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function isAuth() { return authd; }
