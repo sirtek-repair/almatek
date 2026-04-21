@@ -662,6 +662,7 @@
         <button onclick="showFollowUpPicker()" style="flex:1;padding:8px;background:#8b5cf6;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">📅 Follow-up</button>
         <button onclick="markLeadBooked()" style="flex:1;padding:8px;background:#10b981;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">💰 Booked</button>
         <button onclick="markLeadClosed()" style="flex:1;padding:8px;background:#ef4444;border:none;color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">❌ Closed Lost</button>
+        <button onclick="convertLeadToTicket()" style="width:100%;padding:8px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;margin-top:2px;">🎫 Convert to Ticket</button>
       </div>
     </div>
   </div>
@@ -1556,6 +1557,20 @@ function updateExistingLead() {
   saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { name: lead.name, phone: lead.phone, email: lead.email, device: lead.device, issue: lead.issue }); hideNewLeadForm(); renderLeadsList(); showToast('Lead updated ✓');
 }
 function deleteLead(leadId) { if (!confirm('Delete this lead?')) return; leadsStorage = leadsStorage.filter(l => l.id !== leadId); saveLeadsToStorage(); if (USERS_SCRIPT_URL) sheetsCall({ action: 'deleteLead', leadId: leadId }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead deleted ✓'); }
+
+function convertLeadToTicket() {
+  if (!currentLeadId) return;
+  var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; }); if (!lead) return;
+  var now = new Date().toISOString();
+  var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, tier: lead.tier || 'standard', notes: (lead.notes || []).slice(), createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
+  ticketsStorage.push(newTicket); saveTicketsToStorage();
+  lead.status = 'booked'; lead.bookedAt = now; lead.updatedAt = now;
+  saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: now });
+  closeLeadDetail(); renderLeadsList(); updateTicketsBadge(); updateFollowUpBadge();
+  switchLeadSubTab('tickets');
+  setTimeout(function() { openTicketDetail(newTicket.id); }, 80);
+  showToast('Converted to ticket ✓');
+}
 
 function getLeadsNeedingFollowUp() {
   if (!leadsStorage || !leadsStorage.length) return [];
