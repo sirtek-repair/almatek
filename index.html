@@ -15,7 +15,7 @@
       --accent: #3b82f6; --green: #10b981;
     }
     body { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 300; text-transform: lowercase; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px 16px 60px; }
-    button, select, input, textarea, a, span, div, label, p, li, td, th, option, optgroup { text-transform: lowercase; }
+    button, select, input, textarea, a, span, div, label, p, li, td, th { text-transform: lowercase; }
     .container { max-width: 460px; margin: 0 auto; }
     h1, h2, h3, h4 { font-family: Georgia, 'Times New Roman', serif; font-weight: normal; text-transform: lowercase; }
     .brand { text-transform: none !important; font-style: normal; }
@@ -316,7 +316,7 @@
           <a href="tel:+19177909209" class="hlink" id="kimiLink">Kimi Soho ☎</a>
         </div>
       </div>
-      <button class="hlink" id="repairedBtn" onclick="copyLink(this, 'https://repairedcollective.com', 'Repaired Collective')">Repaired Collective</button>
+      <button class="hlink" id="repairedBtn" onclick="copyLink(this, 'https://repairedcollective.com', 'Repaired Collective')"><span class="brand" style="font-weight:300;">Repaired</span> <span class="brand" style="font-weight:400;">Collective</span></button>
       <button class="hlink" id="reviewBtn" onclick="copyLink(this, 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D', 'Review link')">⭐ Review Link</button>
       <span class="hlink" id="supplierDemo" style="display:none;">your part supplier</span>
       <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Demo Mode</button>
@@ -328,13 +328,13 @@
     <label class="field-label" for="repairType">Repair Type</label>
     <select id="repairType" onchange="onRepairChange()">
       <option value="">— select a repair —</option>
-      <option value="iphone_screen">iphone screen</option>
+      <option value="iphone_screen">iPhone screen</option>
       <option value="back_glass">back glass (set price)</option>
       <option value="back_glass_swap">back glass / frame swap</option>
       <option value="battery">battery / small parts</option>
-      <option value="ipad">ipad screen</option>
+      <option value="ipad">iPad screen</option>
       <option value="android">android repair</option>
-      <option value="laptop">macbook / laptop screen</option>
+      <option value="laptop">MacBook / laptop screen</option>
     </select>
   </div>
 
@@ -348,15 +348,15 @@
         <label class="field-label" for="modelSelect1">iPhone Model</label>
         <select id="modelSelect1" onchange="onModel1Change()">
           <option value="">— select model —</option>
-          <optgroup label="iphone 17 series"><option value="iPhone Air">iphone air</option><option value="iPhone 17 Pro Max">iphone 17 pro max</option><option value="iPhone 17 Pro">iphone 17 pro</option><option value="iPhone 17">iphone 17</option></optgroup>
-          <optgroup label="iphone 16 series"><option value="iPhone 16e">iphone 16e</option><option value="iPhone 16 Pro Max">iphone 16 pro max</option><option value="iPhone 16 Pro">iphone 16 pro</option><option value="iPhone 16 Plus">iphone 16 plus</option><option value="iPhone 16">iphone 16</option></optgroup>
-          <optgroup label="iphone 15 series"><option value="iPhone 15 Pro Max">iphone 15 pro max</option><option value="iPhone 15 Pro">iphone 15 pro</option><option value="iPhone 15 Plus">iphone 15 plus</option><option value="iPhone 15">iphone 15</option></optgroup>
-          <optgroup label="iphone 14 series"><option value="iPhone 14 Pro Max">iphone 14 pro max</option><option value="iPhone 14 Pro">iphone 14 pro</option><option value="iPhone 14 Plus">iphone 14 plus</option><option value="iPhone 14">iphone 14</option></optgroup>
-          <optgroup label="iphone 13 series"><option value="iPhone 13 Pro Max">iphone 13 pro max</option><option value="iPhone 13 Pro">iphone 13 pro</option><option value="iPhone 13">iphone 13</option><option value="iPhone 13 Mini">iphone 13 mini</option></optgroup>
-          <optgroup label="iphone 12 series"><option value="iPhone 12 Pro Max">iphone 12 pro max</option><option value="iPhone 12 Pro">iphone 12 pro</option><option value="iPhone 12">iphone 12</option><option value="iPhone 12 Mini">iphone 12 mini</option></optgroup>
-          <optgroup label="iphone 11 series"><option value="iPhone 11 Pro Max">iphone 11 pro max</option><option value="iPhone 11 Pro">iphone 11 pro</option><option value="iPhone 11">iphone 11</option></optgroup>
-          <optgroup label="iphone x series"><option value="iPhone XS Max">iphone xs max</option><option value="iPhone XS">iphone xs</option><option value="iPhone XR">iphone xr</option><option value="iPhone X">iphone x</option></optgroup>
-          <optgroup label="iphone 8 &amp; se"><option value="iPhone 8 Plus">iphone 8 plus</option><option value="iPhone 8 / SE (2nd &amp; 3rd Gen)">iphone 8 / se (2nd &amp; 3rd gen)</option><option value="iPhone SE (2nd Gen)">iphone se (2nd gen)</option><option value="iPhone SE (3rd Gen)">iphone se (3rd gen)</option><option value="iPhone 7 Plus">iphone 7 plus</option><option value="iPhone 7">iphone 7</option><option value="iPhone 6S">iphone 6s</option><option value="iPhone 6 Plus">iphone 6 plus</option><option value="iPhone 6">iphone 6</option><option value="iPhone 5S / SE (1st Gen)">iphone 5s / se (1st gen)</option><option value="iPhone SE (1st Gen)">iphone se (1st gen)</option><option value="iPhone 5C">iphone 5c</option><option value="iPhone 5">iphone 5</option><option value="iPhone 4S">iphone 4s</option><option value="iPhone 4">iphone 4</option></optgroup>
+          <optgroup label="iPhone 17 series"><option value="iPhone Air">iPhone Air</option><option value="iPhone 17 Pro Max">iPhone 17 Pro Max</option><option value="iPhone 17 Pro">iPhone 17 Pro</option><option value="iPhone 17">iPhone 17</option></optgroup>
+          <optgroup label="iPhone 16 series"><option value="iPhone 16e">iPhone 16e</option><option value="iPhone 16 Pro Max">iPhone 16 Pro Max</option><option value="iPhone 16 Pro">iPhone 16 Pro</option><option value="iPhone 16 Plus">iPhone 16 Plus</option><option value="iPhone 16">iPhone 16</option></optgroup>
+          <optgroup label="iPhone 15 series"><option value="iPhone 15 Pro Max">iPhone 15 Pro Max</option><option value="iPhone 15 Pro">iPhone 15 Pro</option><option value="iPhone 15 Plus">iPhone 15 Plus</option><option value="iPhone 15">iPhone 15</option></optgroup>
+          <optgroup label="iPhone 14 series"><option value="iPhone 14 Pro Max">iPhone 14 Pro Max</option><option value="iPhone 14 Pro">iPhone 14 Pro</option><option value="iPhone 14 Plus">iPhone 14 Plus</option><option value="iPhone 14">iPhone 14</option></optgroup>
+          <optgroup label="iPhone 13 series"><option value="iPhone 13 Pro Max">iPhone 13 Pro Max</option><option value="iPhone 13 Pro">iPhone 13 Pro</option><option value="iPhone 13">iPhone 13</option><option value="iPhone 13 Mini">iPhone 13 Mini</option></optgroup>
+          <optgroup label="iPhone 12 series"><option value="iPhone 12 Pro Max">iPhone 12 Pro Max</option><option value="iPhone 12 Pro">iPhone 12 Pro</option><option value="iPhone 12">iPhone 12</option><option value="iPhone 12 Mini">iPhone 12 Mini</option></optgroup>
+          <optgroup label="iPhone 11 series"><option value="iPhone 11 Pro Max">iPhone 11 Pro Max</option><option value="iPhone 11 Pro">iPhone 11 Pro</option><option value="iPhone 11">iPhone 11</option></optgroup>
+          <optgroup label="iPhone X series"><option value="iPhone XS Max">iPhone XS Max</option><option value="iPhone XS">iPhone XS</option><option value="iPhone XR">iPhone XR</option><option value="iPhone X">iPhone X</option></optgroup>
+          <optgroup label="iPhone 8 &amp; SE"><option value="iPhone 8 Plus">iPhone 8 Plus</option><option value="iPhone 8 / SE (2nd &amp; 3rd Gen)">iPhone 8 / SE (2nd &amp; 3rd Gen)</option><option value="iPhone SE (2nd Gen)">iPhone SE (2nd Gen)</option><option value="iPhone SE (3rd Gen)">iPhone SE (3rd Gen)</option><option value="iPhone 7 Plus">iPhone 7 Plus</option><option value="iPhone 7">iPhone 7</option><option value="iPhone 6S">iPhone 6S</option><option value="iPhone 6 Plus">iPhone 6 Plus</option><option value="iPhone 6">iPhone 6</option><option value="iPhone 5S / SE (1st Gen)">iPhone 5S / SE (1st Gen)</option><option value="iPhone SE (1st Gen)">iPhone SE (1st Gen)</option><option value="iPhone 5C">iPhone 5C</option><option value="iPhone 5">iPhone 5</option><option value="iPhone 4S">iPhone 4S</option><option value="iPhone 4">iPhone 4</option></optgroup>
         </select>
         <div class="tier-options hidden" id="tierOptions1">
           <div class="factory-label" id="factoryLabel1"></div>
@@ -420,13 +420,13 @@
     <label class="field-label" for="repair2Type">2nd Repair Type</label>
     <select id="repair2Type" onchange="on2ndRepairChange()">
       <option value="">— select repair —</option>
-      <option value="iphone_screen">iphone screen</option>
+      <option value="iphone_screen">iPhone screen</option>
       <option value="back_glass">back glass (set price)</option>
       <option value="back_glass_swap">back glass / frame swap</option>
       <option value="battery">battery / small parts</option>
-      <option value="ipad">ipad screen</option>
+      <option value="ipad">iPad screen</option>
       <option value="android">android repair</option>
-      <option value="laptop">macbook / laptop screen</option>
+      <option value="laptop">MacBook / laptop screen</option>
     </select>
 
     <div id="cost2Wrap" class="hidden">
@@ -877,7 +877,7 @@ function renderInventory() {
   if (!list.length) { el('invList').innerHTML = '<div class="loading-msg">No screens found.</div>'; return; }
   el('invList').innerHTML = list.map(r => {
     var id = r.id, name = r.fields['fldWzYeFcqm0qnxD8'] || '—', model = r.fields['fldV0jSP3xJuinS8t'] || '', qty = r.fields['fldvwFFYSxAJlcFpp'] != null ? r.fields['fldvwFFYSxAJlcFpp'] : 0, min = r.fields['fldB16jlPFHm11tfW'] != null ? r.fields['fldB16jlPFHm11tfW'] : 0, stockName = selName(r.fields['fldZEvcZT2JnX5kwh']), isIn = stockName === 'In Stock', isLow = isIn && min > 0 && qty <= min, cls = isLow ? 'low' : (isIn ? 'in' : 'out'), badge = isLow ? '⚠ Low Stock' : (isIn ? '✓ In Stock' : '✕ O.O.S.');
-    return '<div class="inv-item" id="item-' + id + '"><div class="inv-item-top"><div><div class="inv-item-name">' + name + '</div><div class="inv-item-model">' + model + '</div></div><span class="stock-badge ' + cls + '">' + badge + '</span></div><div class="inv-item-meta">Qty: ' + qty + (min > 0 ? ' · Min: ' + min : '') + '</div><div class="inv-actions"><button class="inv-btn receive" onclick="showReceive(\'' + id + '\')">+ Receive</button><button class="inv-btn used" onclick="markUsed(\'' + id + '\',\'' + name.replace(/'/g,"\\'") + '\')">Mark Used</button><button class="inv-btn remove" onclick="removeItem(\'' + id + '\',\'' + name.replace(/'/g,"\\'") + '\')">− Remove</button></div><div class="inv-inline hidden" id="receive-' + id + '"><input type="number" min="1" placeholder="Qty" id="rqty-' + id + '"><button onclick="confirmReceive(\'' + id + '\')">Confirm</button><button class="cancel-btn" onclick="hideReceive(\'' + id + '\')">Cancel</button></div></div>';
+    return '<div class="inv-item" id="item-' + id + '"><div class="inv-item-top"><div><div class="inv-item-name">' + fmtBrand(name) + '</div><div class="inv-item-model">' + fmtBrand(model) + '</div></div><span class="stock-badge ' + cls + '">' + badge + '</span></div><div class="inv-item-meta">Qty: ' + qty + (min > 0 ? ' · Min: ' + min : '') + '</div><div class="inv-actions"><button class="inv-btn receive" onclick="showReceive(\'' + id + '\')">+ Receive</button><button class="inv-btn used" onclick="markUsed(\'' + id + '\',\'' + name.replace(/'/g,"\\'") + '\')">Mark Used</button><button class="inv-btn remove" onclick="removeItem(\'' + id + '\',\'' + name.replace(/'/g,"\\'") + '\')">− Remove</button></div><div class="inv-inline hidden" id="receive-' + id + '"><input type="number" min="1" placeholder="Qty" id="rqty-' + id + '"><button onclick="confirmReceive(\'' + id + '\')">Confirm</button><button class="cancel-btn" onclick="hideReceive(\'' + id + '\')">Cancel</button></div></div>';
   }).join('');
 }
 
@@ -969,11 +969,12 @@ function renderNeedOrderList() {
     var cartCtrl = cartItem
       ? '<div class="cart-qty-ctrl"><button onclick="cartDecrement(\'' + r.id + '\')">−</button><span>' + cartItem.qty + '</span><button onclick="cartIncrement(\'' + r.id + '\')">+</button></div>'
       : '<button class="order-item-btn" onclick="addToCart(\'' + r.id + '\',\'' + escQ(name) + '\',\'' + escQ(type) + '\',\'' + escQ(model) + '\')">+ Add</button>';
-    return '<div class="order-item' + (cartItem ? ' in-cart' : '') + '"><div class="order-item-info"><div class="order-item-name">' + name + '</div><div class="order-item-meta">' + [type, model].filter(Boolean).join(' · ') + ' · Qty: ' + qty + (min ? ' / Min: ' + min : '') + '</div></div><div style="display:flex;align-items:center;gap:8px;">' + badge + cartCtrl + '</div></div>';
+    return '<div class="order-item' + (cartItem ? ' in-cart' : '') + '"><div class="order-item-info"><div class="order-item-name">' + fmtBrand(name) + '</div><div class="order-item-meta">' + [fmtBrand(type), fmtBrand(model)].filter(Boolean).join(' · ') + ' · Qty: ' + qty + (min ? ' / Min: ' + min : '') + '</div></div><div style="display:flex;align-items:center;gap:8px;">' + badge + cartCtrl + '</div></div>';
   }).join('');
 }
 
 function escQ(s) { return (s || '').replace(/'/g, "\\'"); }
+function fmtBrand(s) { return (s || '').replace(/iphone/gi, '<span class="brand">iPhone</span>').replace(/ipad/gi, '<span class="brand">iPad</span>').replace(/macbook/gi, '<span class="brand">MacBook</span>'); }
 
 // ---- Cart ----
 function addToCart(id, name, type, model) {
@@ -1019,7 +1020,7 @@ function renderCartTab() {
   if (footer) footer.classList.remove('hidden');
   items.innerHTML = orderCart.map(function(item) {
     return '<div class="cart-panel-item" style="background:var(--surface2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
-      '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;">' + item.name + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">' + [item.type, item.model].filter(Boolean).join(' · ') + '</div></div>' +
+      '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;">' + fmtBrand(item.name) + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">' + [fmtBrand(item.type), fmtBrand(item.model)].filter(Boolean).join(' · ') + '</div></div>' +
       '<div class="cart-qty-ctrl"><button onclick="cartDecrement(\'' + item.id + '\')">−</button><span>' + item.qty + '</span><button onclick="cartIncrement(\'' + item.id + '\')">+</button></div>' +
       '<button onclick="removeFromCart(\'' + item.id + '\')" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px;">✕</button>' +
     '</div>';
@@ -1059,7 +1060,7 @@ function renderOrderedList() {
     var qty = r.fields['fldbKVKkNgZtShHwh'] || '?';
     var supplier = r.fields['fldVq43gyw9HVLYNI'] || '';
     var date = r.fields['fldeHBNhXCrqAJrjp'] ? new Date(r.fields['fldeHBNhXCrqAJrjp']).toLocaleDateString() : '';
-    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + name + '</div><div class="order-item-meta">Qty: ' + qty + (supplier ? ' · ' + supplier : '') + (date ? ' · ' + date : '') + '</div></div><span class="order-status pending">⏳ Ordered</span></div>';
+    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + fmtBrand(name) + '</div><div class="order-item-meta">Qty: ' + qty + (supplier ? ' · ' + supplier : '') + (date ? ' · ' + date : '') + '</div></div><span class="order-status pending">⏳ Ordered</span></div>';
   }).join('');
 }
 
@@ -1071,7 +1072,7 @@ function renderReceiveList() {
     var name = r.fields['fldF0TJARgHugOh83'] || '—';
     var qty = r.fields['fldbKVKkNgZtShHwh'] || 1;
     var supplier = r.fields['fldVq43gyw9HVLYNI'] || '';
-    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + name + '</div><div class="order-item-meta">Qty: ' + qty + (supplier ? ' · ' + supplier : '') + '</div></div><button class="order-item-btn receive" onclick="receiveOrder(\'' + r.id + '\')">Receive</button></div>';
+    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + fmtBrand(name) + '</div><div class="order-item-meta">Qty: ' + qty + (supplier ? ' · ' + supplier : '') + '</div></div><button class="order-item-btn receive" onclick="receiveOrder(\'' + r.id + '\')">Receive</button></div>';
   }).join('');
 }
 
