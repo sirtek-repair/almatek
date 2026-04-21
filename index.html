@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
   <title>AlmaTek</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -11,18 +14,20 @@
       --border: #3f3f46; --text: #fafafa; --muted: #71717a;
       --accent: #3b82f6; --green: #10b981;
     }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px 16px 60px; }
+    body { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 300; text-transform: lowercase; background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px 16px 60px; }
     .container { max-width: 460px; margin: 0 auto; }
+    h1, h2, h3, h4 { font-family: Georgia, 'Times New Roman', serif; font-weight: normal; }
+    .brand { text-transform: none !important; font-style: normal; }
 
     header { text-align: center; padding: 24px 0 28px; }
-    header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
-    header p { color: var(--muted); font-size: 12px; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+    header h1 { font-size: 26px; font-weight: normal; letter-spacing: 0.01em; text-transform: none; }
+    header p { color: var(--muted); font-size: 12px; margin-top: 3px; letter-spacing: 0.06em; font-weight: 300; }
     .header-links { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
-    .hlink { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; color: var(--muted); font-size: 12px; font-weight: 600; text-decoration: none; letter-spacing: 0.03em; transition: all 0.15s; }
+    .hlink { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; color: var(--muted); font-size: 12px; font-weight: 400; text-decoration: none; letter-spacing: 0.02em; transition: all 0.15s; }
     .hlink:hover { border-color: #52525b; color: var(--text); }
 
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
-    .field-label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; }
+    .field-label { display: block; font-size: 11px; font-weight: 400; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 10px; }
     select, input[type="number"], input[type="text"], input[type="email"], textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; color: var(--text); font-size: 16px; font-family: inherit; outline: none; appearance: none; -webkit-appearance: none; transition: border-color 0.15s; }
     select:focus, input:focus, textarea:focus { border-color: var(--accent); }
     select option { background: #27272a; }
@@ -30,16 +35,16 @@
     .gap { margin-top: 14px; }
 
     .mode-tabs { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; margin-bottom: 14px; }
-    .mode-tab { flex: 1; padding: 9px; font-size: 13px; font-weight: 600; font-family: inherit; background: none; border: none; border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .mode-tab { flex: 1; padding: 9px; font-size: 13px; font-weight: 400; font-family: inherit; background: none; border: none; border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
     .mode-tab.active { background: var(--accent); color: #fff; }
 
     .tier-row { display: flex; gap: 8px; margin-top: 12px; }
-    .tier-btn { flex: 1; padding: 12px; font-size: 14px; font-weight: 600; font-family: inherit; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .tier-btn { flex: 1; padding: 12px; font-size: 14px; font-weight: 400; font-family: inherit; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
     .tier-btn:hover:not(.active):not(:disabled) { border-color: #52525b; color: #d4d4d8; }
     .tier-btn.active { background: rgba(59,130,246,0.15); border-color: var(--accent); color: var(--text); }
     .tier-btn:disabled { opacity: 0.3; cursor: not-allowed; }
     .tier-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
-    .factory-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; padding: 6px 10px; background: var(--surface2); border-radius: 8px; border-left: 3px solid var(--accent); display: none; }
+    .factory-label { font-size: 12px; font-weight: 400; color: var(--muted); letter-spacing: 0.3px; margin-bottom: 8px; padding: 6px 10px; background: var(--surface2); border-radius: 8px; border-left: 3px solid var(--accent); display: none; }
     .factory-label.oled { border-left-color: #a855f7; color: #c084fc; }
     .factory-label.lcd  { border-left-color: #3b82f6; color: #60a5fa; }
     .addr-row { margin-top: 12px; }
@@ -51,13 +56,13 @@
     .stock-row .stock-detail { font-size: 12px; color: var(--muted); }
 
     .model-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .model-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; color: var(--muted); font-size: 12px; font-family: inherit; font-weight: 500; cursor: pointer; text-align: center; line-height: 1.5; transition: all 0.15s; }
+    .model-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; color: var(--muted); font-size: 12px; font-family: inherit; font-weight: 300; cursor: pointer; text-align: center; line-height: 1.5; transition: all 0.15s; }
     .model-btn strong { display: block; font-size: 15px; color: var(--text); margin-top: 4px; }
     .model-btn:hover:not(.active) { border-color: #52525b; color: #d4d4d8; }
     .model-btn.active { background: rgba(59,130,246,0.15); border-color: var(--accent); color: var(--text); }
 
     .quote-card { background: linear-gradient(145deg, #1e3a8a, #1d4ed8); border: 1px solid #2563eb; border-radius: 16px; padding: 28px 24px; text-align: center; margin-bottom: 12px; }
-    .quote-card .ql { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
+    .quote-card .ql { font-size: 11px; font-weight: 400; letter-spacing: 0.07em; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
     .quote-card .qa { font-size: 64px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
     .quote-card .qsub { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 8px; }
 
@@ -83,7 +88,7 @@
     .deal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .deal-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 12px; text-align: center; }
     .deal-box.win { background: rgba(16,185,129,0.1); border-color: var(--green); }
-    .deal-box .dl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
+    .deal-box .dl { font-size: 11px; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 6px; font-weight: 300; }
     .deal-box.win .dl { color: rgba(16,185,129,0.8); }
     .deal-box .da { font-size: 30px; font-weight: 700; color: #52525b; }
     .deal-box.win .da { color: #fff; }
@@ -93,14 +98,14 @@
     .savings-pill { display: inline-block; background: rgba(16,185,129,0.15); border: 1px solid var(--green); color: var(--green); font-size: 13px; font-weight: 700; padding: 6px 18px; border-radius: 100px; }
 
     .tab-bar { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 4px; margin-bottom: 20px; }
-    .tab-btn { flex: 1; padding: 10px; font-size: 14px; font-weight: 600; font-family: inherit; background: none; border: none; border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .tab-btn { flex: 1; padding: 10px; font-size: 13px; font-weight: 400; font-family: inherit; background: none; border: none; border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
     .tab-btn.active { background: var(--accent); color: #fff; }
 
     .inv-search { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-size: 15px; font-family: inherit; outline: none; margin-bottom: 12px; }
     .inv-search:focus { border-color: var(--accent); }
     .inv-search::placeholder { color: var(--muted); }
     .filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
-    .filter-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 600; font-family: inherit; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .filter-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 400; font-family: inherit; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
     .filter-btn.active { background: rgba(59,130,246,0.15); border-color: var(--accent); color: var(--text); }
     .inv-item { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; }
     .inv-item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
@@ -112,7 +117,7 @@
     .stock-badge.out { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
     .inv-item-meta { font-size: 12px; color: var(--muted); margin-top: 6px; }
     .inv-actions { display: flex; gap: 8px; margin-top: 12px; }
-    .inv-btn { flex: 1; padding: 9px; font-size: 13px; font-weight: 600; font-family: inherit; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: var(--text); transition: all 0.15s; }
+    .inv-btn { flex: 1; padding: 9px; font-size: 13px; font-weight: 400; font-family: inherit; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: var(--text); transition: all 0.15s; }
     .inv-btn.receive { border-color: var(--accent); color: var(--accent); }
     .inv-btn.used    { border-color: var(--green); color: var(--green); }
     .inv-btn.remove  { border-color: #7c3aed; color: #a78bfa; background: rgba(139,92,246,0.08); }
@@ -120,7 +125,7 @@
     
     .orders-section  { margin-top: 20px; }
     .orders-header   { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .orders-header-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .orders-header-title { font-size: 13px; font-weight: 400; letter-spacing: 0.04em; color: var(--muted); }
     .orders-new-btn  { padding: 7px 14px; font-size: 12px; font-weight: 700; font-family: inherit; background: rgba(59,130,246,0.12); border: 1px solid var(--accent); color: var(--accent); border-radius: 8px; cursor: pointer; }
     .order-item      { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
     .order-item-top  { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
@@ -155,11 +160,11 @@
     
     .auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); }
     .auth-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px 28px; max-width: 320px; width: 90%; text-align: center; }
-    .auth-box h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .auth-box h2 { font-size: 22px; font-weight: normal; margin-bottom: 6px; }
     .auth-box p { color: var(--muted); font-size: 13px; margin-bottom: 20px; line-height: 1.5; }
     .auth-box input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 13px 14px; color: var(--text); font-size: 16px; font-family: inherit; outline: none; text-align: center; letter-spacing: 0.12em; margin-bottom: 12px; }
     .auth-box input:focus { border-color: var(--accent); }
-    .auth-box .auth-submit { width: 100%; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; border: none; background: var(--accent); color: #fff; }
+    .auth-box .auth-submit { width: 100%; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 400; font-family: inherit; cursor: pointer; border: none; background: var(--accent); color: #fff; }
     .auth-error { color: #ef4444; font-size: 13px; margin-top: 8px; min-height: 18px; }
     .auth-dismiss { background: none; border: none; color: var(--muted); font-size: 13px; cursor: pointer; margin-top: 12px; font-family: inherit; text-decoration: underline; }
     .demo-badge { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.35); color: #fbbf24; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-family: inherit; }
@@ -168,7 +173,7 @@
     .demo-inv-note { text-align: center; color: #fbbf24; font-size: 12px; padding: 8px 0 4px; font-weight: 600; letter-spacing: 0.02em; }
 
     .orders-tab-nav { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
-    .orders-tab-btn { padding: 8px 12px; font-size: 12px; font-weight: 600; font-family: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .orders-tab-btn { padding: 8px 12px; font-size: 12px; font-weight: 400; font-family: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
     .orders-tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
     .orders-view { display: none; }
     .orders-view.active { display: block; }
@@ -207,7 +212,7 @@
     .order-partial-notice { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 12px; color: #fbbf24; }
 
     .need-sub-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
-    .need-sub-btn { flex: 1; padding: 7px 8px; font-size: 12px; font-weight: 600; font-family: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; text-align: center; }
+    .need-sub-btn { flex: 1; padding: 7px 8px; font-size: 12px; font-weight: 400; font-family: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; text-align: center; }
     .need-sub-btn.active { background: rgba(59,130,246,0.15); border-color: var(--accent); color: var(--text); }
     
     .tier-options { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
@@ -216,7 +221,7 @@
     .tier-option.active { background: rgba(59,130,246,0.15); border-color: var(--accent); }
     .tier-option.na { opacity: 0.3; pointer-events: none; }
     .tier-option-header { display: flex; justify-content: space-between; align-items: center; }
-    .tier-option-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .tier-option-label { font-size: 12px; font-weight: 400; letter-spacing: 0.04em; color: var(--muted); }
     .tier-option.active .tier-option-label { color: rgba(147,197,253,0.9); }
     .tier-option-price { font-size: 20px; font-weight: 700; color: var(--text); }
     .tier-option .stock-row { margin-top: 8px; padding: 7px 10px; }
@@ -239,13 +244,13 @@
     .booker-row .bl { color: var(--muted); }
     .booker-row .bv { font-weight: 700; }
     .booker-total { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 16px; margin: 12px 0; text-align: center; }
-    .booker-total .bt-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
+    .booker-total .bt-label { font-size: 11px; font-weight: 400; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 4px; }
     .booker-total .bt-amt { font-size: 42px; font-weight: 800; letter-spacing: -0.03em; }
     .owner-take { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
     .owner-take .ot-label { font-size: 13px; font-weight: 600; color: var(--green); }
     .owner-take .ot-amt { font-size: 22px; font-weight: 800; color: var(--green); }
     
-    .staff-section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; }
+    .staff-section-title { font-size: 13px; font-weight: 400; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 12px; }
     .staff-user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
     .staff-user-row:last-child { border-bottom: none; }
     .staff-user-name { font-size: 14px; font-weight: 600; }
@@ -253,7 +258,7 @@
     .staff-add-row { display: flex; gap: 8px; margin-top: 12px; }
     .staff-add-row input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text); font-size: 14px; font-family: inherit; outline: none; }
     .staff-add-row input:focus { border-color: var(--accent); }
-    .staff-add-btn { background: var(--accent); border: none; color: #fff; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap; }
+    .staff-add-btn { background: var(--accent); border: none; color: #fff; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 400; font-family: inherit; cursor: pointer; white-space: nowrap; }
     
     .chpass-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .chpass-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; width: 90%; max-width: 340px; max-height: 80vh; overflow-y: auto; }
@@ -261,7 +266,7 @@
     .chpass-box input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-size: 16px; font-family: inherit; outline: none; margin-bottom: 10px; box-sizing: border-box; }
     .chpass-box input:focus { border-color: var(--accent); }
     .chpass-actions { display: flex; gap: 8px; margin-top: 6px; }
-    .chpass-actions button { flex: 1; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; border: none; }
+    .chpass-actions button { flex: 1; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 400; font-family: inherit; cursor: pointer; border: none; }
     .chpass-save { background: var(--accent); color: #fff; }
     .chpass-cancel { background: var(--surface2); color: var(--muted); border: 1px solid var(--border) !important; }
     .chpass-err { font-size: 12px; color: #ef4444; margin-top: 4px; min-height: 16px; }
@@ -273,8 +278,8 @@
 <div id="authOverlay" class="auth-overlay hidden">
   <div class="auth-box">
     <div style="font-size:36px;margin-bottom:10px;">⚡</div>
-    <h2>AlmaTek Access</h2>
-    <p>Enter your access code to unlock features.</p>
+    <h2><span class="brand">AlmaTek</span> <em>access</em></h2>
+    <p>enter your access code to unlock features.</p>
     <input type="password" id="authInput" placeholder="Access code" onkeydown="if(event.key==='Enter') tryAuth()" autocomplete="off" />
     <button class="auth-submit" onclick="tryAuth()">Unlock</button>
     <div class="auth-error" id="authError"></div>
@@ -512,7 +517,7 @@
 <div id="tabOrders" class="hidden">
 <div class="container">
   <header style="padding:16px 0 8px;display:flex;justify-content:space-between;align-items:center;">
-    <h1 style="font-size:17px;">📋 Orders</h1>
+    <h1 style="font-size:17px;">📋 repair <em>orders</em></h1>
   </header>
   <div class="orders-tab-nav">
     <button class="orders-tab-btn active" onclick="switchOrdersView('needorder')">Need to Order</button>
@@ -550,7 +555,7 @@
 <div id="tabLeads" class="hidden">
 <div class="container">
   <header style="padding:16px 0 20px;">
-    <h1 style="font-size:17px;">👤 Lead Management</h1>
+    <h1 style="font-size:17px;">👤 lead <em>management</em></h1>
     <button id="newLeadBtn" onclick="showNewLeadForm()" style="margin-top:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
   </header>
 
@@ -616,7 +621,7 @@
 <!-- Follow-up Tab -->
 <div id="tabFollowUp" class="hidden">
 <div class="container">
-  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">📅 Follow-up Needed</h1></header>
+  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">📅 follow-up <em>needed</em></h1></header>
   <div id="followUpList"></div>
 </div>
 </div>
@@ -625,7 +630,7 @@
 <div id="tabCart" class="hidden">
 <div class="container">
   <header style="padding:16px 0 20px;display:flex;justify-content:space-between;align-items:center;">
-    <h1 style="font-size:17px;">🛒 Order Cart</h1>
+    <h1 style="font-size:17px;">🛒 order <em>cart</em></h1>
     <button onclick="clearCart()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Clear All</button>
   </header>
   <div id="cartTabItems"></div>
@@ -640,7 +645,7 @@
 <!-- Booker Pay Calculator Tab -->
 <div id="tabBooker" class="hidden">
 <div class="container">
-  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">📊 Booker Pay Calculator</h1></header>
+  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">📊 booker <em>pay</em> calculator</h1></header>
   <div class="card">
     <div class="gap"><label class="field-label" for="bookerName">Booker Name</label><input type="text" id="bookerName" placeholder="Name" oninput="calcBookerPay()" /></div>
     <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerMonth">Month</label><select id="bookerMonth" onchange="calcBookerPay()"><option value="">— Select month —</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select></div>
@@ -656,7 +661,7 @@
 <!-- Staff Management Tab -->
 <div id="tabStaff" class="hidden">
 <div class="container">
-  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">👥 Staff Management</h1><button onclick="showApiPassModal()" style="margin-top:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">🔑 Set Worker Token</button></header>
+  <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">👥 staff <em>management</em></h1><button onclick="showApiPassModal()" style="margin-top:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">🔑 Set Worker Token</button></header>
   <div id="staffSetupSection" class="card"><div class="staff-section-title">Connect Google Sheet</div><p style="font-size:12px;color:var(--muted);margin:0 0 12px;">Paste your Google Apps Script web app URL below.</p><div class="staff-add-row" style="flex-direction:column;gap:8px;"><input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;" /><button class="staff-add-btn" onclick="saveScriptSetup()">Connect</button></div><div id="setupErr" class="chpass-err"></div></div>
   <div id="staffMainSection" class="hidden"><div style="text-align:right;margin-bottom:8px;"><button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Reset Google Sheet connection</button></div><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
   <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
