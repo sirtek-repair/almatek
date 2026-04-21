@@ -580,7 +580,7 @@
 <div id="tabStaff" class="hidden">
 <div class="container">
   <header style="padding:16px 0 20px;"><h1 style="font-size:17px;">👥 Staff Management</h1><button onclick="showApiPassModal()" style="margin-top:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">🔑 Set Worker Token</button></header>
-  <div id="staffSetupSection" class="card"><div class="staff-section-title">Connect Google Sheet</div><p style="font-size:12px;color:var(--muted);margin:0 0 12px;">Paste your Google Apps Script web app URL and the secret you set in the script.</p><div class="staff-add-row" style="flex-direction:column;gap:8px;"><input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;" /><div style="display:flex;gap:8px;"><input type="text" id="scriptSecretInput" placeholder="Admin secret" autocomplete="off" style="flex:1;" /><button class="staff-add-btn" onclick="saveScriptSetup()">Connect</button></div></div><div id="setupErr" class="chpass-err"></div></div>
+  <div id="staffSetupSection" class="card"><div class="staff-section-title">Connect Google Sheet</div><p style="font-size:12px;color:var(--muted);margin:0 0 12px;">Paste your Google Apps Script web app URL below.</p><div class="staff-add-row" style="flex-direction:column;gap:8px;"><input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;" /><button class="staff-add-btn" onclick="saveScriptSetup()">Connect</button></div><div id="setupErr" class="chpass-err"></div></div>
   <div id="staffMainSection" class="hidden"><div style="text-align:right;margin-bottom:8px;"><button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Reset Google Sheet connection</button></div><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
   <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
 </div>
@@ -940,13 +940,80 @@ function calcBookerPay() { var repairs = parseInt(el('bookerRepairs').value) || 
 function shareBookerResults() { showToast('Results ready to share'); }
 
 // Staff Management
-function renderStaffTab() {}
+function renderStaffTab() {
+  if (!USERS_SCRIPT_URL) {
+    el('staffSetupSection').classList.remove('hidden');
+    el('staffMainSection').classList.add('hidden');
+    return;
+  }
+  el('staffSetupSection').classList.add('hidden');
+  el('staffMainSection').classList.remove('hidden');
+  el('staffUserList').innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading…</p>';
+  sheetsCall({ action: 'list' }).then(function(data) {
+    if (!data.ok) { el('staffUserList').innerHTML = '<p style="color:#ef4444;font-size:13px;">Error loading users</p>'; return; }
+    var users = data.users || [];
+    if (!users.length) { el('staffUserList').innerHTML = '<p style="color:var(--muted);font-size:13px;">No staff users yet.</p>'; return; }
+    el('staffUserList').innerHTML = users.map(function(u) {
+      return '<div class="staff-user-row"><div><div class="staff-user-name">' + u.name + '</div><div style="font-size:11px;color:var(--muted);">' + (u.structure||'standard') + '</div></div>' +
+        '<button class="staff-del-btn" onclick="deleteStaffUser(\'' + u.name.replace(/'/g,"\\'") + '\')">Remove</button></div>';
+    }).join('');
+  }).catch(function() { el('staffUserList').innerHTML = '<p style="color:#ef4444;font-size:13px;">Network error</p>'; });
+}
+
 function showApiPassModal() { el('apiPassModal').classList.remove('hidden'); }
-function saveApiPassModal() { el('apiPassModal').classList.add('hidden'); }
-function saveScriptSetup() {}
-function resetScriptConnection() {}
-function addStaffUser() {}
-function resetUserPassword() {}
+function saveApiPassModal() {
+  var val = (el('apiPassModalInput').value || '').trim();
+  if (!val) { el('apiPassModalErr').textContent = 'Enter the token.'; return; }
+  apiPass = val; localStorage.setItem('almatek_api_pass', val);
+  el('apiPassModal').classList.add('hidden');
+  invLoaded = false; allInvRecords = [];
+  if (!el('tabInventory').classList.contains('hidden')) loadInventory();
+}
+
+function saveScriptSetup() {
+  var url = (el('scriptUrlInput').value || '').trim();
+  if (!url || !url.startsWith('https://')) { el('setupErr').textContent = 'Enter a valid script URL.'; return; }
+  USERS_SCRIPT_URL = url;
+  localStorage.setItem('almatek_script_url', url);
+  el('setupErr').textContent = '';
+  renderStaffTab();
+}
+
+function resetScriptConnection() {
+  localStorage.removeItem('almatek_script_url');
+  USERS_SCRIPT_URL = '';
+  renderStaffTab();
+}
+
+function addStaffUser() {
+  var name = (el('newUserName').value || '').trim();
+  var pass = (el('newUserPass').value || '').trim();
+  var structure = el('newStructFlat').classList.contains('active') ? 'flat' : 'standard';
+  if (!name || !pass) { el('addUserErr').textContent = 'Name and password required.'; return; }
+  el('addUserErr').textContent = '';
+  sheetsCall({ action: 'add', name: name, pass: pass, structure: structure }).then(function(data) {
+    if (data.ok) { el('newUserName').value = ''; el('newUserPass').value = ''; renderStaffTab(); showToast(name + ' added ✓'); }
+    else { el('addUserErr').textContent = 'Error adding user.'; }
+  }).catch(function() { el('addUserErr').textContent = 'Network error.'; });
+}
+
+function deleteStaffUser(name) {
+  if (!confirm('Remove ' + name + '?')) return;
+  sheetsCall({ action: 'delete', name: name }).then(function(data) {
+    if (data.ok) { renderStaffTab(); showToast(name + ' removed'); }
+  });
+}
+
+function resetUserPassword() {
+  var name = (el('resetUserName').value || '').trim();
+  var pass = (el('resetUserPass').value || '').trim();
+  if (!name || !pass) { el('resetPassErr').textContent = 'Name and new password required.'; return; }
+  el('resetPassErr').textContent = '';
+  sheetsCall({ action: 'resetPass', name: name, newPass: pass }).then(function(data) {
+    if (data.ok) { el('resetUserName').value = ''; el('resetUserPass').value = ''; showToast('Password reset ✓'); }
+    else { el('resetPassErr').textContent = 'User not found.'; }
+  }).catch(function() { el('resetPassErr').textContent = 'Network error.'; });
+}
 function showChangePass() {}
 function saveNewPassword() {}
 
