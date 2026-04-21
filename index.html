@@ -311,8 +311,7 @@
   <button class="tab-btn active" id="tabQuoteBtn" onclick="switchTab('quote')">💰 Quote</button>
   <button class="tab-btn" id="tabOrdBtn" onclick="switchTab('orders')">📋 Orders</button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
-  <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 LeadTek</button>
-  <button class="tab-btn" id="tabFollowUpBtn" onclick="switchTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+  <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 <span class="brand">LeadTek</span></button>
   <button class="tab-btn" id="tabCartBtn" onclick="switchTab('cart')">🛒 Cart <span id="cartTabBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
   <button class="tab-btn" id="tabBookerBtn" onclick="switchTab('booker')">📊 Booker</button>
   <button class="tab-btn hidden" id="tabStaffBtn" onclick="switchTab('staff')">👥 Staff</button>
@@ -584,6 +583,13 @@
     <button id="newLeadBtn" onclick="showNewLeadForm()" style="margin-top:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
   </header>
 
+  <div class="orders-tab-nav">
+    <button class="orders-tab-btn active" id="leadSubBtnLeads" onclick="switchLeadSubTab('leads')">Leads</button>
+    <button class="orders-tab-btn" id="leadSubBtnFollowUp" onclick="switchLeadSubTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+  </div>
+
+  <div id="leadViewLeads">
+
   <div id="newLeadForm" class="card hidden">
     <h3 style="margin:0 0 16px;font-size:15px;">New Lead</h3>
     <input type="text" id="leadName" placeholder="Customer Name" style="width:100%;margin-bottom:10px;" />
@@ -626,6 +632,11 @@
 
   <div id="leadsList"></div>
 
+  </div><!-- end leadViewLeads -->
+  <div id="leadViewFollowUp" class="hidden">
+    <div id="followUpList"></div>
+  </div>
+
   <div id="leadDetailModal" class="chpass-overlay hidden">
     <div class="chpass-box" style="max-width:500px;max-height:80vh;overflow-y:auto;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -655,16 +666,6 @@
       </div>
     </div>
   </div>
-</div>
-</div>
-
-<!-- Follow-up Tab -->
-<div id="tabFollowUp" class="hidden">
-<div class="container">
-  <header style="text-align:center;padding:16px 0 20px;">
-    <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
-  </header>
-  <div id="followUpList"></div>
 </div>
 </div>
 
@@ -876,10 +877,22 @@ function resetSecond() { secondOpen=false; type2=''; cost2=0; el('secondSw').cla
 function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b=>b.classList.remove('active')); }
 
 function switchTab(tab) {
-  const isQuote = tab==='quote', isOrders = tab==='orders', isInventory = tab==='inventory', isLeads = tab==='leads', isFollowUp = tab==='followup', isCart = tab==='cart', isBooker = tab==='booker', isStaff = tab==='staff';
-  el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabFollowUp').classList.toggle('hidden', !isFollowUp); el('tabCart').classList.toggle('hidden', !isCart); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff);
-  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabFollowUpBtn').classList.toggle('active', isFollowUp); el('tabCartBtn').classList.toggle('active', isCart); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff);
-  if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) setPayStructure(isOwner ? payStructure : currentUserStructure); else if (isLeads) { if (typeof renderLeadsList === 'function') renderLeadsList(); } else if (isFollowUp) renderFollowUpTab(); else if (isCart) renderCartTab();
+  const isQuote = tab==='quote', isOrders = tab==='orders', isInventory = tab==='inventory', isLeads = tab==='leads', isCart = tab==='cart', isBooker = tab==='booker', isStaff = tab==='staff';
+  el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabCart').classList.toggle('hidden', !isCart); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff);
+  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabCartBtn').classList.toggle('active', isCart); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff);
+  if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) setPayStructure(isOwner ? payStructure : currentUserStructure); else if (isLeads) { switchLeadSubTab('leads'); } else if (isCart) renderCartTab();
+}
+
+var leadSubTab = 'leads';
+function switchLeadSubTab(tab) {
+  leadSubTab = tab;
+  var isLeadsView = tab === 'leads';
+  el('leadViewLeads').classList.toggle('hidden', !isLeadsView);
+  el('leadViewFollowUp').classList.toggle('hidden', isLeadsView);
+  el('leadSubBtnLeads').classList.toggle('active', isLeadsView);
+  el('leadSubBtnFollowUp').classList.toggle('active', !isLeadsView);
+  var newLeadBtn = el('newLeadBtn'); if (newLeadBtn) newLeadBtn.style.display = isLeadsView ? '' : 'none';
+  if (!isLeadsView) renderFollowUpTab(); else if (typeof renderLeadsList === 'function') renderLeadsList();
 }
 
 // Worker + Airtable config
@@ -1432,7 +1445,7 @@ function renderFollowUpTab() {
     var isOverdue = l.followUpAt && new Date(l.followUpAt) <= today;
     var tag = isOverdue ? '<span class="stock-badge out">Overdue</span>' : '<span class="stock-badge low">Uncontacted</span>';
     var sub = l.followUpAt ? 'Follow-up: ' + l.followUpAt : 'Created: ' + new Date(l.createdAt).toLocaleDateString();
-    return '<div class="inv-item" onclick="switchTab(\'leads\');setTimeout(function(){openLeadDetail(\'' + l.id + '\')},50)" style="cursor:pointer;">' +
+    return '<div class="inv-item" onclick="switchLeadSubTab(\'leads\');setTimeout(function(){openLeadDetail(\'' + l.id + '\')},50)" style="cursor:pointer;">' +
       '<div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div>' + tag + '</div>' +
       '<div class="inv-item-meta">' + sub + (l.followUpNotes?' · '+l.followUpNotes:'') + '</div>' +
     '</div>';
