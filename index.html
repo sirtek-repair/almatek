@@ -1510,23 +1510,29 @@ function setSyncStatus(state) {
 function syncFromSheets() {
   if (!USERS_SCRIPT_URL) return;
   setSyncStatus('syncing');
+  var up = { leads: 0, tickets: 0 }, dn = { leads: 0, tickets: 0 };
   var done = 0;
-  function onDone() { if (++done >= 2) setSyncStatus('idle'); }
+  function finish() {
+    if (++done < 2) return;
+    setSyncStatus('idle');
+    var parts = [];
+    if (up.leads || up.tickets) parts.push('↑ ' + [up.leads && up.leads + ' lead' + (up.leads !== 1 ? 's' : ''), up.tickets && up.tickets + ' ticket' + (up.tickets !== 1 ? 's' : '')].filter(Boolean).join(', '));
+    if (dn.leads || dn.tickets) parts.push('↓ ' + [dn.leads && dn.leads + ' lead' + (dn.leads !== 1 ? 's' : ''), dn.tickets && dn.tickets + ' ticket' + (dn.tickets !== 1 ? 's' : '')].filter(Boolean).join(', '));
+    showToast(parts.length ? parts.join('  ') : 'Synced ✓');
+  }
 
   sheetsCall({ action: 'getLeads' }).then(function(data) {
     if (data && data.ok && Array.isArray(data.leads)) {
       var sheetMap = {};
       data.leads.forEach(function(l) { sheetMap[l.id] = l; });
-      // push local records Sheets doesn't have
-      leadsStorage.forEach(function(local) {
-        if (!sheetMap[local.id]) sheetsCall({ action: 'createLead', lead: local });
-      });
-      // merge: newer updatedAt wins
       var localMap = {};
       leadsStorage.forEach(function(l) { localMap[l.id] = l; });
+      leadsStorage.forEach(function(local) {
+        if (!sheetMap[local.id]) { sheetsCall({ action: 'createLead', lead: local }); up.leads++; }
+      });
       var merged = data.leads.map(function(s) {
         var loc = localMap[s.id];
-        if (!loc) return s;
+        if (!loc) { dn.leads++; return s; }
         return new Date(s.updatedAt||0) >= new Date(loc.updatedAt||0) ? s : loc;
       });
       leadsStorage.forEach(function(l) { if (!sheetMap[l.id]) merged.push(l); });
@@ -1535,23 +1541,21 @@ function syncFromSheets() {
       if (typeof renderLeadsList === 'function') renderLeadsList();
       updateFollowUpBadge();
     }
-    onDone();
-  }).catch(onDone);
+    finish();
+  }).catch(finish);
 
   sheetsCall({ action: 'getTickets' }).then(function(data) {
     if (data && data.ok && Array.isArray(data.tickets)) {
       var sheetMap = {};
       data.tickets.forEach(function(t) { sheetMap[t.id] = t; });
-      // push local records Sheets doesn't have
-      ticketsStorage.forEach(function(local) {
-        if (!sheetMap[local.id]) sheetsCall({ action: 'createTicket', ticket: local });
-      });
-      // merge: newer updatedAt wins
       var localMap = {};
       ticketsStorage.forEach(function(t) { localMap[t.id] = t; });
+      ticketsStorage.forEach(function(local) {
+        if (!sheetMap[local.id]) { sheetsCall({ action: 'createTicket', ticket: local }); up.tickets++; }
+      });
       var merged = data.tickets.map(function(s) {
         var loc = localMap[s.id];
-        if (!loc) return s;
+        if (!loc) { dn.tickets++; return s; }
         return new Date(s.updatedAt||0) >= new Date(loc.updatedAt||0) ? s : loc;
       });
       ticketsStorage.forEach(function(t) { if (!sheetMap[t.id]) merged.push(t); });
@@ -1559,10 +1563,10 @@ function syncFromSheets() {
       saveTicketsToStorage();
       updateTicketsBadge();
       updateFollowUpBadge();
-      if (typeof renderTicketsList === 'function' && leadSubTab === 'tickets') renderTicketsList();
+      if (typeof renderTicketsList === 'function') renderTicketsList();
     }
-    onDone();
-  }).catch(onDone);
+    finish();
+  }).catch(finish);
 }
 
 function showNewLeadForm() { el('newLeadForm').classList.remove('hidden'); el('newLeadBtn').style.display = 'none'; }
