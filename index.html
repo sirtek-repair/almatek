@@ -1144,39 +1144,34 @@ function switchOrdersView(view) {
 }
 
 function loadOrderRecords() {
-  var _dbg = 'loadOrderRecords: authd=' + authd + ' loading=' + ordersLoading2;
-  var oList = el('ordersOrderedList'), rList = el('ordersReceiveList');
-  if (oList) oList.innerHTML = '<div class="orders-empty-state" style="font-size:11px;">' + _dbg + '</div>';
   if (ordersLoading2) return; ordersLoading2 = true;
   if (!authd) {
     ordersLoading2 = false;
     var msg = '<div class="orders-empty-state">Log in to see orders</div>';
+    var oList = el('ordersOrderedList'), rList = el('ordersReceiveList');
     if (oList) oList.innerHTML = msg;
     if (rList) rList.innerHTML = msg;
     return;
   }
+  var oList = el('ordersOrderedList'), rList = el('ordersReceiveList');
   if (oList) oList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
   if (rList) rList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
   atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(function(data) {
     ordersLoading2 = false;
     if (data.error) {
       var detail = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
-      showToast('Orders error: ' + detail);
       var errMsg = '<div class="orders-empty-state">Error: ' + detail + '</div>';
       if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = errMsg;
       if (el('ordersReceiveList')) el('ordersReceiveList').innerHTML = errMsg;
       return;
     }
     allOrderRecords = data.records || [];
-    var pending = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; });
-    showToast(allOrderRecords.length + ' orders fetched, ' + pending.length + ' pending');
     if (ordersTabView === 'ordered') renderOrderedList();
     else if (ordersTabView === 'receive') renderReceiveList();
   }).catch(function(err) {
     ordersLoading2 = false;
     var detail = err && err.message ? err.message : 'network error';
-    showToast('Orders fetch failed: ' + detail);
-    var errMsg = '<div class="orders-empty-state">Error: ' + detail + '</div>';
+    var errMsg = '<div class="orders-empty-state">Error loading orders — check connection</div>';
     if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = errMsg;
     if (el('ordersReceiveList')) el('ordersReceiveList').innerHTML = errMsg;
   });
