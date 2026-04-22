@@ -1120,6 +1120,7 @@ var orderCart = (function() { try { return JSON.parse(localStorage.getItem('alma
 function saveCartToStorage() { try { localStorage.setItem('almatek_order_cart', JSON.stringify(orderCart)); } catch(e) {} }
 
 function initOrders() {
+  showToast('Orders tab loaded');
   switchOrdersView('needorder');
   renderNeedOrderList();
   if (!authd) return;
