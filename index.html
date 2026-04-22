@@ -1109,14 +1109,18 @@ function sheetsCall(payload) {
 
 let allInvRecords = [], activeFilter = 'all', invLoaded = false;
 function selName(v) { return v ? (typeof v === 'object' ? (v.name || '') : v) : ''; }
+var INV_CACHE_TTL = 10 * 60 * 1000, ORDERS_CACHE_TTL = 5 * 60 * 1000;
+function getCache(key) { try { var raw = localStorage.getItem(key); if (!raw) return null; var obj = JSON.parse(raw); if (Date.now() - obj.ts > (key.includes('orders') ? ORDERS_CACHE_TTL : INV_CACHE_TTL)) { localStorage.removeItem(key); return null; } return obj.data; } catch(e) { return null; } }
+function setCache(key, data) { try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {} }
+function clearCache(key) { try { localStorage.removeItem(key); } catch(e) {} }
 
 function atFetch(path, opts) { opts = opts || {}; return fetch(WORKER_URL + '/v0/' + path, Object.assign({}, opts, { headers: Object.assign({ 'X-Auth': apiPass, 'Content-Type': 'application/json' }, opts.headers || {}) })).then(r => r.json()); }
 
 function initInventory() { if (!invLoaded) loadInventory(); loadOrders(); }
 function loadInventory() {
   if (!authd) { el('invLoading').classList.add('hidden'); el('invList').innerHTML = '<div class="orders-empty-state" style="padding:40px 20px;">🔒 Log in to view inventory</div>'; return; }
-  var cached = sessionStorage.getItem('almatek_inv_cache');
-  if (cached) { try { allInvRecords = JSON.parse(cached); invLoaded = true; el('invLoading').classList.add('hidden'); renderInventory(); return; } catch(e) { sessionStorage.removeItem('almatek_inv_cache'); } }
+  var cached = getCache('almatek_inv_cache');
+  if (cached) { allInvRecords = cached; invLoaded = true; el('invLoading').classList.add('hidden'); renderInventory(); return; }
   el('invLoading').classList.remove('hidden'); el('invList').innerHTML = ''; allInvRecords = []; loadInventoryPage(null, false);
 }
 function loadInventoryPage(offset, quiet) {
@@ -1127,7 +1131,7 @@ function loadInventoryPage(offset, quiet) {
       if (!quiet) el('invLoading').innerHTML = 'Auth error: ' + (data.error.message||'Invalid token') + '. <button onclick="showApiPassModal()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;">Set Token</button>';
       return;
     }
-    allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; try { sessionStorage.setItem('almatek_inv_cache', JSON.stringify(allInvRecords)); } catch(e) {} if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } else { if (model1) updateTierDisplay1(); if (model2) updateTierDisplay2(); } }
+    allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; setCache('almatek_inv_cache', allInvRecords); if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } else { if (model1) updateTierDisplay1(); if (model2) updateTierDisplay2(); } }
   });
 }
 
@@ -1149,10 +1153,10 @@ function showReceive(id) { el('receive-' + id).classList.remove('hidden'); el('r
 function hideReceive(id) { el('receive-' + id).classList.add('hidden'); el('rqty-' + id).value = ''; }
 function confirmReceive(id) {
   var qty = parseInt(el('rqty-' + id).value); if (!qty || qty < 1) return;
-  atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': qty, 'date recieved': new Date().toISOString() } }) }).then(data => { if (data.error) { showToast('Error'); return; } hideReceive(id); showToast('Received ' + qty + ' ✓'); sessionStorage.removeItem('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); loadOrders(); });
+  atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': qty, 'date recieved': new Date().toISOString() } }) }).then(data => { if (data.error) { showToast('Error'); return; } hideReceive(id); showToast('Received ' + qty + ' ✓'); clearCache('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); loadOrders(); });
 }
-function markUsed(id, name) { atFetch(AT_BASE + '/' + AT_SOLD, { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' marked used ✓'); sessionStorage.removeItem('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
-function removeItem(id, name) { if (!confirm('Remove 1 unit?')) return; atFetch(AT_BASE + '/tblFoAyBRZ0KLuYQl', { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' removed ✓'); sessionStorage.removeItem('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
+function markUsed(id, name) { atFetch(AT_BASE + '/' + AT_SOLD, { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' marked used ✓'); clearCache('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
+function removeItem(id, name) { if (!confirm('Remove 1 unit?')) return; atFetch(AT_BASE + '/tblFoAyBRZ0KLuYQl', { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' removed ✓'); clearCache('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
 
 var ordersLoaded = false, DEMO_ORDERS = [{ id:'o1', fields:{ 'fldF0TJARgHugOh83':'Order: iPhone 16 Pro Max Screen', 'fldbKVKkNgZtShHwh':3, 'fldVq43gyw9HVLYNI':'Mobilink', 'fldeHBNhXCrqAJrjp':'2026-03-28', 'fldwGKyfgOuue1eyE':true } }];
 function loadOrders() { if (!isAuth()) { renderOrders(DEMO_ORDERS); return; } el('ordersLoading').classList.remove('hidden'); atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(data => { el('ordersLoading').classList.add('hidden'); if (data.error) return; renderOrders(data.records || []); }); }
@@ -1200,6 +1204,8 @@ function loadOrderRecords() {
     if (oList) oList.innerHTML = '<div class="orders-empty-state">Log in to see orders</div>';
     return;
   }
+  var cachedOrders = getCache('almatek_orders_cache');
+  if (cachedOrders) { ordersLoading2 = false; allOrderRecords = cachedOrders; if (ordersTabView === 'ordered') renderOrderedList(); return; }
   if (oList) oList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
   atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=100').then(function(data) {
     ordersLoading2 = false;
@@ -1209,6 +1215,7 @@ function loadOrderRecords() {
       return;
     }
     allOrderRecords = data.records || [];
+    setCache('almatek_orders_cache', allOrderRecords);
     if (ordersTabView === 'ordered') renderOrderedList();
   }).catch(function(err) {
     ordersLoading2 = false;
@@ -1329,7 +1336,7 @@ function placeCartOrder() {
     }
     orderCart = []; saveCartToStorage(); if (el('cartSupplier')) el('cartSupplier').value = '';
     if (btn) { btn.textContent = 'Place Order'; btn.disabled = false; }
-    updateCartTabBadge(); renderCartTab(); renderNeedOrderList(); loadOrderRecords();
+    clearCache('almatek_orders_cache'); updateCartTabBadge(); renderCartTab(); renderNeedOrderList(); loadOrderRecords();
   }).catch(function() {
     showToast('Network error — try again');
     if (btn) { btn.textContent = 'Place Order'; btn.disabled = false; }
@@ -1364,8 +1371,8 @@ function receiveOrder(orderId) {
     if (data.error) { showToast('Error marking received'); return; }
     showToast('Received ' + qty + ' ✓');
     allOrderRecords = allOrderRecords.map(function(r) { return r.id === orderId ? Object.assign({}, r, { fields: Object.assign({}, r.fields, { 'fldwGKyfgOuue1eyE': { name: 'inv received' } }) }) : r; });
+    setCache('almatek_orders_cache', allOrderRecords);
     renderOrderedList();
-    invLoaded = false; allInvRecords = []; loadInventoryPage(null, true);
   });
 }
 
