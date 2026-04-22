@@ -1044,7 +1044,18 @@ const OWNER_PASS = 'rellow4Life$', WORKER_TOKEN = 'sirtek2026';
 var authPass = localStorage.getItem('almatek_pass') || '', apiPass = WORKER_TOKEN, isOwner = authPass === OWNER_PASS, currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
 
 var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '', USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
-function sheetsCall(payload) { if (!USERS_SCRIPT_URL) return Promise.resolve({}); var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)); return fetch(url, { redirect: 'follow', credentials: 'omit' }).then(r => r.json()).catch(function() { return {}; }); }
+function sheetsCall(payload) {
+  if (!USERS_SCRIPT_URL) return Promise.resolve({});
+  var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+  return fetch(url, { redirect: 'follow', credentials: 'omit' })
+    .then(function(r) {
+      if (!r.ok) return r.text().then(function(t) { return { ok: false, _httpError: r.status, _body: t.slice(0,200) }; });
+      return r.text().then(function(t) {
+        try { return JSON.parse(t); }
+        catch(e) { return { ok: false, _parseError: true, _body: t.slice(0,200) }; }
+      });
+    });
+}
 
 let allInvRecords = [], activeFilter = 'all', invLoaded = false;
 function selName(v) { return v ? (typeof v === 'object' ? (v.name || '') : v) : ''; }
@@ -2035,14 +2046,19 @@ function renderStaffTab() {
   el('staffMainSection').classList.remove('hidden');
   el('staffUserList').innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading…</p>';
   sheetsCall({ action: 'list' }).then(function(data) {
-    if (!data.ok) { el('staffUserList').innerHTML = '<p style="color:#ef4444;font-size:13px;">Error loading users</p>'; return; }
+    if (!data.ok) {
+      var detail = data._httpError ? 'HTTP ' + data._httpError : data._parseError ? 'Invalid response (not JSON)' : data.error ? data.error : 'Unknown error';
+      var preview = data._body ? '<br><span style="font-size:10px;opacity:.7;word-break:break-all;">' + data._body + '</span>' : '';
+      el('staffUserList').innerHTML = '<p style="color:#ef4444;font-size:13px;">Error loading users: ' + detail + preview + '</p>';
+      return;
+    }
     var users = data.users || [];
     if (!users.length) { el('staffUserList').innerHTML = '<p style="color:var(--muted);font-size:13px;">No staff users yet.</p>'; return; }
     el('staffUserList').innerHTML = users.map(function(u) {
       return '<div class="staff-user-row"><div><div class="staff-user-name">' + u.name + '</div><div style="font-size:11px;color:var(--muted);">' + (u.structure||'standard') + '</div></div>' +
         '<button class="staff-del-btn" onclick="deleteStaffUser(\'' + u.name.replace(/'/g,"\\'") + '\')">Remove</button></div>';
     }).join('');
-  }).catch(function() { el('staffUserList').innerHTML = '<p style="color:#ef4444;font-size:13px;">Network error</p>'; });
+  }).catch(function(err) { el('staffUserList').innerHTML = '<p style="color:#ef4444;font-size:13px;">Network error: ' + (err && err.message ? err.message : 'CORS or connection failed') + '</p>'; });
 }
 
 function showApiPassModal() { el('apiPassModal').classList.remove('hidden'); }
