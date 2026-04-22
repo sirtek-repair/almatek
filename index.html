@@ -557,7 +557,8 @@
   </header>
   <div class="orders-tab-nav">
     <button class="orders-tab-btn active" onclick="switchOrdersView('needorder')">Need to Order</button>
-    <button class="orders-tab-btn" onclick="showToast('btn tapped');switchOrdersView('ordered')">Ordered</button>
+    <button class="orders-tab-btn" onclick="switchOrdersView('cart')">🛒 Cart <span id="cartSubBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+    <button class="orders-tab-btn" onclick="switchOrdersView('ordered')">Ordered</button>
   </div>
 
   <div id="ordersNeedView" class="orders-view active">
@@ -573,8 +574,19 @@
     <div id="ordersNeedList" class="orders-items-list"></div>
   </div>
 
+  <div id="ordersCartView" class="orders-view">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+      <button onclick="clearCart()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Clear All</button>
+    </div>
+    <div id="cartTabItems"></div>
+    <div id="cartTabEmpty" class="orders-empty-state hidden">Cart is empty — add items from Need to Order</div>
+    <div id="cartTabFooter" class="hidden" style="margin-top:16px;">
+      <input type="text" id="cartSupplier" placeholder="Supplier (e.g. Mobile Sentrix)" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+      <button id="placeOrderBtn" onclick="placeCartOrder()" style="width:100%;padding:14px;background:var(--accent);border:none;color:#fff;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Place Order</button>
+    </div>
+  </div>
+
   <div id="ordersOrderedView" class="orders-view">
-    <div id="ordersDbg" style="font-size:11px;color:var(--muted);padding:4px 0 8px;"></div>
     <div id="ordersOrderedList" class="orders-items-list"><div class="orders-empty-state">Loading…</div></div>
   </div>
 
@@ -730,22 +742,7 @@
 </div>
 
 <!-- Cart Tab -->
-<div id="tabCart" class="hidden">
-<div class="container">
-  <header style="text-align:center;padding:16px 0 20px;">
-    <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
-  </header>
-  <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
-    <button onclick="clearCart()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Clear All</button>
-  </div>
-  <div id="cartTabItems"></div>
-  <div id="cartTabEmpty" class="orders-empty-state hidden">Cart is empty — add items from the Orders tab</div>
-  <div id="cartTabFooter" class="hidden" style="margin-top:16px;">
-    <input type="text" id="cartSupplier" placeholder="Supplier (e.g. Mobile Sentrix)" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
-    <button onclick="placeCartOrder()" style="width:100%;padding:14px;background:var(--accent);border:none;color:#fff;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Place Order</button>
-  </div>
-</div>
-</div>
+<div id="tabCart" class="hidden"></div>
 
 <!-- Booker Pay Calculator Tab -->
 <div id="tabBooker" class="hidden">
@@ -1016,10 +1013,11 @@ function resetSecond() { secondOpen=false; type2=''; cost2=0; el('secondSw').cla
 function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b=>b.classList.remove('active')); }
 
 function switchTab(tab) {
-  const isQuote = tab==='quote', isOrders = tab==='orders', isInventory = tab==='inventory', isLeads = tab==='leads', isCart = tab==='cart', isBooker = tab==='booker', isStaff = tab==='staff';
-  el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabCart').classList.toggle('hidden', !isCart); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff);
-  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabCartBtn').classList.toggle('active', isCart); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff);
-  if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) setPayStructure(isOwner ? payStructure : currentUserStructure); else if (isLeads) { switchLeadSubTab('leads'); } else if (isCart) renderCartTab();
+  if (tab === 'cart') { switchTab('orders'); switchOrdersView('cart'); return; }
+  const isQuote = tab==='quote', isOrders = tab==='orders', isInventory = tab==='inventory', isLeads = tab==='leads', isBooker = tab==='booker', isStaff = tab==='staff';
+  el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabCart').classList.toggle('hidden', true); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff);
+  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabCartBtn').classList.toggle('active', false); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff);
+  if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) setPayStructure(isOwner ? payStructure : currentUserStructure); else if (isLeads) { switchLeadSubTab('leads'); }
 }
 
 var leadSubTab = 'leads';
@@ -1120,7 +1118,6 @@ var orderCart = (function() { try { return JSON.parse(localStorage.getItem('alma
 function saveCartToStorage() { try { localStorage.setItem('almatek_order_cart', JSON.stringify(orderCart)); } catch(e) {} }
 
 function initOrders() {
-  showToast('Orders tab loaded');
   switchOrdersView('needorder');
   renderNeedOrderList();
   if (!authd) return;
@@ -1130,14 +1127,18 @@ function initOrders() {
 
 function switchOrdersView(view) {
   ordersTabView = view;
-  var needEl = el('ordersNeedView'), ordEl = el('ordersOrderedView');
-  if (needEl) { needEl.classList.toggle('active', view === 'needorder'); needEl.style.display = view === 'needorder' ? 'block' : 'none'; }
-  if (ordEl)  { ordEl.classList.toggle('active', view === 'ordered');  ordEl.style.display  = view === 'ordered'  ? 'block' : 'none'; }
-  var dbg = el('ordersDbg'); if (dbg) dbg.textContent = 'switchOrdersView(' + view + ') needEl=' + !!needEl + ' ordEl=' + !!ordEl;
+  var views = { needorder: 'ordersNeedView', cart: 'ordersCartView', ordered: 'ordersOrderedView' };
+  Object.keys(views).forEach(function(v) {
+    var el2 = el(views[v]); if (!el2) return;
+    el2.classList.toggle('active', v === view);
+    el2.style.display = v === view ? 'block' : 'none';
+  });
   var btns = document.querySelectorAll('#tabOrders .orders-tab-btn');
   if (btns[0]) btns[0].classList.toggle('active', view === 'needorder');
-  if (btns[1]) btns[1].classList.toggle('active', view === 'ordered');
+  if (btns[1]) btns[1].classList.toggle('active', view === 'cart');
+  if (btns[2]) btns[2].classList.toggle('active', view === 'ordered');
   if (view === 'needorder') renderNeedOrderList();
+  else if (view === 'cart') renderCartTab();
   else if (view === 'ordered') { ordersLoading2 = false; loadOrderRecords(); }
 }
 
@@ -1233,10 +1234,12 @@ function removeFromCart(id) {
 function clearCart() { orderCart = []; saveCartToStorage(); updateCartTabBadge(); renderNeedOrderList(); renderCartTab(); }
 
 function updateCartTabBadge() {
-  var badge = el('cartTabBadge'); if (!badge) return;
   var count = orderCart.length;
-  badge.textContent = count;
-  badge.classList.toggle('hidden', count === 0);
+  ['cartTabBadge', 'cartSubBadge'].forEach(function(id) {
+    var badge = el(id); if (!badge) return;
+    badge.textContent = count;
+    badge.classList.toggle('hidden', count === 0);
+  });
 }
 
 function renderCartTab() {
@@ -1262,7 +1265,7 @@ function renderCartTab() {
 function placeCartOrder() {
   if (!orderCart.length) { showToast('Cart is empty'); return; }
   var supplier = (el('cartSupplier') ? el('cartSupplier').value.trim() : '');
-  var btn = document.querySelector('#tabCart button[onclick="placeCartOrder()"]');
+  var btn = el('placeOrderBtn');
   if (btn) { btn.textContent = 'Placing…'; btn.disabled = true; }
   var promises = orderCart.map(function(item) {
     var fields = { 'Item': [item.id], 'QTY': item.qty };
@@ -1619,6 +1622,7 @@ function getStatusLabel(s) { var labels = { new:'New', contacted:'Contacted', fo
 function getStatusColor(s) { var colors = { new:'#3b82f6', contacted:'#10b981', follow_up_scheduled:'#8b5cf6', booked:'#06b6d4', closed_lost:'#ef4444' }; return colors[s] || '#6b7280'; }
 
 function renderLeadsList() {
+  if (!authd) { el('leadsList').innerHTML = '<div class="orders-empty-state">🔒 Log in to view leads</div>'; return; }
   var search = (el('leadSearch')?.value || '').toLowerCase();
   var filtered = leadsStorage.filter(l => { var match = !search || (l.name||'').toLowerCase().includes(search) || (l.phone||'').includes(search); return match && (leadFilterStatus === 'all' || l.status === leadFilterStatus); });
   filtered.sort((a,b) => new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt));
@@ -1807,6 +1811,7 @@ function updateTicketsBadge() {
 
 function renderTicketsList() {
   var container = el('ticketsList'); if (!container) return;
+  if (!authd) { container.innerHTML = '<div class="orders-empty-state">🔒 Log in to view tickets</div>'; return; }
   if (!ticketsStorage.length) { container.innerHTML = '<div class="orders-empty-state">No tickets yet — create one from the Quote tab</div>'; return; }
   var sorted = ticketsStorage.slice().sort(function(a, b) { return new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt); });
   container.innerHTML = sorted.map(function(t) {
