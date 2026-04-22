@@ -574,6 +574,7 @@
   </div>
 
   <div id="ordersOrderedView" class="orders-view">
+    <div id="ordersDbg" style="font-size:11px;color:var(--muted);padding:4px 0 8px;"></div>
     <div id="ordersOrderedList" class="orders-items-list"><div class="orders-empty-state">Loading…</div></div>
   </div>
 
@@ -1131,6 +1132,7 @@ function switchOrdersView(view) {
   var needEl = el('ordersNeedView'), ordEl = el('ordersOrderedView');
   if (needEl) { needEl.classList.toggle('active', view === 'needorder'); needEl.style.display = view === 'needorder' ? 'block' : 'none'; }
   if (ordEl)  { ordEl.classList.toggle('active', view === 'ordered');  ordEl.style.display  = view === 'ordered'  ? 'block' : 'none'; }
+  var dbg = el('ordersDbg'); if (dbg) dbg.textContent = 'switchOrdersView(' + view + ') needEl=' + !!needEl + ' ordEl=' + !!ordEl;
   var btns = document.querySelectorAll('#tabOrders .orders-tab-btn');
   if (btns[0]) btns[0].classList.toggle('active', view === 'needorder');
   if (btns[1]) btns[1].classList.toggle('active', view === 'ordered');
@@ -1139,18 +1141,18 @@ function switchOrdersView(view) {
 }
 
 function loadOrderRecords() {
-  var oList = el('ordersOrderedList');
-  if (oList) oList.innerHTML = '<div class="orders-empty-state" style="font-size:11px;line-height:1.8;">dbg: loading2=' + ordersLoading2 + ' authd=' + authd + '</div>';
+  var oList = el('ordersOrderedList'), dbg = el('ordersDbg');
+  if (dbg) dbg.textContent += ' | loadOrderRecords loading2=' + ordersLoading2 + ' authd=' + authd;
   if (ordersLoading2) return; ordersLoading2 = true;
   if (!authd) {
     ordersLoading2 = false;
     if (oList) oList.innerHTML = '<div class="orders-empty-state">Log in to see orders</div>';
     return;
   }
-  if (oList) oList.innerHTML = '<div class="orders-empty-state" style="font-size:11px;">dbg: fetching from Airtable…</div>';
+  if (oList) oList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
   atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=100').then(function(data) {
     ordersLoading2 = false;
-    if (oList) oList.innerHTML = '<div class="orders-empty-state" style="font-size:11px;">dbg: got response, error=' + (data.error||'none') + ' records=' + (data.records ? data.records.length : 'none') + '</div>';
+    if (dbg) dbg.textContent += ' | fetch done records=' + (data.records ? data.records.length : 'err:' + data.error);
     if (data.error) {
       var detail = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
       if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = '<div class="orders-empty-state">Error: ' + detail + '</div>';
