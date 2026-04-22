@@ -1139,18 +1139,18 @@ function switchOrdersView(view) {
 }
 
 function loadOrderRecords() {
+  var oList = el('ordersOrderedList');
+  if (oList) oList.innerHTML = '<div class="orders-empty-state" style="font-size:11px;line-height:1.8;">dbg: loading2=' + ordersLoading2 + ' authd=' + authd + '</div>';
   if (ordersLoading2) return; ordersLoading2 = true;
   if (!authd) {
     ordersLoading2 = false;
-    var msg = '<div class="orders-empty-state">Log in to see orders</div>';
-    var oList = el('ordersOrderedList');
-    if (oList) oList.innerHTML = msg;
+    if (oList) oList.innerHTML = '<div class="orders-empty-state">Log in to see orders</div>';
     return;
   }
-  var oList = el('ordersOrderedList');
-  if (oList) oList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
+  if (oList) oList.innerHTML = '<div class="orders-empty-state" style="font-size:11px;">dbg: fetching from Airtable…</div>';
   atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=100').then(function(data) {
     ordersLoading2 = false;
+    if (oList) oList.innerHTML = '<div class="orders-empty-state" style="font-size:11px;">dbg: got response, error=' + (data.error||'none') + ' records=' + (data.records ? data.records.length : 'none') + '</div>';
     if (data.error) {
       var detail = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
       if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = '<div class="orders-empty-state">Error: ' + detail + '</div>';
