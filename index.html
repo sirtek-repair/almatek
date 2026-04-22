@@ -575,11 +575,11 @@
   </div>
 
   <div id="ordersOrderedView" class="orders-view hidden">
-    <div id="ordersOrderedList" class="orders-items-list"></div>
+    <div id="ordersOrderedList" class="orders-items-list"><div class="orders-empty-state">Loading…</div></div>
   </div>
 
   <div id="ordersReceiveView" class="orders-view hidden">
-    <div id="ordersReceiveList" class="orders-items-list"></div>
+    <div id="ordersReceiveList" class="orders-items-list"><div class="orders-empty-state">Loading…</div></div>
   </div>
 
   <div id="ordersNoData" class="orders-empty-state hidden">No items to show</div>
@@ -1140,19 +1140,39 @@ function switchOrdersView(view) {
     if (btns[i]) btns[i].classList.toggle('active', v === view);
   });
   if (view === 'needorder') renderNeedOrderList();
-  else if (view === 'ordered') renderOrderedList();
-  else if (view === 'receive') renderReceiveList();
+  else if (view === 'ordered' || view === 'receive') { ordersLoading2 = false; loadOrderRecords(); }
 }
 
 function loadOrderRecords() {
   if (ordersLoading2) return; ordersLoading2 = true;
+  if (!authd) {
+    ordersLoading2 = false;
+    var msg = '<div class="orders-empty-state">Log in to see orders</div>';
+    var oList = el('ordersOrderedList'), rList = el('ordersReceiveList');
+    if (oList) oList.innerHTML = msg;
+    if (rList) rList.innerHTML = msg;
+    return;
+  }
+  var oList = el('ordersOrderedList'), rList = el('ordersReceiveList');
+  if (oList) oList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
+  if (rList) rList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
   atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(function(data) {
     ordersLoading2 = false;
-    if (data.error) return;
+    if (data.error) {
+      var errMsg = '<div class="orders-empty-state">Error loading orders — check connection</div>';
+      if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = errMsg;
+      if (el('ordersReceiveList')) el('ordersReceiveList').innerHTML = errMsg;
+      return;
+    }
     allOrderRecords = data.records || [];
     if (ordersTabView === 'ordered') renderOrderedList();
     else if (ordersTabView === 'receive') renderReceiveList();
-  }).catch(function() { ordersLoading2 = false; });
+  }).catch(function() {
+    ordersLoading2 = false;
+    var errMsg = '<div class="orders-empty-state">Error loading orders — check connection</div>';
+    if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = errMsg;
+    if (el('ordersReceiveList')) el('ordersReceiveList').innerHTML = errMsg;
+  });
 }
 
 // ---- Need to Order list (with cart buttons) ----
