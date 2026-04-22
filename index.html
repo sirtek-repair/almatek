@@ -1285,6 +1285,7 @@ function placeCartOrder() {
 // ---- Ordered view (all orders, with inline receive) ----
 function renderOrderedList() {
   var listEl = el('ordersOrderedList'); if (!listEl) return;
+  showToast('renderOrderedList: ' + allOrderRecords.length + ' records');
   if (!allOrderRecords.length) { listEl.innerHTML = '<div class="orders-empty-state">No orders</div>'; return; }
   var sorted = allOrderRecords.slice().sort(function(a, b) {
     return new Date(b.fields['fldeHBNhXCrqAJrjp'] || 0) - new Date(a.fields['fldeHBNhXCrqAJrjp'] || 0);
