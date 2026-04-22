@@ -6,7 +6,7 @@ var ss = SpreadsheetApp.getActiveSpreadsheet();
 
 function doGet(e) {
   var payload = {};
-  try { payload = JSON.parse(decodeURIComponent(e.parameter.payload || '{}')); } catch(err) {}
+  try { payload = JSON.parse(e.parameter.payload || '{}'); } catch(err) {}
   var result = handleAction(payload);
   return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
 }
@@ -30,7 +30,7 @@ function handleAction(p) {
       for (var i = 1; i < rows.length; i++) {
         if (rows[i][0]) users.push({ name: rows[i][0], structure: rows[i][2] || 'standard' });
       }
-      return { users: users };
+      return { ok: true, users: users };
     }
     case 'add': {
       var sheet = getOrCreate('Users', ['name','pass','structure']);

@@ -1044,7 +1044,7 @@ const OWNER_PASS = 'rellow4Life$', WORKER_TOKEN = 'sirtek2026';
 var authPass = localStorage.getItem('almatek_pass') || '', apiPass = WORKER_TOKEN, isOwner = authPass === OWNER_PASS, currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
 
 var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '', USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
-function sheetsCall(payload) { if (!USERS_SCRIPT_URL) return Promise.resolve({}); var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)); return fetch(url).then(r => r.json()); }
+function sheetsCall(payload) { if (!USERS_SCRIPT_URL) return Promise.resolve({}); var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload)); return fetch(url, { redirect: 'follow', credentials: 'omit' }).then(r => r.json()).catch(function() { return {}; }); }
 
 let allInvRecords = [], activeFilter = 'all', invLoaded = false;
 function selName(v) { return v ? (typeof v === 'object' ? (v.name || '') : v) : ''; }
