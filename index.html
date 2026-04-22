@@ -2046,8 +2046,8 @@ function renderStaffTab() {
   el('staffMainSection').classList.remove('hidden');
   el('staffUserList').innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading…</p>';
   sheetsCall({ action: 'list' }).then(function(data) {
-    if (!data.ok) {
-      var detail = data._httpError ? 'HTTP ' + data._httpError : data._parseError ? 'Invalid response (not JSON)' : data.error ? data.error : 'Unknown error';
+    if (!data.ok && !data.users) {
+      var detail = data._httpError ? 'HTTP ' + data._httpError : data._parseError ? 'Invalid response (not JSON)' : data.error ? data.error : 'No response from script';
       var preview = data._body ? '<br><span style="font-size:10px;opacity:.7;word-break:break-all;">' + data._body + '</span>' : '';
       el('staffUserList').innerHTML = '<p style="color:#ef4444;font-size:13px;">Error loading users: ' + detail + preview + '</p>';
       return;
