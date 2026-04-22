@@ -1089,8 +1089,9 @@ function switchLeadSubTab(tab) {
 // Worker + Airtable config
 var WORKER_URL = 'https://almatek.sirtek-repair.workers.dev';
 const AT_BASE = 'appDFaflvCWvIGhZB', AT_INV = 'tblGqxylJqQjAgJ40', AT_ORDERS = 'tbli8pFcvU1mV5O6B', AT_SOLD = 'tblTw2ZVlJABAkJoo';
-const OWNER_PASS = 'rellow4Life$', WORKER_TOKEN = 'sirtek2026';
-var authPass = localStorage.getItem('almatek_pass') || '', apiPass = WORKER_TOKEN, isOwner = authPass === OWNER_PASS, currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
+const OWNER_PASS_HASH = 'f60a3e2e8ee48ddcc27f5e2089da6588067de28ea9a1d0c124cfdab30f062d48';
+if (localStorage.getItem('almatek_auth_v') !== '2') { localStorage.removeItem('almatek_pass'); localStorage.removeItem('almatek_is_owner'); localStorage.setItem('almatek_auth_v', '2'); }
+var authPass = localStorage.getItem('almatek_pass') || '', apiPass = localStorage.getItem('almatek_api_pass') || '', isOwner = localStorage.getItem('almatek_is_owner') === 'true', currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
 
 var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '', USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
 function sheetsCall(payload) {
@@ -1450,12 +1451,12 @@ function haversineMiles(lat1, lon1, lat2, lon2) {
 }
 
 function isAuth() { return authd; }
-var authd = !!authPass;
+var authd = !!(authPass || isOwner);
 
 function onAuthBtnClick() {
   if (authd) {
     if (confirm('Log out?')) {
-      localStorage.removeItem('almatek_pass'); localStorage.removeItem('almatek_current_user');
+      localStorage.removeItem('almatek_pass'); localStorage.removeItem('almatek_current_user'); localStorage.removeItem('almatek_is_owner');
       authPass = ''; authd = false; isOwner = false; currentUser = '';
       updateAuthBtn();
     }
@@ -1479,26 +1480,30 @@ function saveAuthSetup() {
 function tryAuth() {
   var input = el('authInput').value.trim();
   if (!input) return;
-  if (input === OWNER_PASS) {
-    authPass = input; localStorage.setItem('almatek_pass', input);
-    authd = true; isOwner = true;
-    el('authOverlay').classList.add('hidden');
-    updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
-    syncFromSheets();
-    return;
-  }
   el('authError').textContent = 'Checking…';
-  if (USERS_SCRIPT_URL) {
-    sheetsCall({ action: 'login', pass: input }).then(function(data) {
-      if (data && data.ok) {
-        onStaffLoginSuccess(input, data.name, data.structure, data.apiPass);
-      } else {
-        el('authError').textContent = 'Wrong code — try again';
-      }
-    }).catch(function() { el('authError').textContent = 'Connection error — try again'; });
-  } else {
-    el('authError').textContent = 'Wrong code — try again';
-  }
+  crypto.subtle.digest('SHA-256', new TextEncoder().encode(input)).then(function(buf) {
+    var hash = Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+    if (hash === OWNER_PASS_HASH) {
+      localStorage.setItem('almatek_pass', '_auth_'); localStorage.setItem('almatek_is_owner', 'true');
+      authPass = '_auth_'; authd = true; isOwner = true;
+      el('authOverlay').classList.add('hidden');
+      updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
+      syncFromSheets();
+      if (!apiPass) setTimeout(showApiPassModal, 400);
+      return;
+    }
+    if (USERS_SCRIPT_URL) {
+      sheetsCall({ action: 'login', pass: input }).then(function(data) {
+        if (data && data.ok) {
+          onStaffLoginSuccess(input, data.name, data.structure, data.apiPass);
+        } else {
+          el('authError').textContent = 'Wrong code — try again';
+        }
+      }).catch(function() { el('authError').textContent = 'Connection error — try again'; });
+    } else {
+      el('authError').textContent = 'Wrong code — try again';
+    }
+  });
 }
 
 function onStaffLoginSuccess(pass, name, structure, sheetApiPass) {
