@@ -1159,17 +1159,23 @@ function loadOrderRecords() {
   atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(function(data) {
     ordersLoading2 = false;
     if (data.error) {
-      var errMsg = '<div class="orders-empty-state">Error loading orders — check connection</div>';
+      var detail = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+      showToast('Orders error: ' + detail);
+      var errMsg = '<div class="orders-empty-state">Error: ' + detail + '</div>';
       if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = errMsg;
       if (el('ordersReceiveList')) el('ordersReceiveList').innerHTML = errMsg;
       return;
     }
     allOrderRecords = data.records || [];
+    var pending = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; });
+    showToast(allOrderRecords.length + ' orders fetched, ' + pending.length + ' pending');
     if (ordersTabView === 'ordered') renderOrderedList();
     else if (ordersTabView === 'receive') renderReceiveList();
-  }).catch(function() {
+  }).catch(function(err) {
     ordersLoading2 = false;
-    var errMsg = '<div class="orders-empty-state">Error loading orders — check connection</div>';
+    var detail = err && err.message ? err.message : 'network error';
+    showToast('Orders fetch failed: ' + detail);
+    var errMsg = '<div class="orders-empty-state">Error: ' + detail + '</div>';
     if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = errMsg;
     if (el('ordersReceiveList')) el('ordersReceiveList').innerHTML = errMsg;
   });
