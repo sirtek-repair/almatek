@@ -1046,8 +1046,18 @@ const OWNER_PASS = 'rellow4Life$', WORKER_TOKEN = 'sirtek2026';
 var authPass = localStorage.getItem('almatek_pass') || '', apiPass = WORKER_TOKEN, isOwner = authPass === OWNER_PASS, currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
 
 var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '', USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
+var SHEETS_POST_ACTIONS = ['createLead','updateLead','deleteLead','createTicket','updateTicket','deleteTicket','logCartOrder','add','delete','resetPass'];
 function sheetsCall(payload) {
   if (!USERS_SCRIPT_URL) return Promise.resolve({});
+  // Write operations use POST (no URL length limit, no CORS needed for fire-and-forget)
+  if (SHEETS_POST_ACTIONS.indexOf(payload.action) !== -1) {
+    return fetch(USERS_SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
+    }).then(function() { return { ok: true }; }).catch(function() { return { ok: false }; });
+  }
+  // Read operations use GET so we can read the response
   var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
   return fetch(url, { redirect: 'follow', credentials: 'omit' })
     .then(function(r) {

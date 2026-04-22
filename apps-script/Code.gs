@@ -11,6 +11,13 @@ function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
 }
 
+function doPost(e) {
+  var payload = {};
+  try { payload = JSON.parse((e.postData && e.postData.contents) || '{}'); } catch(err) {}
+  var result = handleAction(payload);
+  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+}
+
 function rowToObj(headers, row) {
   var obj = {};
   headers.forEach(function(h, i) {
