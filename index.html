@@ -558,7 +558,6 @@
   <div class="orders-tab-nav">
     <button class="orders-tab-btn active" onclick="switchOrdersView('needorder')">Need to Order</button>
     <button class="orders-tab-btn" onclick="switchOrdersView('ordered')">Ordered</button>
-    <button class="orders-tab-btn" onclick="switchOrdersView('receive')">Receive</button>
   </div>
 
   <div id="ordersNeedView" class="orders-view active">
@@ -576,10 +575,6 @@
 
   <div id="ordersOrderedView" class="orders-view hidden">
     <div id="ordersOrderedList" class="orders-items-list"><div class="orders-empty-state">Loading…</div></div>
-  </div>
-
-  <div id="ordersReceiveView" class="orders-view hidden">
-    <div id="ordersReceiveList" class="orders-items-list"><div class="orders-empty-state">Loading…</div></div>
   </div>
 
   <div id="ordersNoData" class="orders-empty-state hidden">No items to show</div>
@@ -1133,14 +1128,14 @@ function initOrders() {
 
 function switchOrdersView(view) {
   ordersTabView = view;
-  var ids = { needorder: 'ordersNeedView', ordered: 'ordersOrderedView', receive: 'ordersReceiveView' };
+  var ids = { needorder: 'ordersNeedView', ordered: 'ordersOrderedView' };
   Object.keys(ids).forEach(function(v, i) {
     var viewEl = el(ids[v]); if (viewEl) viewEl.classList.toggle('hidden', v !== view);
     var btns = document.querySelectorAll('.orders-tab-btn');
     if (btns[i]) btns[i].classList.toggle('active', v === view);
   });
   if (view === 'needorder') renderNeedOrderList();
-  else if (view === 'ordered' || view === 'receive') { ordersLoading2 = false; loadOrderRecords(); }
+  else if (view === 'ordered') { ordersLoading2 = false; loadOrderRecords(); }
 }
 
 function loadOrderRecords() {
@@ -1148,32 +1143,24 @@ function loadOrderRecords() {
   if (!authd) {
     ordersLoading2 = false;
     var msg = '<div class="orders-empty-state">Log in to see orders</div>';
-    var oList = el('ordersOrderedList'), rList = el('ordersReceiveList');
+    var oList = el('ordersOrderedList');
     if (oList) oList.innerHTML = msg;
-    if (rList) rList.innerHTML = msg;
     return;
   }
-  var oList = el('ordersOrderedList'), rList = el('ordersReceiveList');
+  var oList = el('ordersOrderedList');
   if (oList) oList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
-  if (rList) rList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
-  atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(function(data) {
+  atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=100').then(function(data) {
     ordersLoading2 = false;
     if (data.error) {
       var detail = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
-      var errMsg = '<div class="orders-empty-state">Error: ' + detail + '</div>';
-      if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = errMsg;
-      if (el('ordersReceiveList')) el('ordersReceiveList').innerHTML = errMsg;
+      if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = '<div class="orders-empty-state">Error: ' + detail + '</div>';
       return;
     }
     allOrderRecords = data.records || [];
     if (ordersTabView === 'ordered') renderOrderedList();
-    else if (ordersTabView === 'receive') renderReceiveList();
   }).catch(function(err) {
     ordersLoading2 = false;
-    var detail = err && err.message ? err.message : 'network error';
-    var errMsg = '<div class="orders-empty-state">Error loading orders — check connection</div>';
-    if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = errMsg;
-    if (el('ordersReceiveList')) el('ordersReceiveList').innerHTML = errMsg;
+    if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = '<div class="orders-empty-state">Error loading orders — check connection</div>';
   });
 }
 
@@ -1295,39 +1282,35 @@ function placeCartOrder() {
   });
 }
 
-// ---- Ordered + Receive views ----
+// ---- Ordered view (all orders, with inline receive) ----
 function renderOrderedList() {
   var listEl = el('ordersOrderedList'); if (!listEl) return;
-  var pending = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; });
-  if (!pending.length) { listEl.innerHTML = '<div class="orders-empty-state">No pending orders</div>'; return; }
-  listEl.innerHTML = pending.map(function(r) {
-    var name = r.fields['fldF0TJARgHugOh83'] || '—';
-    var qty = r.fields['fldbKVKkNgZtShHwh'] || '?';
-    var supplier = r.fields['fldVq43gyw9HVLYNI'] || '';
-    var date = r.fields['fldeHBNhXCrqAJrjp'] ? new Date(r.fields['fldeHBNhXCrqAJrjp']).toLocaleDateString() : '';
-    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + fmtBrand(name) + '</div><div class="order-item-meta">Qty: ' + qty + (supplier ? ' · ' + supplier : '') + (date ? ' · ' + date : '') + '</div></div><span class="order-status pending">⏳ Ordered</span></div>';
-  }).join('');
-}
-
-function renderReceiveList() {
-  var listEl = el('ordersReceiveList'); if (!listEl) return;
-  var pending = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; });
-  if (!pending.length) { listEl.innerHTML = '<div class="orders-empty-state">No orders awaiting receipt</div>'; return; }
-  listEl.innerHTML = pending.map(function(r) {
+  if (!allOrderRecords.length) { listEl.innerHTML = '<div class="orders-empty-state">No orders</div>'; return; }
+  var sorted = allOrderRecords.slice().sort(function(a, b) {
+    return new Date(b.fields['fldeHBNhXCrqAJrjp'] || 0) - new Date(a.fields['fldeHBNhXCrqAJrjp'] || 0);
+  });
+  listEl.innerHTML = sorted.map(function(r) {
     var name = r.fields['fldF0TJARgHugOh83'] || '—';
     var qty = r.fields['fldbKVKkNgZtShHwh'] || 1;
-    var supplier = r.fields['fldVq43gyw9HVLYNI'] || '';
-    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + fmtBrand(name) + '</div><div class="order-item-meta">Qty: ' + qty + (supplier ? ' · ' + supplier : '') + '</div></div><button class="order-item-btn receive" onclick="receiveOrder(\'' + r.id + '\')">Receive</button></div>';
+    var supplier = r.fields['fldVq43gyw9HVLYNI'] ? (r.fields['fldVq43gyw9HVLYNI'].name || r.fields['fldVq43gyw9HVLYNI']) : '';
+    var date = r.fields['fldeHBNhXCrqAJrjp'] ? new Date(r.fields['fldeHBNhXCrqAJrjp']).toLocaleDateString() : '';
+    var isReceived = !!r.fields['fldwGKyfgOuue1eyE'];
+    var action = isReceived
+      ? '<span class="order-status received">✓ Received</span>'
+      : '<div style="display:flex;align-items:center;gap:6px;"><input type="number" min="1" value="' + qty + '" id="rcvQty_' + r.id + '" style="width:52px;padding:4px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;text-align:center;" /><button class="order-item-btn receive" onclick="receiveOrder(\'' + r.id + '\')">Receive</button></div>';
+    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + fmtBrand(name) + '</div><div class="order-item-meta">Qty: ' + qty + (supplier ? ' · ' + supplier : '') + (date ? ' · ' + date : '') + '</div></div>' + action + '</div>';
   }).join('');
 }
 
 function receiveOrder(orderId) {
-  if (!confirm('Mark this order as received?')) return;
-  atFetch(AT_BASE + '/' + AT_ORDERS + '/' + orderId, { method: 'PATCH', body: JSON.stringify({ fields: { 'fldwGKyfgOuue1eyE': true } }) }).then(function(data) {
+  var qtyEl = el('rcvQty_' + orderId);
+  var qty = qtyEl ? (parseInt(qtyEl.value) || 1) : 1;
+  if (!confirm('Receive ' + qty + ' into inventory?')) return;
+  atFetch(AT_BASE + '/' + AT_ORDERS + '/' + orderId, { method: 'PATCH', body: JSON.stringify({ fields: { 'fldwGKyfgOuue1eyE': 'inv received' } }) }).then(function(data) {
     if (data.error) { showToast('Error marking received'); return; }
-    showToast('Order received ✓');
-    allOrderRecords = allOrderRecords.map(function(r) { return r.id === orderId ? Object.assign({}, r, { fields: Object.assign({}, r.fields, { 'fldwGKyfgOuue1eyE': true }) }) : r; });
-    renderReceiveList(); renderOrderedList();
+    showToast('Received ' + qty + ' ✓');
+    allOrderRecords = allOrderRecords.map(function(r) { return r.id === orderId ? Object.assign({}, r, { fields: Object.assign({}, r.fields, { 'fldwGKyfgOuue1eyE': { name: 'inv received' } }) }) : r; });
+    renderOrderedList();
     invLoaded = false; allInvRecords = []; loadInventoryPage(null, true);
   });
 }
