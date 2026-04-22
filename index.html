@@ -1143,8 +1143,7 @@ function switchOrdersView(view) {
 }
 
 function loadOrderRecords() {
-  var oList = el('ordersOrderedList'), dbg = el('ordersDbg');
-  if (dbg) dbg.textContent += ' | loadOrderRecords loading2=' + ordersLoading2 + ' authd=' + authd;
+  var oList = el('ordersOrderedList');
   if (ordersLoading2) return; ordersLoading2 = true;
   if (!authd) {
     ordersLoading2 = false;
@@ -1154,7 +1153,6 @@ function loadOrderRecords() {
   if (oList) oList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
   atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=100').then(function(data) {
     ordersLoading2 = false;
-    if (dbg) dbg.textContent += ' | fetch done records=' + (data.records ? data.records.length : 'err:' + data.error);
     if (data.error) {
       var detail = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
       if (el('ordersOrderedList')) el('ordersOrderedList').innerHTML = '<div class="orders-empty-state">Error: ' + detail + '</div>';
