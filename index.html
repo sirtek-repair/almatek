@@ -573,7 +573,7 @@
     <div id="ordersNeedList" class="orders-items-list"></div>
   </div>
 
-  <div id="ordersOrderedView" class="orders-view hidden">
+  <div id="ordersOrderedView" class="orders-view">
     <div id="ordersOrderedList" class="orders-items-list"><div class="orders-empty-state">Loading…</div></div>
   </div>
 
@@ -1130,7 +1130,7 @@ function switchOrdersView(view) {
   ordersTabView = view;
   var ids = { needorder: 'ordersNeedView', ordered: 'ordersOrderedView' };
   Object.keys(ids).forEach(function(v, i) {
-    var viewEl = el(ids[v]); if (viewEl) viewEl.classList.toggle('hidden', v !== view);
+    var viewEl = el(ids[v]); if (viewEl) viewEl.classList.toggle('active', v === view);
     var btns = document.querySelectorAll('.orders-tab-btn');
     if (btns[i]) btns[i].classList.toggle('active', v === view);
   });
@@ -1285,7 +1285,6 @@ function placeCartOrder() {
 // ---- Ordered view (all orders, with inline receive) ----
 function renderOrderedList() {
   var listEl = el('ordersOrderedList'); if (!listEl) return;
-  showToast('renderOrderedList: ' + allOrderRecords.length + ' records');
   if (!allOrderRecords.length) { listEl.innerHTML = '<div class="orders-empty-state">No orders</div>'; return; }
   var sorted = allOrderRecords.slice().sort(function(a, b) {
     return new Date(b.fields['fldeHBNhXCrqAJrjp'] || 0) - new Date(a.fields['fldeHBNhXCrqAJrjp'] || 0);
