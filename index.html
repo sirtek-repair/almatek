@@ -1488,17 +1488,7 @@ function tryAuth() {
   var input = el('authInput').value.trim();
   if (!input) return;
   el('authError').textContent = 'Checking…';
-  crypto.subtle.digest('SHA-256', new TextEncoder().encode(input)).then(function(buf) {
-    var hash = Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-    if (hash === OWNER_PASS_HASH) {
-      localStorage.setItem('almatek_pass', '_auth_'); localStorage.setItem('almatek_is_owner', 'true');
-      authPass = '_auth_'; authd = true; isOwner = true;
-      el('authOverlay').classList.add('hidden');
-      updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
-      syncFromSheets();
-      if (!apiPass) setTimeout(showApiPassModal, 400);
-      return;
-    }
+  function doStaffCheck() {
     if (USERS_SCRIPT_URL) {
       sheetsCall({ action: 'login', pass: input }).then(function(data) {
         if (data && data.ok) {
@@ -1510,11 +1500,26 @@ function tryAuth() {
     } else {
       el('authError').textContent = 'Wrong code — try again';
     }
-  });
+  }
+  try {
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(input)).then(function(buf) {
+      var hash = Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+      if (hash === OWNER_PASS_HASH) {
+        localStorage.setItem('almatek_pass', '_auth_'); localStorage.setItem('almatek_is_owner', 'true');
+        authPass = '_auth_'; authd = true; isOwner = true;
+        el('authOverlay').classList.add('hidden');
+        updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
+        syncFromSheets();
+        if (!apiPass) setTimeout(showApiPassModal, 400);
+        return;
+      }
+      doStaffCheck();
+    }).catch(doStaffCheck);
+  } catch(e) { doStaffCheck(); }
 }
 
 function onStaffLoginSuccess(pass, name, structure, sheetApiPass) {
-  if (sheetApiPass) { apiPass = sheetApiPass; }
+  if (sheetApiPass) { apiPass = sheetApiPass; localStorage.setItem('almatek_api_pass', sheetApiPass); }
   authPass = pass; currentUser = name || '';
   currentUserStructure = structure || 'standard';
   localStorage.setItem('almatek_pass', pass);
@@ -1697,7 +1702,6 @@ function openLeadDetail(leadId) {
   el('detailLeadName').textContent = lead.name || 'Unnamed';
   var tierBadge = lead.tier === 'premium' ? '<span class="stock-badge" style="background:#f59e0b20;color:#f59e0b;margin-left:6px;">⭐ Premium</span>' : '';
   var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;"><div><span class="stock-badge" style="background:' + getStatusColor(lead.status) + '20;color:' + getStatusColor(lead.status) + '">' + getStatusLabel(lead.status) + '</span>' + tierBadge + '</div><div><button onclick="closeLeadDetail();editLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px;">✏️ Edit</button><button onclick="deleteLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Delete</button></div></div>';
-  html += '<a href="https://qrr.to/207b6c1c" target="_blank" rel="noopener" style="display:block;width:100%;padding:10px 14px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);border-radius:8px;text-align:center;font-size:13px;font-weight:600;text-decoration:none;margin-bottom:14px;box-sizing:border-box;">📅 Square Appointments</a>';
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (lead.phone||'—') + '</div></div><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (lead.device||'—') + '</div></div></div>';
   if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + lead.email + '</div></div>';
   if (lead.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + lead.issue + '</div></div>';
@@ -1705,9 +1709,8 @@ function openLeadDetail(leadId) {
     var qVal = lead.quote || 0, dVal = lead.deposit || 0, balVal = qVal - dVal;
     var inputStyle = 'width:100%;margin-bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;box-sizing:border-box;';
     html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
-    html += '<div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Quote</div><input type="number" id="detailQuoteInput" value="' + qVal + '" min="0" step="1" oninput="updateDetailBalance()" style="' + inputStyle + '" /></div>';
-    html += '<div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Deposit Paid</div><input type="number" id="detailDepositInput" value="' + dVal + '" min="0" step="1" oninput="updateDetailBalance()" style="' + inputStyle + '" /></div>';
+    html += '<div style="margin-bottom:8px;">';
+    html += '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Quote</div><input type="number" id="detailQuoteInput" value="' + qVal + '" min="0" step="1" oninput="updateDetailBalance()" style="' + inputStyle + '" />';
     html += '</div>';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(59,130,246,0.2);padding-top:8px;margin-bottom:10px;"><span style="font-size:12px;color:var(--muted);">Balance Due</span><span id="detailBalanceAmt" style="font-size:18px;font-weight:800;color:' + (balVal > 0 ? 'var(--accent)' : 'var(--green)') + ';">$' + balVal + '</span></div>';
     html += '<button onclick="saveLeadFinancials()" style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save Financials</button>';
@@ -1720,17 +1723,15 @@ function openLeadDetail(leadId) {
 function closeLeadDetail() { el('leadDetailModal').classList.add('hidden'); currentLeadId = null; el('newNoteText').value = ''; var fup = el('followUpPickerRow'); if (fup) fup.classList.add('hidden'); }
 function updateDetailBalance() {
   var q = parseFloat(el('detailQuoteInput')?.value || 0) || 0;
-  var d = parseFloat(el('detailDepositInput')?.value || 0) || 0;
-  var bal = q - d, amtEl = el('detailBalanceAmt');
-  if (amtEl) { amtEl.textContent = '$' + bal; amtEl.style.color = bal > 0 ? 'var(--accent)' : 'var(--green)'; }
+  var amtEl = el('detailBalanceAmt');
+  if (amtEl) { amtEl.textContent = '$' + q; amtEl.style.color = q > 0 ? 'var(--accent)' : 'var(--green)'; }
 }
 function saveLeadFinancials() {
   if (!currentLeadId) return;
   var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; }); if (!lead) return;
   lead.quote = parseFloat(el('detailQuoteInput')?.value || 0) || 0;
-  lead.deposit = parseFloat(el('detailDepositInput')?.value || 0) || 0;
   lead.updatedAt = new Date().toISOString();
-  saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { quote: lead.quote, deposit: lead.deposit });
+  saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { quote: lead.quote });
   renderLeadsList(); openLeadDetail(lead.id); showToast('Saved ✓');
 }
 function addLeadNote() { if (!currentLeadId) return; var note = el('newNoteText').value.trim(); if (!note) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.notes.push({ text: note, createdAt: new Date().toISOString() }); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { notes: lead.notes }); closeLeadDetail(); renderLeadsList(); showToast('Note added'); }
@@ -1906,6 +1907,7 @@ function openTicketDetail(ticketId) {
   var html = '<div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">';
   html += '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[status] || status) + '</span>';
   html += '</div>';
+  html += '<a href="https://qrr.to/207b6c1c" target="_blank" rel="noopener" style="display:block;width:100%;padding:10px 14px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);border-radius:8px;text-align:center;font-size:13px;font-weight:600;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">📅 Square Appointments</a>';
   // Flow toggle
   var inStockFlowStyle = isInStock ? 'flex:1;padding:7px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
   var soFlowStyle = isInStock ? 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:7px;background:#f59e0b;border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
@@ -1998,7 +2000,7 @@ function openTicketDetail(ticketId) {
     html += '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px;"><span>Mobile Fee</span><span>+$' + mfee + '</span></div>';
   }
   html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span style="font-size:13px;font-weight:600;">Quote Total</span><span id="ticketTotalDisplay" style="font-size:20px;font-weight:800;color:var(--accent);">$' + totalQuote + '</span></div>';
-  html += '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">DEPOSIT PAID</div>';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-size:12px;font-weight:700;color:var(--green);letter-spacing:0.05em;">💰 DEPOSIT PAID</span>' + (dVal > 0 ? '<span style="font-size:16px;font-weight:800;color:var(--green);">$' + dVal + '</span>' : '') + '</div>';
   html += '<input type="number" id="ticketDepositInput" value="' + dVal + '" min="0" step="1" placeholder="$0" oninput="updateTicketBalance()" style="width:100%;margin-bottom:10px;' + rowInputStyle2 + '" />';
   html += '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(59,130,246,0.2);padding-top:10px;margin-bottom:10px;"><span style="font-size:13px;font-weight:600;">Balance Due</span><span id="ticketBalanceAmt" style="font-size:20px;font-weight:800;color:' + (balVal > 0 ? 'var(--accent)' : '#10b981') + ';">$' + balVal + '</span></div>';
   html += '<button onclick="saveTicketFinancials()" style="width:100%;padding:9px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save</button>';
