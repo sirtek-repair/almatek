@@ -976,7 +976,7 @@ function saveTicketFromQuote() {
   var initItems = price > 0 ? [{ label: repairLabel, price: price }] : [];
   var miles = parseFloat((el('milesInput') ? el('milesInput').value : '') || 0) || 0;
   var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', supplier: quoteSupplier || '', orderRef: quoteOrderRef || '', items: initItems, notes: [], createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
-  ticketsStorage.push(newTicket); saveTicketsToStorage();
+  ticketsStorage.push(newTicket); saveTicketsToStorage(); syncTicketCreate(newTicket);
   closeAddToTicketModal(); updateTicketsBadge(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('tickets');
   setTimeout(function() { openTicketDetail(newTicket.id); }, 80);
@@ -1420,6 +1420,7 @@ function tryAuth() {
     authd = true; isOwner = true;
     el('authOverlay').classList.add('hidden');
     updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
+    syncFromSheets();
     return;
   }
   el('authError').textContent = 'Checking…';
@@ -1446,6 +1447,7 @@ function onStaffLoginSuccess(pass, name, structure, sheetApiPass) {
   authd = true; isOwner = false;
   el('authOverlay').classList.add('hidden');
   updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
+  syncFromSheets();
 }
 function updateAuthBtn() {
   var btn = el('authBtn'), btnInv = el('authBtnInv');
@@ -1480,6 +1482,41 @@ function saveLeadsToStorage() { localStorage.setItem('almatek_leads', JSON.strin
 
 function syncLeadToSheet(lead) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'createLead', lead: lead }); }
 function syncUpdateToSheet(leadId, updates) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'updateLead', leadId: leadId, updates: updates }); }
+
+function syncTicketCreate(ticket) { if (!USERS_SCRIPT_URL || !ticket) return; sheetsCall({ action: 'createTicket', ticket: ticket }); }
+function syncTicketDelete(ticketId) { if (!USERS_SCRIPT_URL) return; sheetsCall({ action: 'deleteTicket', ticketId: ticketId }); }
+function syncTicket(ticket) {
+  if (!USERS_SCRIPT_URL || !ticket) return;
+  sheetsCall({ action: 'updateTicket', ticketId: ticket.id, updates: {
+    name: ticket.name, phone: ticket.phone, email: ticket.email,
+    device: ticket.device, issue: ticket.issue, flow: ticket.flow, status: ticket.status,
+    tier: ticket.tier, repairType: ticket.repairType||'', repairModel: ticket.repairModel||'',
+    quote: ticket.quote||0, deposit: ticket.deposit||0,
+    mobileFee: ticket.mobileFee||0, mobileFeeMiles: ticket.mobileFeeMiles||0,
+    supplier: ticket.supplier||'', orderRef: ticket.orderRef||'',
+    items: ticket.items||[], notes: ticket.notes||[]
+  }});
+}
+
+function syncFromSheets() {
+  if (!USERS_SCRIPT_URL) return;
+  sheetsCall({ action: 'getLeads' }).then(function(data) {
+    if (data && data.ok && Array.isArray(data.leads) && data.leads.length) {
+      leadsStorage = data.leads;
+      saveLeadsToStorage();
+      if (typeof renderLeadsList === 'function') renderLeadsList();
+      updateFollowUpBadge();
+    }
+  });
+  sheetsCall({ action: 'getTickets' }).then(function(data) {
+    if (data && data.ok && Array.isArray(data.tickets)) {
+      ticketsStorage = data.tickets;
+      saveTicketsToStorage();
+      updateTicketsBadge();
+      updateFollowUpBadge();
+    }
+  });
+}
 
 function showNewLeadForm() { el('newLeadForm').classList.remove('hidden'); el('newLeadBtn').style.display = 'none'; }
 var leadTier = 'standard';
@@ -1608,7 +1645,7 @@ function convertLeadToTicket() {
   var now = new Date().toISOString();
   var leadInitItems = lead.quote > 0 ? [{ label: lead.issue || lead.device || 'Repair', price: lead.quote }] : [];
   var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, mobileFee: 0, mobileFeeMiles: 0, tier: lead.tier || 'standard', items: leadInitItems, notes: (lead.notes || []).slice(), createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
-  ticketsStorage.push(newTicket); saveTicketsToStorage();
+  ticketsStorage.push(newTicket); saveTicketsToStorage(); syncTicketCreate(newTicket);
   lead.status = 'booked'; lead.bookedAt = now; lead.updatedAt = now;
   saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: now });
   closeLeadDetail(); renderLeadsList(); updateTicketsBadge(); updateFollowUpBadge();
@@ -1846,7 +1883,7 @@ function advanceTicketStatus(ticketId) {
   if (idx < 0 || idx >= stages.length - 1) return;
   ticket.status = stages[idx + 1];
   ticket.updatedAt = new Date().toISOString();
-  saveTicketsToStorage(); updateTicketsBadge(); updateFollowUpBadge();
+  saveTicketsToStorage(); syncTicket(ticket); updateTicketsBadge(); updateFollowUpBadge();
   showToast((labels[ticket.status] || ticket.status) + ' ✓');
   renderTicketsList(); openTicketDetail(ticketId);
 }
@@ -1872,7 +1909,7 @@ function saveTicketFinancials() {
   ticket.quote = itemsSum + (ticket.mobileFee || 0);
   ticket.deposit = parseFloat(el('ticketDepositInput')?.value || 0) || 0;
   ticket.updatedAt = new Date().toISOString();
-  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(ticket.id); showToast('Saved ✓');
+  saveTicketsToStorage(); syncTicket(ticket); renderTicketsList(); openTicketDetail(ticket.id); showToast('Saved ✓');
 }
 
 function updateTicketMobileFee(milesStr) {
@@ -1894,7 +1931,7 @@ function saveTicketMobileFee(milesStr) {
   var itemsSum = (ticket.items||[]).reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
   ticket.quote = itemsSum + fee;
   ticket.updatedAt = new Date().toISOString();
-  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(currentTicketId);
+  saveTicketsToStorage(); syncTicket(ticket); renderTicketsList(); openTicketDetail(currentTicketId);
 }
 
 function setTicketTier(tier, ticketId) {
@@ -1917,20 +1954,20 @@ function setTicketTier(tier, ticketId) {
     ticket.quote = itemsSum + (ticket.mobileFee || 0);
   }
   ticket.updatedAt = new Date().toISOString();
-  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(ticketId);
+  saveTicketsToStorage(); syncTicket(ticket); renderTicketsList(); openTicketDetail(ticketId);
 }
 
 function setTicketSupplier(name, ticketId) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
   ticket.supplier = ticket.supplier === name ? '' : name;
   ticket.updatedAt = new Date().toISOString();
-  saveTicketsToStorage(); openTicketDetail(ticketId);
+  saveTicketsToStorage(); syncTicket(ticket); openTicketDetail(ticketId);
 }
 function saveTicketOrderRef(val) {
   if (!currentTicketId) return;
   var ticket = ticketsStorage.find(function(t) { return t.id === currentTicketId; }); if (!ticket) return;
   ticket.orderRef = val; ticket.updatedAt = new Date().toISOString();
-  saveTicketsToStorage();
+  saveTicketsToStorage(); syncTicket(ticket);
 }
 
 function setTicketFlow2(ticketId, flow) {
@@ -1939,7 +1976,7 @@ function setTicketFlow2(ticketId, flow) {
   ticket.flow = flow;
   ticket.status = flow === 'in_stock' ? REPAIR_STAGES[0] : SO_STAGES[0];
   ticket.updatedAt = new Date().toISOString();
-  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(ticketId);
+  saveTicketsToStorage(); syncTicket(ticket); renderTicketsList(); openTicketDetail(ticketId);
   showToast(flow === 'in_stock' ? 'Switched to In-Stock flow' : 'Switched to Special Order flow');
 }
 
@@ -1954,7 +1991,7 @@ function addTicketItem() {
   var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
   ticket.quote = itemsSum + (ticket.mobileFee || 0);
   ticket.updatedAt = new Date().toISOString();
-  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(currentTicketId);
+  saveTicketsToStorage(); syncTicket(ticket); renderTicketsList(); openTicketDetail(currentTicketId);
 }
 
 function removeTicketItem(idx) {
@@ -1964,7 +2001,7 @@ function removeTicketItem(idx) {
   var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
   ticket.quote = itemsSum + (ticket.mobileFee || 0);
   ticket.updatedAt = new Date().toISOString();
-  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(currentTicketId);
+  saveTicketsToStorage(); syncTicket(ticket); renderTicketsList(); openTicketDetail(currentTicketId);
 }
 
 function updateTicketItemField(idx, field, val) {
@@ -1974,7 +2011,7 @@ function updateTicketItemField(idx, field, val) {
   var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
   ticket.quote = itemsSum + (ticket.mobileFee || 0);
   ticket.updatedAt = new Date().toISOString();
-  saveTicketsToStorage(); renderTicketsList(); openTicketDetail(currentTicketId);
+  saveTicketsToStorage(); syncTicket(ticket); renderTicketsList(); openTicketDetail(currentTicketId);
 }
 
 function addTicketNote() {
@@ -1983,13 +2020,13 @@ function addTicketNote() {
   var ticket = ticketsStorage.find(function(t) { return t.id === currentTicketId; }); if (!ticket) return;
   ticket.notes.push({ text: note, createdAt: new Date().toISOString() });
   ticket.updatedAt = new Date().toISOString();
-  saveTicketsToStorage(); closeTicketDetail(); renderTicketsList(); showToast('Note added');
+  saveTicketsToStorage(); syncTicket(ticket); closeTicketDetail(); renderTicketsList(); showToast('Note added');
 }
 
 function deleteTicket(ticketId) {
   if (!confirm('Delete this ticket?')) return;
   ticketsStorage = ticketsStorage.filter(function(t) { return t.id !== ticketId; });
-  saveTicketsToStorage(); closeTicketDetail(); renderTicketsList(); updateTicketsBadge(); updateFollowUpBadge(); showToast('Ticket deleted ✓');
+  saveTicketsToStorage(); syncTicketDelete(ticketId); closeTicketDetail(); renderTicketsList(); updateTicketsBadge(); updateFollowUpBadge(); showToast('Ticket deleted ✓');
 }
 
 // Booker Pay Calculator
