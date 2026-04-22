@@ -596,10 +596,11 @@
     <button id="newLeadBtn" onclick="showNewLeadForm()" style="margin-top:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
   </header>
 
-  <div class="orders-tab-nav">
+  <div class="orders-tab-nav" style="display:flex;align-items:center;gap:4px;">
     <button class="orders-tab-btn active" id="leadSubBtnLeads" onclick="switchLeadSubTab('leads')">Leads</button>
     <button class="orders-tab-btn" id="leadSubBtnTickets" onclick="switchLeadSubTab('tickets')">🎫 Tickets <span id="ticketsBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" id="leadSubBtnFollowUp" onclick="switchLeadSubTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+    <button id="syncBtn" onclick="syncFromSheets()" title="Sync with cloud" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;padding:4px 8px;color:var(--muted);line-height:1;">↻</button>
   </div>
 
   <div id="leadViewLeads">
@@ -1499,24 +1500,69 @@ function syncTicket(ticket) {
   }});
 }
 
+function setSyncStatus(state) {
+  var btn = el('syncBtn');
+  if (!btn) return;
+  if (state === 'syncing') { btn.textContent = '↻'; btn.style.opacity = '0.5'; btn.disabled = true; }
+  else { btn.textContent = '↻'; btn.style.opacity = '1'; btn.disabled = false; }
+}
+
 function syncFromSheets() {
   if (!USERS_SCRIPT_URL) return;
+  setSyncStatus('syncing');
+  var done = 0;
+  function onDone() { if (++done >= 2) setSyncStatus('idle'); }
+
   sheetsCall({ action: 'getLeads' }).then(function(data) {
-    if (data && data.ok && Array.isArray(data.leads) && data.leads.length) {
-      leadsStorage = data.leads;
+    if (data && data.ok && Array.isArray(data.leads)) {
+      var sheetMap = {};
+      data.leads.forEach(function(l) { sheetMap[l.id] = l; });
+      // push local records Sheets doesn't have
+      leadsStorage.forEach(function(local) {
+        if (!sheetMap[local.id]) sheetsCall({ action: 'createLead', lead: local });
+      });
+      // merge: newer updatedAt wins
+      var localMap = {};
+      leadsStorage.forEach(function(l) { localMap[l.id] = l; });
+      var merged = data.leads.map(function(s) {
+        var loc = localMap[s.id];
+        if (!loc) return s;
+        return new Date(s.updatedAt||0) >= new Date(loc.updatedAt||0) ? s : loc;
+      });
+      leadsStorage.forEach(function(l) { if (!sheetMap[l.id]) merged.push(l); });
+      leadsStorage = merged;
       saveLeadsToStorage();
       if (typeof renderLeadsList === 'function') renderLeadsList();
       updateFollowUpBadge();
     }
-  });
+    onDone();
+  }).catch(onDone);
+
   sheetsCall({ action: 'getTickets' }).then(function(data) {
     if (data && data.ok && Array.isArray(data.tickets)) {
-      ticketsStorage = data.tickets;
+      var sheetMap = {};
+      data.tickets.forEach(function(t) { sheetMap[t.id] = t; });
+      // push local records Sheets doesn't have
+      ticketsStorage.forEach(function(local) {
+        if (!sheetMap[local.id]) sheetsCall({ action: 'createTicket', ticket: local });
+      });
+      // merge: newer updatedAt wins
+      var localMap = {};
+      ticketsStorage.forEach(function(t) { localMap[t.id] = t; });
+      var merged = data.tickets.map(function(s) {
+        var loc = localMap[s.id];
+        if (!loc) return s;
+        return new Date(s.updatedAt||0) >= new Date(loc.updatedAt||0) ? s : loc;
+      });
+      ticketsStorage.forEach(function(t) { if (!sheetMap[t.id]) merged.push(t); });
+      ticketsStorage = merged;
       saveTicketsToStorage();
       updateTicketsBadge();
       updateFollowUpBadge();
+      if (typeof renderTicketsList === 'function' && leadSubTab === 'tickets') renderTicketsList();
     }
-  });
+    onDone();
+  }).catch(onDone);
 }
 
 function showNewLeadForm() { el('newLeadForm').classList.remove('hidden'); el('newLeadBtn').style.display = 'none'; }
