@@ -11,12 +11,6 @@ function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
 }
 
-function doPost(e) {
-  var payload = {};
-  try { payload = JSON.parse((e.postData && e.postData.contents) || '{}'); } catch(err) {}
-  var result = handleAction(payload);
-  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
-}
 
 function rowToObj(headers, row) {
   var obj = {};
@@ -92,6 +86,8 @@ function handleAction(p) {
         'createdBy','createdAt','updatedAt','notes'
       ]);
       var l = p.lead || {};
+      var existingRows = sheet.getDataRange().getValues();
+      for (var ei = 1; ei < existingRows.length; ei++) { if (existingRows[ei][0] === l.id) return { ok: true }; }
       sheet.appendRow([
         l.id, l.name, l.phone, l.email, l.device, l.issue, l.status, l.tier || 'standard',
         l.followUpAt, l.followUpNotes, l.quote || 0, l.deposit || 0,
@@ -154,6 +150,8 @@ function handleAction(p) {
         'supplier','orderRef','items','notes','createdBy','createdAt','updatedAt'
       ]);
       var t = p.ticket || {};
+      var existingRows = sheet.getDataRange().getValues();
+      for (var ei = 1; ei < existingRows.length; ei++) { if (String(existingRows[ei][0]) === String(t.id)) return { ok: true }; }
       sheet.appendRow([
         t.id, t.name||'', t.phone||'', t.email||'', t.device||'', t.issue||'',
         t.flow||'in_stock', t.status||'waiting_for_repair',

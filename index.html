@@ -1046,18 +1046,8 @@ const OWNER_PASS = 'rellow4Life$', WORKER_TOKEN = 'sirtek2026';
 var authPass = localStorage.getItem('almatek_pass') || '', apiPass = WORKER_TOKEN, isOwner = authPass === OWNER_PASS, currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
 
 var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '', USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
-var SHEETS_POST_ACTIONS = ['createLead','updateLead','deleteLead','createTicket','updateTicket','deleteTicket','logCartOrder','add','delete','resetPass'];
 function sheetsCall(payload) {
   if (!USERS_SCRIPT_URL) return Promise.resolve({});
-  // Write operations use POST (no URL length limit, no CORS needed for fire-and-forget)
-  if (SHEETS_POST_ACTIONS.indexOf(payload.action) !== -1) {
-    return fetch(USERS_SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
-    }).then(function() { return { ok: true }; }).catch(function() { return { ok: false }; });
-  }
-  // Read operations use GET so we can read the response
   var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
   return fetch(url, { redirect: 'follow', credentials: 'omit' })
     .then(function(r) {
@@ -1522,13 +1512,13 @@ function syncFromSheets() {
   setSyncStatus('syncing');
   var up = { leads: 0, tickets: 0 }, dn = { leads: 0, tickets: 0 };
   var done = 0;
-  function finish() {
+  function finish(msg) {
     if (++done < 2) return;
     setSyncStatus('idle');
     var parts = [];
     if (up.leads || up.tickets) parts.push('↑ ' + [up.leads && up.leads + ' lead' + (up.leads !== 1 ? 's' : ''), up.tickets && up.tickets + ' ticket' + (up.tickets !== 1 ? 's' : '')].filter(Boolean).join(', '));
     if (dn.leads || dn.tickets) parts.push('↓ ' + [dn.leads && dn.leads + ' lead' + (dn.leads !== 1 ? 's' : ''), dn.tickets && dn.tickets + ' ticket' + (dn.tickets !== 1 ? 's' : '')].filter(Boolean).join(', '));
-    showToast(parts.length ? parts.join('  ') : 'Synced ✓');
+    showToast(parts.length ? parts.join('  ') : (msg || 'Synced ✓'));
   }
 
   sheetsCall({ action: 'getLeads' }).then(function(data) {
@@ -1550,6 +1540,8 @@ function syncFromSheets() {
       saveLeadsToStorage();
       if (typeof renderLeadsList === 'function') renderLeadsList();
       updateFollowUpBadge();
+    } else if (data && data.error) {
+      finish('Script needs update — redeploy Apps Script');
     }
     finish();
   }).catch(finish);
@@ -1574,6 +1566,10 @@ function syncFromSheets() {
       updateTicketsBadge();
       updateFollowUpBadge();
       if (typeof renderTicketsList === 'function') renderTicketsList();
+    } else if (data && data.error) {
+      // Old script deployment — push local tickets anyway, server deduplicates
+      ticketsStorage.forEach(function(t) { sheetsCall({ action: 'createTicket', ticket: t }); up.tickets++; });
+      showToast('Script needs update — redeploy Apps Script then tap ↻ again');
     }
     finish();
   }).catch(finish);
