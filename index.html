@@ -1035,6 +1035,7 @@ function switchLeadSubTab(tab) {
   if (isFollowUp) renderFollowUpTab();
   else if (isTickets) renderTicketsList();
   else if (typeof renderLeadsList === 'function') renderLeadsList();
+  if (isLeads || isTickets) syncFromSheets();
 }
 
 // Worker + Airtable config
@@ -1719,6 +1720,9 @@ var ticketsStorage = [];
 function loadTicketsFromStorage() { try { ticketsStorage = JSON.parse(localStorage.getItem('almatek_tickets') || '[]'); } catch(e) { ticketsStorage = []; } updateTicketsBadge(); updateFollowUpBadge(); }
 function saveTicketsToStorage() { localStorage.setItem('almatek_tickets', JSON.stringify(ticketsStorage)); }
 loadTicketsFromStorage();
+
+// Sync from Sheets on startup if already authenticated (skips login flow)
+if (authd) setTimeout(syncFromSheets, 500);
 
 var currentTicketId = null;
 
