@@ -1036,7 +1036,7 @@ function switchLeadSubTab(tab) {
   if (isFollowUp) renderFollowUpTab();
   else if (isTickets) renderTicketsList();
   else if (typeof renderLeadsList === 'function') renderLeadsList();
-  if (isLeads || isTickets) syncFromSheets();
+  syncFromSheets();
 }
 
 // Worker + Airtable config
@@ -1538,7 +1538,8 @@ function syncFromSheets() {
       leadsStorage.forEach(function(l) { if (!sheetMap[l.id]) merged.push(l); });
       leadsStorage = merged;
       saveLeadsToStorage();
-      if (typeof renderLeadsList === 'function') renderLeadsList();
+      if (leadSubTab === 'leads' && typeof renderLeadsList === 'function') renderLeadsList();
+      if (leadSubTab === 'followup') renderFollowUpTab();
       updateFollowUpBadge();
     } else if (data && data.error) {
       finish('Script needs update — redeploy Apps Script');
@@ -1565,7 +1566,8 @@ function syncFromSheets() {
       saveTicketsToStorage();
       updateTicketsBadge();
       updateFollowUpBadge();
-      if (typeof renderTicketsList === 'function') renderTicketsList();
+      if (leadSubTab === 'tickets' && typeof renderTicketsList === 'function') renderTicketsList();
+      if (leadSubTab === 'followup') renderFollowUpTab();
     } else if (data && data.error) {
       // Old script deployment — push local tickets anyway, server deduplicates
       ticketsStorage.forEach(function(t) { sheetsCall({ action: 'createTicket', ticket: t }); up.tickets++; });
