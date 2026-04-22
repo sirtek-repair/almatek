@@ -1128,12 +1128,12 @@ function initOrders() {
 
 function switchOrdersView(view) {
   ordersTabView = view;
-  var ids = { needorder: 'ordersNeedView', ordered: 'ordersOrderedView' };
-  Object.keys(ids).forEach(function(v, i) {
-    var viewEl = el(ids[v]); if (viewEl) viewEl.classList.toggle('active', v === view);
-    var btns = document.querySelectorAll('.orders-tab-btn');
-    if (btns[i]) btns[i].classList.toggle('active', v === view);
-  });
+  var needEl = el('ordersNeedView'), ordEl = el('ordersOrderedView');
+  if (needEl) { needEl.classList.toggle('active', view === 'needorder'); needEl.style.display = view === 'needorder' ? 'block' : 'none'; }
+  if (ordEl)  { ordEl.classList.toggle('active', view === 'ordered');  ordEl.style.display  = view === 'ordered'  ? 'block' : 'none'; }
+  var btns = document.querySelectorAll('#tabOrders .orders-tab-btn');
+  if (btns[0]) btns[0].classList.toggle('active', view === 'needorder');
+  if (btns[1]) btns[1].classList.toggle('active', view === 'ordered');
   if (view === 'needorder') renderNeedOrderList();
   else if (view === 'ordered') { ordersLoading2 = false; loadOrderRecords(); }
 }
@@ -1295,10 +1295,9 @@ function renderOrderedList() {
     var supplier = r.fields['fldVq43gyw9HVLYNI'] ? (r.fields['fldVq43gyw9HVLYNI'].name || r.fields['fldVq43gyw9HVLYNI']) : '';
     var date = r.fields['fldeHBNhXCrqAJrjp'] ? new Date(r.fields['fldeHBNhXCrqAJrjp']).toLocaleDateString() : '';
     var isReceived = !!r.fields['fldwGKyfgOuue1eyE'];
-    var action = isReceived
-      ? '<span class="order-status received">✓ Received</span>'
-      : '<div style="display:flex;align-items:center;gap:6px;"><input type="number" min="1" value="' + qty + '" id="rcvQty_' + r.id + '" style="width:52px;padding:4px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;text-align:center;" /><button class="order-item-btn receive" onclick="receiveOrder(\'' + r.id + '\')">Receive</button></div>';
-    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + fmtBrand(name) + '</div><div class="order-item-meta">Qty: ' + qty + (supplier ? ' · ' + supplier : '') + (date ? ' · ' + date : '') + '</div></div>' + action + '</div>';
+    var receivedDot = isReceived ? '<span style="color:var(--green);font-size:11px;margin-left:4px;">✓</span>' : '';
+    var action = '<div style="display:flex;align-items:center;gap:6px;"><input type="number" min="1" value="' + qty + '" id="rcvQty_' + r.id + '" style="width:52px;padding:4px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;text-align:center;" /><button class="order-item-btn receive" onclick="receiveOrder(\'' + r.id + '\')">' + (isReceived ? 'Re-receive' : 'Receive') + '</button></div>';
+    return '<div class="order-item"><div class="order-item-info"><div class="order-item-name">' + fmtBrand(name) + receivedDot + '</div><div class="order-item-meta">Qty: ' + qty + (supplier ? ' · ' + supplier : '') + (date ? ' · ' + date : '') + '</div></div>' + action + '</div>';
   }).join('');
 }
 
