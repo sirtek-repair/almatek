@@ -1144,9 +1144,11 @@ function switchOrdersView(view) {
 }
 
 function loadOrderRecords() {
+  showToast('loadOrderRecords called, authd=' + authd + ' loading=' + ordersLoading2);
   if (ordersLoading2) return; ordersLoading2 = true;
   if (!authd) {
     ordersLoading2 = false;
+    showToast('Not logged in — cannot load orders');
     var msg = '<div class="orders-empty-state">Log in to see orders</div>';
     var oList = el('ordersOrderedList'), rList = el('ordersReceiveList');
     if (oList) oList.innerHTML = msg;
