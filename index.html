@@ -1144,18 +1144,17 @@ function switchOrdersView(view) {
 }
 
 function loadOrderRecords() {
-  showToast('loadOrderRecords called, authd=' + authd + ' loading=' + ordersLoading2);
+  var _dbg = 'loadOrderRecords: authd=' + authd + ' loading=' + ordersLoading2;
+  var oList = el('ordersOrderedList'), rList = el('ordersReceiveList');
+  if (oList) oList.innerHTML = '<div class="orders-empty-state" style="font-size:11px;">' + _dbg + '</div>';
   if (ordersLoading2) return; ordersLoading2 = true;
   if (!authd) {
     ordersLoading2 = false;
-    showToast('Not logged in — cannot load orders');
     var msg = '<div class="orders-empty-state">Log in to see orders</div>';
-    var oList = el('ordersOrderedList'), rList = el('ordersReceiveList');
     if (oList) oList.innerHTML = msg;
     if (rList) rList.innerHTML = msg;
     return;
   }
-  var oList = el('ordersOrderedList'), rList = el('ordersReceiveList');
   if (oList) oList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
   if (rList) rList.innerHTML = '<div class="orders-empty-state">Loading…</div>';
   atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(function(data) {
