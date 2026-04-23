@@ -2168,7 +2168,6 @@ function setPayStructure(type) {
   el('structBtnStandard').classList.toggle('active', type === 'standard');
   el('structBtnFlat').classList.toggle('active', type === 'flat');
   el('payStructureRow').style.display = isOwner ? '' : 'none';
-  el('avgProfitRow').style.display = type === 'standard' ? '' : 'none';
   el('flatRevshareRow').classList.toggle('hidden', !isOwner || type !== 'flat');
   calcBookerPay();
 }
