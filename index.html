@@ -1705,27 +1705,20 @@ function openLeadDetail(leadId) {
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (lead.phone||'—') + '</div></div><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (lead.device||'—') + '</div></div></div>';
   if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + lead.email + '</div></div>';
   if (lead.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + lead.issue + '</div></div>';
-  if (lead.quote || lead.deposit) {
-    var qVal = lead.quote || 0, dVal = lead.deposit || 0, balVal = qVal - dVal;
-    var inputStyle = 'width:100%;margin-bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;box-sizing:border-box;';
-    html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
-    html += '<div style="margin-bottom:8px;">';
-    html += '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Quote</div><input type="number" id="detailQuoteInput" value="' + qVal + '" min="0" step="1" oninput="updateDetailBalance()" style="' + inputStyle + '" />';
-    html += '</div>';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(59,130,246,0.2);padding-top:8px;margin-bottom:10px;"><span style="font-size:12px;color:var(--muted);">Balance Due</span><span id="detailBalanceAmt" style="font-size:18px;font-weight:800;color:' + (balVal > 0 ? 'var(--accent)' : 'var(--green)') + ';">$' + balVal + '</span></div>';
-    html += '<button onclick="saveLeadFinancials()" style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save Financials</button>';
-    html += '</div>';
-  }
+  var qVal = lead.quote || 0;
+  var inputStyle = 'width:100%;margin-bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;box-sizing:border-box;';
+  html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
+  html += '<div style="margin-bottom:8px;">';
+  html += '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">QUOTE</div><input type="number" id="detailQuoteInput" value="' + qVal + '" min="0" step="1" placeholder="$0" oninput="updateDetailBalance()" style="' + inputStyle + '" />';
+  html += '</div>';
+  html += '<button onclick="saveLeadFinancials()" style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save Quote</button>';
+  html += '</div>';
   if (lead.notes?.length) { html += '<div style="margin-top:16px;"><strong>Notes</strong>'; lead.notes.slice().reverse().forEach(n => html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;">' + n.text + '<div style="font-size:11px;color:var(--muted);">' + new Date(n.createdAt).toLocaleString() + '</div></div>'); html += '</div>'; }
   el('leadDetailContent').innerHTML = html; el('leadDetailModal').classList.remove('hidden');
 }
 
 function closeLeadDetail() { el('leadDetailModal').classList.add('hidden'); currentLeadId = null; el('newNoteText').value = ''; var fup = el('followUpPickerRow'); if (fup) fup.classList.add('hidden'); }
-function updateDetailBalance() {
-  var q = parseFloat(el('detailQuoteInput')?.value || 0) || 0;
-  var amtEl = el('detailBalanceAmt');
-  if (amtEl) { amtEl.textContent = '$' + q; amtEl.style.color = q > 0 ? 'var(--accent)' : 'var(--green)'; }
-}
+function updateDetailBalance() {}
 function saveLeadFinancials() {
   if (!currentLeadId) return;
   var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; }); if (!lead) return;
