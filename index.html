@@ -317,7 +317,6 @@
   <button class="tab-btn" id="tabOrdBtn" onclick="switchTab('orders')">📋 Orders</button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
   <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 <span class="brand">LeadTek</span></button>
-  <button class="tab-btn" id="tabCartBtn" onclick="switchTab('cart')">🛒 Cart <span id="cartTabBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
   <button class="tab-btn" id="tabBookerBtn" onclick="switchTab('booker')">📊 Booker</button>
   <button class="tab-btn hidden" id="tabStaffBtn" onclick="switchTab('staff')">👥 Staff</button>
 </div>
@@ -438,7 +437,7 @@
       <label class="field-label" for="cxAddrInput">Customer Address</label>
       <div style="display:flex;gap:8px;align-items:center;">
         <input type="text" id="cxAddrInput" placeholder="e.g. 123 Main St, Brooklyn, NY" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit;outline:none;" oninput="onCxAddrInput()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
-        <button onclick="shareCxAddress()" style="padding:10px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">📍 Share</button>
+        <button onclick="shareCxAddress()" style="padding:10px 14px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">⬆ Share</button>
       </div>
       <div id="addrStatus" style="font-size:12px;color:var(--muted);margin-top:6px;min-height:16px;"></div>
     </div>
@@ -780,10 +779,9 @@
     <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerMonth">Month</label><select id="bookerMonth" onchange="calcBookerPay()"><option value="">— select month —</option><option>january</option><option>february</option><option>march</option><option>april</option><option>may</option><option>june</option><option>july</option><option>august</option><option>september</option><option>october</option><option>november</option><option>december</option></select></div>
     <div id="payStructureRow" class="gap" style="margin-top:14px;"><label class="field-label">Pay Structure</label><div style="display:flex;gap:8px;margin-top:4px;"><button id="structBtnStandard" class="need-sub-btn active" onclick="setPayStructure('standard')">Standard</button><button id="structBtnFlat" class="need-sub-btn" onclick="setPayStructure('flat')">Flat Rate</button></div></div>
     <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerRepairs">Repairs Booked</label><input type="number" id="bookerRepairs" placeholder="0" min="0" step="1" oninput="calcBookerPay()" /></div>
-    <div id="avgProfitRow" class="gap" style="margin-top:14px;"><label class="field-label" for="bookerAvgProfit">Avg Profit Per Repair ($)</label><input type="number" id="bookerAvgProfit" value="110" min="0" step="1" oninput="calcBookerPay()" /><p class="hint">Default $110 — adjust if needed</p></div>
     <div id="flatRevshareRow" class="gap hidden" style="margin-top:14px;"><label class="field-label" for="flatRevshare">Rev Share % (optional)</label><input type="number" id="flatRevshare" value="0" min="0" max="100" step="0.5" oninput="calcBookerPay()" /><p class="hint">Leave 0 if not applicable yet</p></div>
   </div>
-  <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total" style="margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:10px;"><div class="bt-label">Per Repair Payout</div><div class="bt-amt" id="perRepairAmt">$—</div></div><div id="revShareResultRow" class="booker-total hidden"><div class="bt-label">Rev Share Payout</div><div class="bt-amt" id="revShareAmt">$—</div></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">📤 Share Results</button></div></div>
+  <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total" style="margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:10px;"><div class="bt-label">Per Repair Payout</div><div class="bt-amt" id="perRepairAmt">$—</div></div><div id="revShareResultRow" class="booker-total hidden"><div class="bt-label">Rev Share Payout</div><div class="bt-amt" id="revShareAmt">$—</div></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">⬆ Share Results</button></div></div>
 </div>
 </div>
 
@@ -1071,7 +1069,7 @@ function switchTab(tab) {
   if (tab === 'cart') { switchTab('orders'); switchOrdersView('cart'); return; }
   const isQuote = tab==='quote', isOrders = tab==='orders', isInventory = tab==='inventory', isLeads = tab==='leads', isBooker = tab==='booker', isStaff = tab==='staff';
   el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabCart').classList.toggle('hidden', true); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff);
-  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabCartBtn').classList.toggle('active', false); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff);
+  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff);
   if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) setPayStructure(isOwner ? payStructure : currentUserStructure); else if (isLeads) { switchLeadSubTab('leads'); }
 }
 
@@ -1703,16 +1701,14 @@ function renderLeadsList() {
   filtered.sort((a,b) => new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt));
   el('leadsList').innerHTML = filtered.length ? filtered.map(l => {
     var mainBadge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
-    var tierPip = l.tier === 'premium' ? '<span style="font-size:11px;margin-left:4px;" title="Premium">⭐</span>' : '';
-    return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + tierPip + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div>' + mainBadge + '</div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>';
+    return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div>' + mainBadge + '</div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
 }
 
 function openLeadDetail(leadId) {
   currentLeadId = leadId; var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
   el('detailLeadName').textContent = lead.name || 'Unnamed';
-  var tierBadge = lead.tier === 'premium' ? '<span class="stock-badge" style="background:#f59e0b20;color:#f59e0b;margin-left:6px;">⭐ Premium</span>' : '';
-  var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;"><div><span class="stock-badge" style="background:' + getStatusColor(lead.status) + '20;color:' + getStatusColor(lead.status) + '">' + getStatusLabel(lead.status) + '</span>' + tierBadge + '</div><div><button onclick="closeLeadDetail();editLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px;">✏️ Edit</button><button onclick="deleteLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Delete</button></div></div>';
+  var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;"><div><span class="stock-badge" style="background:' + getStatusColor(lead.status) + '20;color:' + getStatusColor(lead.status) + '">' + getStatusLabel(lead.status) + '</span></div><div><button onclick="closeLeadDetail();editLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px;">✏️ Edit</button><button onclick="deleteLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Delete</button></div></div>';
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (lead.phone||'—') + '</div></div><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (lead.device||'—') + '</div></div></div>';
   if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + lead.email + '</div></div>';
   if (lead.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + lead.issue + '</div></div>';
@@ -2183,14 +2179,13 @@ function calcBookerPay() {
   el('bookerModelTag').textContent = [name, month].filter(Boolean).join(' · ');
   var perRepair = 0, revShare = 0;
   if (payStructure === 'standard') {
-    var avgProfit = parseFloat(el('bookerAvgProfit').value) || 110;
     perRepair = repairs * 25;
-    revShare = Math.round(repairs * avgProfit * 0.05 * 100) / 100;
-    el('bookerBreakdown').innerHTML = repairs + ' repairs × $25 per repair + 5% of avg $' + avgProfit + ' profit each';
+    revShare = 0;
+    el('bookerBreakdown').innerHTML = repairs + ' repairs × $25 per repair';
   } else {
     var revPct = parseFloat(el('flatRevshare').value) || 0;
     perRepair = repairs * 25;
-    revShare = revPct > 0 ? Math.round(repairs * (parseFloat(el('bookerAvgProfit').value) || 110) * (revPct / 100) * 100) / 100 : 0;
+    revShare = 0;
     el('bookerBreakdown').innerHTML = repairs + ' repairs × $25 flat rate' + (revPct > 0 ? ' + ' + revPct + '% rev share' : '');
   }
   el('perRepairAmt').textContent = '$' + perRepair.toFixed(2).replace(/\.00$/, '');
@@ -2293,6 +2288,6 @@ function saveNewPassword() {}
 
 el('tabLeadsBtn').classList.remove('hidden');
 </script>
-<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23c</div>
+<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23d</div>
 </body>
 </html>
