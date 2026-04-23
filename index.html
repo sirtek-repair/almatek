@@ -1497,17 +1497,21 @@ function tryAuth() {
   if (!input) return;
   el('authError').textContent = 'Checking…';
   function doStaffCheck() {
-    if (USERS_SCRIPT_URL) {
-      sheetsCall({ action: 'login', pass: input }).then(function(data) {
-        if (data && data.ok) {
-          onStaffLoginSuccess(input, data.name, data.structure, data.apiPass);
-        } else {
-          el('authError').textContent = 'Wrong code — try again';
-        }
-      }).catch(function() { el('authError').textContent = 'Connection error — try again'; });
-    } else {
-      el('authError').textContent = 'Wrong code — try again';
+    if (!USERS_SCRIPT_URL) {
+      el('authError').textContent = 'Connection not set up — tap ⚙ below to configure';
+      el('authSetupBox').classList.remove('hidden');
+      el('authSetupUrl').focus();
+      return;
     }
+    sheetsCall({ action: 'login', pass: input }).then(function(data) {
+      if (data && data.ok) {
+        onStaffLoginSuccess(input, data.name, data.structure, data.apiPass);
+      } else if (data && data._httpError) {
+        el('authError').textContent = 'Server error (' + data._httpError + ') — check with owner';
+      } else {
+        el('authError').textContent = 'Wrong code — try again';
+      }
+    }).catch(function() { el('authError').textContent = 'Connection error — check network'; });
   }
   try {
     crypto.subtle.digest('SHA-256', new TextEncoder().encode(input)).then(function(buf) {
@@ -2287,6 +2291,6 @@ function saveNewPassword() {}
 
 el('tabLeadsBtn').classList.remove('hidden');
 </script>
-<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23d</div>
+<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23e</div>
 </body>
 </html>
