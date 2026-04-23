@@ -584,7 +584,8 @@
     <div id="cartTabItems"></div>
     <div id="cartTabEmpty" class="orders-empty-state hidden">Cart is empty — add items from Need to Order</div>
     <div id="cartTabFooter" class="hidden" style="margin-top:16px;">
-      <input type="text" id="cartSupplier" placeholder="Supplier (e.g. Mobile Sentrix)" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+      <input type="text" id="cartSupplier" placeholder="Supplier * (required)" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
+      <input type="date" id="cartOrderDate" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" />
       <button id="placeOrderBtn" onclick="placeCartOrder()" style="width:100%;padding:14px;background:var(--accent);border:none;color:#fff;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Place Order</button>
     </div>
   </div>
@@ -1322,11 +1323,13 @@ function renderCartTab() {
 function placeCartOrder() {
   if (!orderCart.length) { showToast('Cart is empty'); return; }
   var supplier = (el('cartSupplier') ? el('cartSupplier').value.trim() : '');
+  var orderDate = (el('cartOrderDate') ? el('cartOrderDate').value.trim() : '');
+  if (!supplier) { showToast('Supplier is required'); if (el('cartSupplier')) { el('cartSupplier').style.borderColor='#ef4444'; el('cartSupplier').focus(); } return; }
+  if (!orderDate) { showToast('Date is required'); if (el('cartOrderDate')) { el('cartOrderDate').style.borderColor='#ef4444'; el('cartOrderDate').focus(); } return; }
   var btn = el('placeOrderBtn');
   if (btn) { btn.textContent = 'Placing…'; btn.disabled = true; }
   var promises = orderCart.map(function(item) {
-    var fields = { 'Item': [item.id], 'QTY': item.qty };
-    if (supplier) fields['Supplier'] = supplier;
+    var fields = { 'Item': [item.id], 'QTY': item.qty, 'Supplier': supplier, 'date recieved': orderDate };
     return atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: fields }) });
   });
   Promise.all(promises).then(function(results) {
@@ -1334,9 +1337,11 @@ function placeCartOrder() {
     if (errors.length) { showToast(errors.length + ' item(s) failed'); }
     else {
       showToast('Order placed — ' + orderCart.length + ' item' + (orderCart.length !== 1 ? 's' : '') + ' ✓');
-      sheetsCall({ action: 'logCartOrder', supplier: supplier, items: orderCart.map(function(i) { return { name: i.name, qty: i.qty }; }), placedAt: new Date().toISOString(), placedBy: currentUser || 'staff' });
+      sheetsCall({ action: 'logCartOrder', supplier: supplier, orderDate: orderDate, items: orderCart.map(function(i) { return { name: i.name, qty: i.qty }; }), placedAt: new Date().toISOString(), placedBy: currentUser || 'staff' });
     }
-    orderCart = []; saveCartToStorage(); if (el('cartSupplier')) el('cartSupplier').value = '';
+    orderCart = []; saveCartToStorage();
+    if (el('cartSupplier')) { el('cartSupplier').value = ''; el('cartSupplier').style.borderColor = ''; }
+    if (el('cartOrderDate')) { el('cartOrderDate').value = ''; el('cartOrderDate').style.borderColor = ''; }
     if (btn) { btn.textContent = 'Place Order'; btn.disabled = false; }
     clearCache('almatek_orders_cache'); updateCartTabBadge(); renderCartTab(); renderNeedOrderList(); loadOrderRecords();
   }).catch(function() {
@@ -1923,18 +1928,6 @@ function openTicketDetail(ticketId) {
   html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (ticket.device||'—') + '</div></div></div>';
   if (ticket.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + ticket.email + '</div></div>';
   if (ticket.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + ticket.issue + '</div></div>';
-  // Supplier + order ref
-  var supplierRowStyle = 'width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;margin-bottom:6px;';
-  html += '<div style="background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:10px;">';
-  html += '<div style="font-size:10px;color:var(--muted);letter-spacing:0.05em;margin-bottom:8px;">SUPPLIER &amp; ORDER REF</div>';
-  var supplierBtnsHtml = SUPPLIERS.map(function(s) {
-    var active = (ticket.supplier || '') === s;
-    var sty = active ? 'padding:5px 10px;background:var(--accent);border:none;color:#fff;border-radius:20px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:700;' : 'padding:5px 10px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:20px;font-size:11px;font-family:inherit;cursor:pointer;';
-    return '<button type="button" onclick="setTicketSupplier(\'' + s.replace(/'/g,"\\'") + '\',\'' + ticket.id + '\')" style="' + sty + '">' + s + '</button>';
-  }).join('');
-  html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">' + supplierBtnsHtml + '</div>';
-  html += '<input type="text" id="ticketOrderRefInput" value="' + (ticket.orderRef||'').replace(/"/g,'&quot;') + '" placeholder="Order # / date (for tax records)" onchange="saveTicketOrderRef(this.value)" style="' + supplierRowStyle + '" />';
-  html += '</div>';
   // Stepper
   var stepperHtml = stages.map(function(s, i) {
     var done = i < stageIdx, active = i === stageIdx;
