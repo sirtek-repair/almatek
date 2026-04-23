@@ -1705,8 +1705,25 @@ function renderLeadsList() {
   filtered.sort((a,b) => new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt));
   el('leadsList').innerHTML = filtered.length ? filtered.map(l => {
     var mainBadge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
-    return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div>' + mainBadge + '</div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>';
+    var shareBtn = '<button onclick="shareLeadCard(\'' + l.id + '\',event)" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;" title="Share">⬆</button>';
+    return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
+}
+
+function shareLeadCard(leadId, e) {
+  e.stopPropagation();
+  var lead = leadsStorage.find(function(l) { return l.id === leadId; }); if (!lead) return;
+  var lines = [lead.name || 'Unnamed'];
+  if (lead.phone) lines.push(lead.phone);
+  if (lead.device) lines.push(lead.device);
+  if (lead.issue) lines.push(lead.issue);
+  lines.push('Status: ' + getStatusLabel(lead.status));
+  if (lead.quote) lines.push('Quote: $' + lead.quote);
+  if (lead.followUpAt) lines.push('Follow-up: ' + lead.followUpAt);
+  var text = lines.join('\n');
+  if (navigator.share) { navigator.share({ title: lead.name || 'Lead', text: text }).catch(function(){}); }
+  else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied ✓'); }); }
+  else { showToast('Share not supported'); }
 }
 
 function openLeadDetail(leadId) {
@@ -1886,12 +1903,30 @@ function renderTicketsList() {
     var flowIcon = t.flow === 'in_stock' ? '✅' : '📦';
     var badge = '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[t.status] || t.status) + '</span>';
     var tierPip = t.tier === 'premium' ? '<span style="font-size:11px;margin-left:4px;">⭐</span>' : '';
+    var shareBtn = '<button onclick="shareTicketCard(\'' + t.id + '\',event)" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;" title="Share">⬆</button>';
     return '<div class="inv-item" onclick="openTicketDetail(\'' + t.id + '\')" style="cursor:pointer;">' +
       '<div class="inv-item-top"><div><div class="inv-item-name">' + (t.name||'Unnamed') + tierPip + ' <span style="font-size:11px;color:var(--muted);">' + flowIcon + '</span></div>' +
-      '<div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div>' + badge + '</div>' +
+      '<div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div><div style="display:flex;align-items:center;gap:4px;">' + badge + shareBtn + '</div></div>' +
       (t.issue ? '<div class="inv-item-meta">' + t.issue.substring(0,60) + '</div>' : '') +
     '</div>';
   }).join('');
+}
+
+function shareTicketCard(ticketId, e) {
+  e.stopPropagation();
+  var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
+  var stageLabels = ticket.flow === 'in_stock' ? REPAIR_LABELS : SO_LABELS;
+  var lines = [ticket.name || 'Unnamed'];
+  if (ticket.phone) lines.push(ticket.phone);
+  if (ticket.device) lines.push(ticket.device);
+  if (ticket.issue) lines.push(ticket.issue);
+  lines.push('Status: ' + (stageLabels[ticket.status] || ticket.status));
+  if (ticket.quote) lines.push('Quote: $' + ticket.quote);
+  if (ticket.deposit) lines.push('Deposit paid: $' + ticket.deposit);
+  var text = lines.join('\n');
+  if (navigator.share) { navigator.share({ title: ticket.name || 'Ticket', text: text }).catch(function(){}); }
+  else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied ✓'); }); }
+  else { showToast('Share not supported'); }
 }
 
 function openTicketDetail(ticketId) {
@@ -2291,6 +2326,6 @@ function saveNewPassword() {}
 
 el('tabLeadsBtn').classList.remove('hidden');
 </script>
-<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23e</div>
+<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23f</div>
 </body>
 </html>
