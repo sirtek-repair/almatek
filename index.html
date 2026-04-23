@@ -2006,6 +2006,8 @@ function openTicketDetail(ticketId) {
   el('ticketDetailContent').innerHTML = html;
   if (el('ticketNoteText')) el('ticketNoteText').value = '';
   el('ticketDetailModal').classList.remove('hidden');
+  var scrollEl = el('ticketDetailModal').querySelector('[style*="overflow-y"]');
+  if (scrollEl) scrollEl.scrollTop = 0;
 }
 
 function closeTicketDetail() { el('ticketDetailModal').classList.add('hidden'); currentTicketId = null; if (el('ticketNoteText')) el('ticketNoteText').value = ''; }
