@@ -813,6 +813,7 @@
 <script>
 const LABOR = { iphone_screen:80, back_glass:100, back_glass_swap:100, battery:65, ipad:85, android:85, laptop:85 };
 const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', android:'Android Repair', laptop:'MacBook / Laptop' };
+const SHARE_ICON = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
 
 const FACTORY_SCREEN_TYPE = {
   'iPhone Air':'oled','iPhone 17 Pro Max':'oled','iPhone 17 Pro':'oled','iPhone 17':'oled',
@@ -1705,7 +1706,7 @@ function renderLeadsList() {
   filtered.sort((a,b) => new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt));
   el('leadsList').innerHTML = filtered.length ? filtered.map(l => {
     var mainBadge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
-    var shareBtn = '<button onclick="shareLeadCard(\'' + l.id + '\',event)" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;" title="Share">⬆</button>';
+    var shareBtn = '<button onclick="shareLeadCard(\'' + l.id + '\',event)" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;display:flex;align-items:center;" title="Share">' + SHARE_ICON + '</button>';
     return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
 }
@@ -1903,7 +1904,7 @@ function renderTicketsList() {
     var flowIcon = t.flow === 'in_stock' ? '✅' : '📦';
     var badge = '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[t.status] || t.status) + '</span>';
     var tierPip = t.tier === 'premium' ? '<span style="font-size:11px;margin-left:4px;">⭐</span>' : '';
-    var shareBtn = '<button onclick="shareTicketCard(\'' + t.id + '\',event)" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;" title="Share">⬆</button>';
+    var shareBtn = '<button onclick="shareTicketCard(\'' + t.id + '\',event)" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;display:flex;align-items:center;" title="Share">' + SHARE_ICON + '</button>';
     return '<div class="inv-item" onclick="openTicketDetail(\'' + t.id + '\')" style="cursor:pointer;">' +
       '<div class="inv-item-top"><div><div class="inv-item-name">' + (t.name||'Unnamed') + tierPip + ' <span style="font-size:11px;color:var(--muted);">' + flowIcon + '</span></div>' +
       '<div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div><div style="display:flex;align-items:center;gap:4px;">' + badge + shareBtn + '</div></div>' +
@@ -2326,6 +2327,6 @@ function saveNewPassword() {}
 
 el('tabLeadsBtn').classList.remove('hidden');
 </script>
-<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23f</div>
+<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23g</div>
 </body>
 </html>
