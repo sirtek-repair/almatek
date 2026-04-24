@@ -333,7 +333,7 @@
   <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 <span class="brand">LeadTek</span></button>
   <button class="tab-btn" id="tabOrdBtn" onclick="switchTab('orders')">📋 Orders</button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
-  <button class="tab-btn" id="tabBookerBtn" onclick="switchTab('booker')">📊 Booker</button>
+  <button class="tab-btn" id="tabBookerBtn" onclick="switchTab('booker')">📊 Tally</button>
   <button class="tab-btn hidden" id="tabStaffBtn" onclick="switchTab('staff')">👥 Staff</button>
 </div>
 
@@ -791,7 +791,7 @@
     <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
   </header>
   <div class="card">
-    <div class="gap"><label class="field-label" for="bookerName">Booker Name</label><input type="text" id="bookerName" placeholder="Name" oninput="calcBookerPay()" /></div>
+    <div class="gap"><label class="field-label" for="bookerName">Name</label><input type="text" id="bookerName" placeholder="Name" oninput="calcBookerPay()" /></div>
     <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerMonth">Month</label><select id="bookerMonth" onchange="calcBookerPay()"><option value="">— select month —</option><option>january</option><option>february</option><option>march</option><option>april</option><option>may</option><option>june</option><option>july</option><option>august</option><option>september</option><option>october</option><option>november</option><option>december</option></select></div>
     <div id="payStructureRow" class="gap" style="margin-top:14px;"><label class="field-label">Pay Structure</label><div style="display:flex;gap:8px;margin-top:4px;"><button id="structBtnStandard" class="need-sub-btn active" onclick="setPayStructure('standard')">Standard</button><button id="structBtnFlat" class="need-sub-btn" onclick="setPayStructure('flat')">Flat Rate</button></div></div>
     <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerRepairs">Repairs Booked</label><input type="number" id="bookerRepairs" placeholder="0" min="0" step="1" oninput="calcBookerPay()" /></div>
@@ -2272,8 +2272,13 @@ function shareBookerResults() {
   var perR = el('perRepairAmt').textContent;
   var text = (name ? name + ' — ' : '') + (month ? month + ' · ' : '') + repairs + ' repairs\nPer Repair: ' + perR;
   if (isOwner) text += '\nRev Share: ' + el('revShareAmt').textContent;
-  if (navigator.share) { navigator.share({ title: 'Booker Pay', text: text }).catch(function() {}); }
-  else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied to clipboard ✓'); }); }
+  function resetRepairs() {
+    el('bookerRepairs').value = '';
+    saveBookerState();
+    calcBookerPay();
+  }
+  if (navigator.share) { navigator.share({ title: 'Tally', text: text }).then(resetRepairs).catch(function() {}); }
+  else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied ✓'); resetRepairs(); }); }
   else { showToast('Share not supported on this device'); }
 }
 
@@ -2390,6 +2395,6 @@ function dismissInstallBanner() {
 }
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }
 </script>
-<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23j</div>
+<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23k</div>
 </body>
 </html>
