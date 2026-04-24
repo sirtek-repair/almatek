@@ -1087,7 +1087,7 @@ function switchTab(tab) {
   const isQuote = tab==='quote', isOrders = tab==='orders', isInventory = tab==='inventory', isLeads = tab==='leads', isBooker = tab==='booker', isStaff = tab==='staff';
   el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabCart').classList.toggle('hidden', true); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff);
   el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff);
-  if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) setPayStructure(isOwner ? payStructure : currentUserStructure); else if (isLeads) { switchLeadSubTab('leads'); }
+  if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); } else if (isLeads) { switchLeadSubTab('leads'); }
 }
 
 var leadSubTab = 'leads';
@@ -2219,6 +2219,24 @@ function deleteTicket(ticketId) {
 
 // Booker Pay Calculator
 var payStructure = 'standard';
+var BOOKER_MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+
+function saveBookerState() {
+  try { localStorage.setItem('almatek_booker_state', JSON.stringify({ name: el('bookerName').value, month: el('bookerMonth').value, repairs: el('bookerRepairs').value })); } catch(e) {}
+}
+function loadBookerState() {
+  var curMonth = BOOKER_MONTHS[new Date().getMonth()];
+  try {
+    var s = JSON.parse(localStorage.getItem('almatek_booker_state') || '{}');
+    el('bookerName').value = s.name || currentUser || '';
+    el('bookerMonth').value = s.month || curMonth;
+    el('bookerRepairs').value = s.repairs || '';
+  } catch(e) {
+    if (!el('bookerName').value) el('bookerName').value = currentUser || '';
+    if (!el('bookerMonth').value) el('bookerMonth').value = curMonth;
+  }
+}
+
 function setPayStructure(type) {
   payStructure = type;
   el('structBtnStandard').classList.toggle('active', type === 'standard');
@@ -2228,6 +2246,7 @@ function setPayStructure(type) {
   calcBookerPay();
 }
 function calcBookerPay() {
+  saveBookerState();
   var repairs = parseInt(el('bookerRepairs').value) || 0;
   if (repairs <= 0) { el('bookerResult').classList.add('hidden'); return; }
   var name = el('bookerName').value.trim(), month = el('bookerMonth').value;
@@ -2371,6 +2390,6 @@ function dismissInstallBanner() {
 }
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }
 </script>
-<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23i</div>
+<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23j</div>
 </body>
 </html>
