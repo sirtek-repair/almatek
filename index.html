@@ -13,7 +13,9 @@
   <link rel="icon" href="line-logo.jpg" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="AlmaTek" />
+  <meta name="theme-color" content="#0c0c0e" />
   <link rel="apple-touch-icon" href="line-logo.jpg" />
+  <link rel="manifest" href="/manifest.json" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -293,6 +295,20 @@
   </style>
 </head>
 <body>
+<!-- Install Banner (Android) -->
+<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 16px;z-index:500;align-items:center;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,0.4);">
+  <img src="line-logo.jpg" width="38" height="38" style="border-radius:9px;flex-shrink:0;" alt="AlmaTek" />
+  <div style="flex:1;"><div style="font-size:13px;font-weight:600;">Install AlmaTek</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">Add to your home screen</div></div>
+  <button onclick="doInstall()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Install</button>
+  <button onclick="dismissInstallBanner()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0;">×</button>
+</div>
+<!-- Install Banner (iOS) -->
+<div id="iosBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:14px 16px;z-index:500;box-shadow:0 -4px 20px rgba(0,0,0,0.4);">
+  <div style="display:flex;align-items:flex-start;gap:10px;">
+    <div style="flex:1;font-size:13px;color:var(--text);line-height:1.6;">Tap <strong>Share</strong> <svg style="display:inline;vertical-align:middle;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> then <strong>Add to Home Screen</strong> to install AlmaTek.</div>
+    <button onclick="dismissInstallBanner()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0;">×</button>
+  </div>
+</div>
 <!-- Auth Modal -->
 <div id="authOverlay" class="auth-overlay hidden">
   <div class="auth-box">
@@ -2326,7 +2342,35 @@ function showChangePass() {}
 function saveNewPassword() {}
 
 el('tabLeadsBtn').classList.remove('hidden');
+
+// PWA install prompt
+var deferredInstallPrompt = null;
+var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+if (!isStandalone) {
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (!localStorage.getItem('almatek_install_dismissed')) {
+      var b = el('installBanner'); if (b) b.style.display = 'flex';
+    }
+  });
+  var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (isIOS && !localStorage.getItem('almatek_install_dismissed')) {
+    setTimeout(function() { var b = el('iosBanner'); if (b) b.style.display = 'block'; }, 3000);
+  }
+}
+function doInstall() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(function() { deferredInstallPrompt = null; var b = el('installBanner'); if (b) b.style.display = 'none'; });
+}
+function dismissInstallBanner() {
+  var b = el('installBanner'); if (b) b.style.display = 'none';
+  var c = el('iosBanner'); if (c) c.style.display = 'none';
+  localStorage.setItem('almatek_install_dismissed', '1');
+}
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }
 </script>
-<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23g</div>
+<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23h</div>
 </body>
 </html>
