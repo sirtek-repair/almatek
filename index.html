@@ -348,9 +348,9 @@
       <div class="hlink-dropdown" id="suppliersDropdown" style="display:none;">
         <button class="hlink" id="suppliersBtn" onclick="toggleSuppliers(event)">Parts ▾</button>
         <div class="hlink-dropdown-menu hidden" id="suppliersMenu">
-          <a href="https://www.mobilesentrix.com" target="_blank" class="hlink" id="sentrixLink">Mobile Sentrix ↗</a>
-          <a href="https://brosphoneparts.com/" target="_blank" class="hlink" id="brosLink">Bros Parts ↗</a>
-          <a href="https://parts4cells.com/" target="_blank" class="hlink" id="p4cLink">Parts4Cells ↗</a>
+          <a href="https://www.mobilesentrix.com" target="_blank" class="hlink" id="sentrixLink">Mobile Sentrix (Virginia) ↗</a>
+          <a href="https://brosphoneparts.com/" target="_blank" class="hlink" id="brosLink">Bros Phone Parts (Bklyn) ↗</a>
+          <a href="https://parts4cells.com/" target="_blank" class="hlink" id="p4cLink">Parts4Cells (Houston) ↗</a>
           <a href="tel:+19177909209" class="hlink" id="kimiLink">Kimi Soho ☎</a>
         </div>
       </div>
@@ -863,7 +863,7 @@ const SCREEN_PRICES = {
 };
 
 let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2='', mode1='select', mode2='select', secondOpen=false, mobileOpen=false, mobileFee=0;
-var SUPPLIERS = ['Mobile Sentrix','Bros Parts','Parts4Cells','Kimi Soho'];
+var SUPPLIERS = ['Mobile Sentrix (Virginia)','Bros Phone Parts (Bklyn)','Parts4Cells (Houston)','Kimi Soho'];
 var quoteSupplier = '', quoteOrderRef = '';
 function renderSupplierBtns() {
   ['supplierBtns1','supplierBtns2'].forEach(function(id) {
@@ -2395,6 +2395,6 @@ function dismissInstallBanner() {
 }
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }
 </script>
-<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23l</div>
+<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23m</div>
 </body>
 </html>
