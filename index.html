@@ -358,6 +358,7 @@
           <a href="tel:+19177909209" class="hlink" id="kimiLink">Kimi Soho ☎</a>
         </div>
       </div>
+      <button class="hlink" onclick="copySwan(this)">Swan Address</button>
       <button class="hlink" id="repairedBtn" onclick="copyLink(this, 'https://repairedcollective.com', 'Repaired Collective')"><span class="brand" style="font-weight:300;">Repaired</span> <span class="brand" style="font-weight:400;">Collective</span></button>
       <button class="hlink" id="reviewBtn" onclick="copyLink(this, 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D', 'Review link')">⭐ Review Link</button>
       <span class="hlink" id="supplierDemo" style="display:none;">your part supplier</span>
@@ -633,7 +634,10 @@
   <header style="padding:16px 0 20px;text-align:center;">
     <img src="line-logo.jpg" width="48" height="48" style="display:block;margin:0 auto 6px;border-radius:10px;" alt="AlmaTek" />
     <h1 style="font-size:26px;font-family:Georgia,serif;font-weight:normal;text-transform:none;letter-spacing:0.01em;"><span class="brand">LeadTek</span></h1>
-    <button id="newLeadBtn" onclick="showNewLeadForm()" style="margin-top:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
+      <button id="newLeadBtn" onclick="showNewLeadForm()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
+      <button onclick="copySwan(this)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Swan Address</button>
+    </div>
   </header>
 
   <div class="orders-tab-nav" style="display:flex;align-items:center;gap:4px;">
@@ -680,7 +684,7 @@
   </div><!-- end leadViewLeads -->
   <div id="leadViewTickets" class="hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 10px;">
-      <span style="font-size:13px;font-weight:600;color:var(--muted);">Tickets</span>
+      <button onclick="copySwan(this)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Swan Address</button>
       <button onclick="showNewTicketManual()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">+ New Ticket</button>
     </div>
     <div id="ticketsList"></div>
@@ -1632,6 +1636,7 @@ function toggleSuppliers(e) { e.stopPropagation(); el('suppliersMenu').classList
 document.addEventListener('click', () => el('suppliersMenu')?.classList.add('hidden'));
 
 function copyLink(btn, url, label) { navigator.clipboard?.writeText(url).then(() => { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = label; }, 1800); }); }
+function copySwan(btn) { var addr = '1048 Bedford Ave, Brooklyn NY, 11205'; navigator.clipboard?.writeText(addr).then(function() { var orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(function() { btn.textContent = orig; }, 1800); }); }
 
 updateAuthBtn();
 if (authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
