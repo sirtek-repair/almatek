@@ -1744,14 +1744,15 @@ function getStatusLabel(s) { var labels = { new:'New', contacted:'Contacted', fo
 function getStatusColor(s) { var colors = { new:'#3b82f6', contacted:'#10b981', follow_up_scheduled:'#8b5cf6', booked:'#06b6d4', closed_lost:'#ef4444' }; return colors[s] || '#6b7280'; }
 
 function renderLeadsList() {
-  if (!authd) { el('leadsList').innerHTML = DEMO_LEADS.map(function(l) { var badge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>'; return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name">' + l.name + '</div><div class="inv-item-model">' + l.phone + (l.device?' · '+l.device:'') + '</div></div>' + badge + '</div>' + (l.issue?'<div class="inv-item-meta">'+l.issue.substring(0,60)+'</div>':'') + '</div>'; }).join(''); return; }
+  if (!authd) { el('leadsList').innerHTML = '<div class="demo-inv-note">Sample Data · Log in to see real data</div>' + DEMO_LEADS.map(function(l) { var badge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>'; var dateStr = new Date(l.createdAt).toLocaleDateString('en-US', {month:'short', day:'numeric'}); return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name">' + l.name + '</div><div class="inv-item-model">' + l.phone + (l.device?' · '+l.device:'') + '</div></div>' + badge + '</div>' + (l.issue?'<div class="inv-item-meta">'+l.issue.substring(0,60)+'</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + '</div></div>'; }).join(''); return; }
   var search = (el('leadSearch')?.value || '').toLowerCase();
   var filtered = leadsStorage.filter(l => { var match = !search || (l.name||'').toLowerCase().includes(search) || (l.phone||'').includes(search); return match && (leadFilterStatus === 'all' || l.status === leadFilterStatus); });
-  filtered.sort((a,b) => new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt));
+  filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
   el('leadsList').innerHTML = filtered.length ? filtered.map(l => {
     var mainBadge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
     var shareBtn = '<button onclick="shareLeadCard(\'' + l.id + '\',event)" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;display:flex;align-items:center;" title="Share">' + SHARE_ICON + '</button>';
-    return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '</div>';
+    var dateStr = new Date(l.createdAt).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + '</div></div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
 }
 
@@ -1815,7 +1816,7 @@ function openLeadDetail(leadId) {
   html += '</div>';
   html += '<button onclick="saveLeadFinancials()" style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save Quote</button>';
   html += '</div>';
-  if (lead.notes?.length) { html += '<div style="margin-top:16px;"><strong>Notes</strong>'; lead.notes.slice().reverse().forEach(n => html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;font-size:13px;">' + (n.text||'').replace(/\n/g,'<br>') + (n.author ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:4px;">' + new Date(n.createdAt).toLocaleString() + '</div>') + '</div>'); html += '</div>'; }
+  if (lead.notes?.length) { html += '<div style="margin-top:16px;"><strong>Notes</strong>'; lead.notes.slice().reverse().forEach(function(n, ri) { var idx = lead.notes.length - 1 - ri; html += '<div id="ln_' + idx + '" style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;font-size:13px;">' + (n.text||'').replace(/\n/g,'<br>') + '<div style="display:flex;gap:4px;margin-top:6px;justify-content:flex-end;"><button onclick="editLeadNote(\'' + lead.id + '\',' + idx + ')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer;font-family:inherit;">✏️</button><button onclick="deleteLeadNote(\'' + lead.id + '\',' + idx + ')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer;font-family:inherit;">🗑️</button></div></div>'; }); html += '</div>'; }
   el('leadDetailContent').innerHTML = html; el('leadDetailModal').classList.remove('hidden');
 }
 
@@ -1828,6 +1829,54 @@ function saveLeadFinancials() {
   lead.updatedAt = new Date().toISOString();
   saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { quote: lead.quote });
   renderLeadsList(); openLeadDetail(lead.id); showToast('Saved ✓');
+}
+function deleteLeadNote(leadId, idx) {
+  if (!confirm('Delete this note?')) return;
+  var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
+  lead.notes.splice(idx, 1); lead.updatedAt = new Date().toISOString();
+  saveLeadsToStorage(); syncUpdateToSheet(leadId, { notes: lead.notes }); openLeadDetail(leadId); showToast('Note deleted');
+}
+function editLeadNote(leadId, idx) {
+  var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
+  var note = lead.notes[idx]; if (!note) return;
+  var parts = (note.text||'').split('\n'); var userText = parts.length > 1 ? parts.slice(1).join('\n') : parts[0];
+  var c = document.getElementById('ln_' + idx); if (!c) return;
+  c.innerHTML = '<textarea id="lnEdit_' + idx + '" rows="3" style="width:100%;background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:8px;color:var(--text);font-family:inherit;resize:vertical;box-sizing:border-box;font-size:13px;">' + userText + '</textarea><div style="display:flex;gap:6px;margin-top:6px;"><button onclick="saveLeadNoteEdit(\'' + leadId + '\',' + idx + ')" style="flex:1;padding:6px;background:var(--accent);border:none;color:#fff;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;">Save</button><button onclick="openLeadDetail(\'' + leadId + '\')" style="flex:1;padding:6px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;">Cancel</button></div>';
+  var ta = document.getElementById('lnEdit_' + idx); if (ta) { ta.focus(); ta.selectionStart = ta.value.length; }
+}
+function saveLeadNoteEdit(leadId, idx) {
+  var ta = document.getElementById('lnEdit_' + idx); if (!ta) return;
+  var newText = ta.value.trim(); if (!newText) return;
+  var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
+  var note = lead.notes[idx]; if (!note) return;
+  var parts = (note.text||'').split('\n'); var prefix = parts.length > 1 ? parts[0] : fmtNotePrefix();
+  note.text = prefix + '\n' + newText; note.updatedAt = new Date().toISOString();
+  lead.updatedAt = new Date().toISOString();
+  saveLeadsToStorage(); syncUpdateToSheet(leadId, { notes: lead.notes }); openLeadDetail(leadId); showToast('Note updated ✓');
+}
+function deleteTicketNote(ticketId, idx) {
+  if (!confirm('Delete this note?')) return;
+  var ticket = ticketsStorage.find(t => t.id === ticketId); if (!ticket) return;
+  ticket.notes.splice(idx, 1); ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); syncTicket(ticket); openTicketDetail(ticketId); showToast('Note deleted');
+}
+function editTicketNote(ticketId, idx) {
+  var ticket = ticketsStorage.find(t => t.id === ticketId); if (!ticket) return;
+  var note = ticket.notes[idx]; if (!note) return;
+  var parts = (note.text||'').split('\n'); var userText = parts.length > 1 ? parts.slice(1).join('\n') : parts[0];
+  var c = document.getElementById('tn_' + idx); if (!c) return;
+  c.innerHTML = '<textarea id="tnEdit_' + idx + '" rows="3" style="width:100%;background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:8px;color:var(--text);font-family:inherit;resize:vertical;box-sizing:border-box;font-size:13px;">' + userText + '</textarea><div style="display:flex;gap:6px;margin-top:6px;"><button onclick="saveTicketNoteEdit(\'' + ticketId + '\',' + idx + ')" style="flex:1;padding:6px;background:var(--accent);border:none;color:#fff;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;">Save</button><button onclick="openTicketDetail(\'' + ticketId + '\')" style="flex:1;padding:6px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer;">Cancel</button></div>';
+  var ta = document.getElementById('tnEdit_' + idx); if (ta) { ta.focus(); ta.selectionStart = ta.value.length; }
+}
+function saveTicketNoteEdit(ticketId, idx) {
+  var ta = document.getElementById('tnEdit_' + idx); if (!ta) return;
+  var newText = ta.value.trim(); if (!newText) return;
+  var ticket = ticketsStorage.find(t => t.id === ticketId); if (!ticket) return;
+  var note = ticket.notes[idx]; if (!note) return;
+  var parts = (note.text||'').split('\n'); var prefix = parts.length > 1 ? parts[0] : fmtNotePrefix();
+  note.text = prefix + '\n' + newText; note.updatedAt = new Date().toISOString();
+  ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); syncTicket(ticket); openTicketDetail(ticketId); showToast('Note updated ✓');
 }
 function addLeadNote() { if (!currentLeadId) return; var note = el('newNoteText').value.trim(); if (!note) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.notes.push({ text: fmtNotePrefix() + '\n' + note, createdAt: new Date().toISOString(), author: currentUser || 'staff' }); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { notes: lead.notes }); closeLeadDetail(); renderLeadsList(); showToast('Note added'); }
 
@@ -1875,7 +1924,9 @@ function convertLeadToTicket() {
   var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; }); if (!lead) return;
   var now = new Date().toISOString();
   var leadInitItems = lead.quote > 0 ? [{ label: lead.issue || lead.device || 'Repair', price: lead.quote }] : [];
-  var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, mobileFee: 0, mobileFeeMiles: 0, tier: lead.tier || 'standard', items: leadInitItems, notes: (lead.notes || []).slice(), createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
+  var transferredNotes = (lead.notes || []).slice();
+  transferredNotes.push({ text: fmtNotePrefix() + '\nConverted from lead to ticket', createdAt: now, author: currentUser || 'staff' });
+  var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, mobileFee: 0, mobileFeeMiles: 0, tier: lead.tier || 'standard', items: leadInitItems, notes: transferredNotes, createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage(); syncTicketCreate(newTicket);
   lead.status = 'booked'; lead.bookedAt = now; lead.updatedAt = now;
   saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: now });
@@ -1981,9 +2032,9 @@ function updateTicketsBadge() {
 
 function renderTicketsList() {
   var container = el('ticketsList'); if (!container) return;
-  if (!authd) { container.innerHTML = DEMO_TICKETS.map(function(t) { var labels = t.flow==='in_stock' ? REPAIR_LABELS : SO_LABELS; var colors = t.flow==='in_stock' ? REPAIR_COLORS : SO_COLORS; var color = colors[t.status]||'#3b82f6'; var badge = '<span class="stock-badge" style="background:'+color+'20;color:'+color+';">'+(labels[t.status]||t.status)+'</span>'; var flowIcon = t.flow==='in_stock' ? '✅' : '📦'; return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name">'+t.name+' <span style="font-size:11px;color:var(--muted);">'+flowIcon+'</span></div><div class="inv-item-model">'+(t.phone||'')+' · '+t.device+'</div></div>'+badge+'</div>'+(t.issue?'<div class="inv-item-meta">'+t.issue.substring(0,60)+'</div>':'')+'</div>'; }).join(''); return; }
+  if (!authd) { container.innerHTML = '<div class="demo-inv-note">Sample Data · Log in to see real data</div>' + DEMO_TICKETS.map(function(t) { var labels = t.flow==='in_stock' ? REPAIR_LABELS : SO_LABELS; var colors = t.flow==='in_stock' ? REPAIR_COLORS : SO_COLORS; var color = colors[t.status]||'#3b82f6'; var badge = '<span class="stock-badge" style="background:'+color+'20;color:'+color+';">'+(labels[t.status]||t.status)+'</span>'; var flowIcon = t.flow==='in_stock' ? '✅' : '📦'; var dateStr = new Date(t.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}); return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name">'+t.name+' <span style="font-size:11px;color:var(--muted);">'+flowIcon+'</span></div><div class="inv-item-model">'+(t.phone||'')+' · '+t.device+'</div></div>'+badge+'</div>'+(t.issue?'<div class="inv-item-meta">'+t.issue.substring(0,60)+'</div>':'')+'<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added '+dateStr+'</div></div>'; }).join(''); return; }
   if (!ticketsStorage.length) { container.innerHTML = '<div class="orders-empty-state">No tickets yet — create one from the Quote tab</div>'; return; }
-  var sorted = ticketsStorage.slice().sort(function(a, b) { return new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt); });
+  var sorted = ticketsStorage.slice().sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
   container.innerHTML = sorted.map(function(t) {
     var stages = t.flow === 'in_stock' ? REPAIR_STAGES : SO_STAGES;
     var labels = t.flow === 'in_stock' ? REPAIR_LABELS : SO_LABELS;
@@ -1993,10 +2044,12 @@ function renderTicketsList() {
     var badge = '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[t.status] || t.status) + '</span>';
     var tierPip = t.tier === 'premium' ? '<span style="font-size:11px;margin-left:4px;">⭐</span>' : '';
     var shareBtn = '<button onclick="shareTicketCard(\'' + t.id + '\',event)" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;display:flex;align-items:center;" title="Share">' + SHARE_ICON + '</button>';
+    var dateStr = new Date(t.createdAt).toLocaleDateString('en-US', {month:'short', day:'numeric'});
     return '<div class="inv-item" onclick="openTicketDetail(\'' + t.id + '\')" style="cursor:pointer;">' +
       '<div class="inv-item-top"><div><div class="inv-item-name">' + (t.name||'Unnamed') + tierPip + ' <span style="font-size:11px;color:var(--muted);">' + flowIcon + '</span></div>' +
       '<div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div><div style="display:flex;align-items:center;gap:4px;">' + badge + shareBtn + '</div></div>' +
       (t.issue ? '<div class="inv-item-meta">' + t.issue.substring(0,60) + '</div>' : '') +
+      '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + '</div>' +
     '</div>';
   }).join('');
 }
@@ -2123,7 +2176,7 @@ function openTicketDetail(ticketId) {
   html += '</div></div>';
   if (ticket.notes && ticket.notes.length) {
     html += '<div style="margin-top:16px;"><strong>Notes</strong>';
-    ticket.notes.slice().reverse().forEach(function(n) { html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;font-size:13px;">' + (n.text||'').replace(/\n/g,'<br>') + (n.author ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:4px;">' + new Date(n.createdAt).toLocaleString() + '</div>') + '</div>'; });
+    ticket.notes.slice().reverse().forEach(function(n, ri) { var idx = ticket.notes.length - 1 - ri; html += '<div id="tn_' + idx + '" style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;font-size:13px;">' + (n.text||'').replace(/\n/g,'<br>') + '<div style="display:flex;gap:4px;margin-top:6px;justify-content:flex-end;"><button onclick="editTicketNote(\'' + ticket.id + '\',' + idx + ')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer;font-family:inherit;">✏️</button><button onclick="deleteTicketNote(\'' + ticket.id + '\',' + idx + ')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer;font-family:inherit;">🗑️</button></div></div>'; });
     html += '</div>';
   }
   el('ticketDetailContent').innerHTML = html;
