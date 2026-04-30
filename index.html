@@ -1045,8 +1045,9 @@ function showAddToLeadModal() {
 }
 function closeAddToLeadModal() { el('addToLeadModal').classList.add('hidden'); }
 function saveLeadFromQuote() {
+  if (_savingLead) return; _savingLead = true; setTimeout(function(){ _savingLead = false; }, 2000);
   var name = (el('atlName').value || '').trim(), phone = (el('atlPhone').value || '').trim();
-  if (!name || !phone) { showToast('Name and phone required'); return; }
+  if (!name || !phone) { _savingLead = false; showToast('Name and phone required'); return; }
   var price = getPrice1(), total = price + mobileFee;
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
   var deviceStr = model1 || typeLabel;
@@ -1061,9 +1062,11 @@ function saveLeadFromQuote() {
   setTimeout(function() { openLeadDetail(newLead.id); }, 80);
   showToast('Lead created ✓');
 }
+var _savingTicket = false;
 function saveTicketFromQuote() {
+  if (_savingTicket) return; _savingTicket = true; setTimeout(function(){ _savingTicket = false; }, 2000);
   var name = (el('attName').value || '').trim(), phone = (el('attPhone').value || '').trim();
-  if (!name || !phone) { showToast('Name and phone required'); return; }
+  if (!name || !phone) { _savingTicket = false; showToast('Name and phone required'); return; }
   var price = getPrice1(), total = price + mobileFee;
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
   var deviceStr = model1 || typeLabel;
@@ -1647,7 +1650,13 @@ if (authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
 
 var leadsStorage = [], leadFilterStatus = 'all', currentLeadId = null;
 
-function loadLeadsFromStorage() { var saved = localStorage.getItem('almatek_leads'); leadsStorage = saved ? JSON.parse(saved) : []; renderLeadsList(); updateFollowUpBadge(); }
+function loadLeadsFromStorage() {
+  var saved = localStorage.getItem('almatek_leads');
+  var raw = saved ? JSON.parse(saved) : [];
+  var seen = {}; leadsStorage = raw.filter(function(l) { if (seen[l.id]) return false; seen[l.id] = true; return true; });
+  if (leadsStorage.length !== raw.length) localStorage.setItem('almatek_leads', JSON.stringify(leadsStorage));
+  renderLeadsList(); updateFollowUpBadge();
+}
 function saveLeadsToStorage() { localStorage.setItem('almatek_leads', JSON.stringify(leadsStorage)); }
 
 function syncLeadToSheet(lead) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'createLead', lead: lead }); }
@@ -1704,7 +1713,7 @@ function syncFromSheets() {
         return new Date(s.updatedAt||0) >= new Date(loc.updatedAt||0) ? s : loc;
       });
       leadsStorage.forEach(function(l) { if (!sheetMap[l.id]) merged.push(l); });
-      leadsStorage = merged;
+      var seenIds = {}; leadsStorage = merged.filter(function(l) { if (seenIds[l.id]) return false; seenIds[l.id] = true; return true; });
       saveLeadsToStorage();
       if (leadSubTab === 'leads' && typeof renderLeadsList === 'function') renderLeadsList();
       if (leadSubTab === 'followup') renderFollowUpTab();
@@ -1761,8 +1770,10 @@ var REPAIR_LABELS = { waiting_for_repair:'Waiting for Repair', in_repair:'In Rep
 var REPAIR_COLORS = { waiting_for_repair:'#f59e0b', in_repair:'#3b82f6', ready_for_pickup:'#10b981' };
 function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue','leadFollowUp'].forEach(id => { var e = el(id); if (e) e.value = ''; }); toggleLeadTier('standard'); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
 
+var _savingLead = false;
 function createNewLead() {
-  var name = el('leadName').value.trim(), phone = el('leadPhone').value.trim(); if (!name || !phone) { showToast('Name and phone required'); return; }
+  if (_savingLead) return; _savingLead = true; setTimeout(function(){ _savingLead = false; }, 2000);
+  var name = el('leadName').value.trim(), phone = el('leadPhone').value.trim(); if (!name || !phone) { _savingLead = false; showToast('Name and phone required'); return; }
   var followUp = el('leadFollowUp') ? el('leadFollowUp').value : '';
   var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: 0, deposit: 0, tier: leadTier, createdAt: now, updatedAt: now };
   leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead); hideNewLeadForm(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead saved ✓');
