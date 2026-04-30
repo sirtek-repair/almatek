@@ -1138,6 +1138,7 @@ const AT_BASE = 'appDFaflvCWvIGhZB', AT_INV = 'tblGqxylJqQjAgJ40', AT_ORDERS = '
 const OWNER_PASS_HASH = 'f60a3e2e8ee48ddcc27f5e2089da6588067de28ea9a1d0c124cfdab30f062d48';
 if (localStorage.getItem('almatek_auth_v') !== '2') { localStorage.removeItem('almatek_pass'); localStorage.removeItem('almatek_is_owner'); localStorage.setItem('almatek_auth_v', '2'); }
 var authPass = localStorage.getItem('almatek_pass') || '', apiPass = localStorage.getItem('almatek_api_pass') || '', isOwner = localStorage.getItem('almatek_is_owner') === 'true', currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
+if (isOwner && !currentUser) { currentUser = 'Sir'; localStorage.setItem('almatek_current_user', 'Sir'); }
 
 var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || '', USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
 function sheetsCall(payload) {
