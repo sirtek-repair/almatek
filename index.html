@@ -937,9 +937,9 @@ function onCost2Change() { const inputId = type2==='iphone_screen' ? 'partCostIp
 function tryRenderQuote() {
   const p = getPrice1(); if (p <= 0) { hideQuote(); return; }
   const total = p + mobileFee;
-  if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileFee > 0) { sub.textContent = 'includes mobile service fee'; sub.classList.remove('hidden'); } else sub.classList.add('hidden'); }
-  else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; sub.classList.remove('hidden'); } else sub.classList.add('hidden'); }
-  el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
+  if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
+  else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; el('mobileSubline').innerHTML = ''; el('mobileSubline').classList.add('hidden'); }
+  el('quoteCard').classList.remove('hidden'); if (isAuth()) { el('mobileToggleRow').classList.remove('hidden'); } else { el('mobileToggleRow').classList.add('hidden'); } el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
 function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); }
@@ -1037,7 +1037,7 @@ function saveTicketFromQuote() {
 }
 
 function onToggleMobile() {
-  mobileOpen = !mobileOpen; el('mobileSw').classList.toggle('on', mobileOpen); el('mobileToggleRow').classList.toggle('active', mobileOpen); el('mobileCard').classList.toggle('hidden', !mobileOpen);
+  mobileOpen = !mobileOpen; el('mobileSw').classList.toggle('on', mobileOpen); el('mobileToggleRow').classList.toggle('active', mobileOpen); el('mobileCard').classList.toggle('hidden', !mobileOpen || !isAuth());
   if (!mobileOpen) { mobileFee=0; el('milesInput').value=''; el('feeBadge').classList.add('hidden'); }
   tryRenderQuote();
 }
