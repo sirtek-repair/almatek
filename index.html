@@ -439,8 +439,9 @@
     </div>
   </div>
 
-  <div id="quoteNotesRow" class="hidden" style="margin-bottom:8px;">
-    <textarea id="quoteNotes" placeholder="Notes for this repair (optional)..." rows="2" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+  <div id="quoteNotesRow" style="margin-bottom:8px;">
+    <label class="field-label" style="margin-bottom:6px;display:block;">Notes</label>
+    <textarea id="quoteNotes" placeholder="Customer notes, special instructions..." rows="2" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
   </div>
 
   <div id="quoteCard" class="quote-card hidden">
@@ -969,10 +970,10 @@ function tryRenderQuote() {
   const total = p + mobileFee;
   if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileOpen) { sub.textContent = 'includes mobile service'; sub.classList.remove('hidden'); } else { sub.textContent = ''; sub.classList.add('hidden'); } }
   else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
-  el('quoteNotesRow').classList.remove('hidden'); el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
+  el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
-function hideQuote() { el('quoteNotesRow').classList.add('hidden'); el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); }
+function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); }
 
 var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Swap', battery:'Battery', ipad:'iPad', android:'Android', laptop:'Laptop' };
 
