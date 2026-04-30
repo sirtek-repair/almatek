@@ -446,6 +446,7 @@
     <div class="qsub hidden" id="quoteStockLine"></div>
     <button onclick="showAddToTicketModal()" style="margin-top:16px;width:100%;padding:10px 0;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">🎫 Add to Ticket</button>
     <button onclick="showAddToLeadModal()" style="margin-top:8px;width:100%;padding:10px 0;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">👤 Add to Lead</button>
+    <button onclick="shareQuote()" style="margin-top:8px;width:100%;padding:9px 0;background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.65);border-radius:10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share Quote</button>
   </div>
 
   <div id="mobileToggleRow" class="toggle-row hidden" onclick="onToggleMobile()">
@@ -956,7 +957,7 @@ function onCost2Change() { const inputId = type2==='iphone_screen' ? 'partCostIp
 function tryRenderQuote() {
   const p = getPrice1(); if (p <= 0) { hideQuote(); return; }
   const total = p + mobileFee;
-  if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
+  if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileOpen) { sub.textContent = 'includes mobile service'; sub.classList.remove('hidden'); } else { sub.textContent = ''; sub.classList.add('hidden'); } }
   else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
   el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
@@ -1059,7 +1060,7 @@ function onToggleMobile() {
   mobileOpen = !mobileOpen; el('mobileSw').classList.toggle('on', mobileOpen); el('mobileToggleRow').classList.toggle('active', mobileOpen); el('mobileCard').classList.toggle('hidden', !mobileOpen || !isAuth());
   if (!mobileOpen) { mobileFee=0; el('milesInput').value=''; el('feeBadge').classList.add('hidden'); }
   var lbl = el('mobileToggleLabel');
-  if (lbl) { lbl.innerHTML = ''; requestAnimationFrame(function(){ lbl.innerHTML = mobileOpen ? 'Mobile repair service? <span class="coffee-emoji">☕</span>' : 'Mobile repair service?'; }); }
+  if (lbl) { lbl.innerHTML = ''; requestAnimationFrame(function(){ lbl.innerHTML = (!authd && mobileOpen) ? 'Mobile repair service? <span class="coffee-emoji">☕</span>' : 'Mobile repair service?'; }); }
   tryRenderQuote();
 }
 function onMilesChange() {
@@ -1754,6 +1755,35 @@ function renderLeadsList() {
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
 }
 
+function fmtNotePrefix() {
+  var now = new Date();
+  var name = currentUser || 'Staff';
+  var date = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  var time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return name + ' · ' + date + ' · ' + time;
+}
+function pushLeadAuditNote(lead, msg) { lead.notes.push({ text: fmtNotePrefix() + '\n' + msg, createdAt: new Date().toISOString(), author: currentUser || 'staff' }); }
+function pushTicketAuditNote(ticket, msg) { ticket.notes.push({ text: fmtNotePrefix() + '\n' + msg, createdAt: new Date().toISOString(), author: currentUser || 'staff' }); }
+
+function shareQuote() {
+  var typeLabel = ATL_TYPE_LABELS[type1] || type1;
+  var lines = [];
+  if (model1) lines.push(model1);
+  lines.push(typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : ''));
+  if (isAuth()) {
+    var p = getPrice1(), total = p + mobileFee;
+    lines.push('Quote: $' + total);
+    if (mobileOpen) lines.push(mobileFee > 0 ? 'Includes mobile service fee ($' + mobileFee + ')' : 'Includes mobile service');
+  } else {
+    lines.push('Quote: part + tax');
+    if (mobileOpen) lines.push('+ Mobile service');
+  }
+  var text = lines.join('\n');
+  if (navigator.share) { navigator.share({ title: 'Quote', text: text }).catch(function(){}); }
+  else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function(){ showToast('Copied ✓'); }); }
+  else { showToast('Share not supported'); }
+}
+
 function shareLeadCard(leadId, e) {
   e.stopPropagation();
   var lead = leadsStorage.find(function(l) { return l.id === leadId; }); if (!lead) return;
@@ -1785,7 +1815,7 @@ function openLeadDetail(leadId) {
   html += '</div>';
   html += '<button onclick="saveLeadFinancials()" style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Save Quote</button>';
   html += '</div>';
-  if (lead.notes?.length) { html += '<div style="margin-top:16px;"><strong>Notes</strong>'; lead.notes.slice().reverse().forEach(n => html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;">' + n.text + '<div style="font-size:11px;color:var(--muted);">' + new Date(n.createdAt).toLocaleString() + '</div></div>'); html += '</div>'; }
+  if (lead.notes?.length) { html += '<div style="margin-top:16px;"><strong>Notes</strong>'; lead.notes.slice().reverse().forEach(n => html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;font-size:13px;">' + (n.text||'').replace(/\n/g,'<br>') + (n.author ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:4px;">' + new Date(n.createdAt).toLocaleString() + '</div>') + '</div>'); html += '</div>'; }
   el('leadDetailContent').innerHTML = html; el('leadDetailModal').classList.remove('hidden');
 }
 
@@ -1799,9 +1829,9 @@ function saveLeadFinancials() {
   saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { quote: lead.quote });
   renderLeadsList(); openLeadDetail(lead.id); showToast('Saved ✓');
 }
-function addLeadNote() { if (!currentLeadId) return; var note = el('newNoteText').value.trim(); if (!note) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.notes.push({ text: note, createdAt: new Date().toISOString() }); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { notes: lead.notes }); closeLeadDetail(); renderLeadsList(); showToast('Note added'); }
+function addLeadNote() { if (!currentLeadId) return; var note = el('newNoteText').value.trim(); if (!note) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.notes.push({ text: fmtNotePrefix() + '\n' + note, createdAt: new Date().toISOString(), author: currentUser || 'staff' }); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { notes: lead.notes }); closeLeadDetail(); renderLeadsList(); showToast('Note added'); }
 
-function markLeadContacted() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'contacted'; lead.lastContactedAt = new Date().toISOString(); lead.contactAttempts = (lead.contactAttempts||0) + 1; lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, lastContactedAt: lead.lastContactedAt, contactAttempts: lead.contactAttempts }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Contacted ✓'); }
+function markLeadContacted() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'contacted'; lead.lastContactedAt = new Date().toISOString(); lead.contactAttempts = (lead.contactAttempts||0) + 1; lead.updatedAt = new Date().toISOString(); pushLeadAuditNote(lead, 'Marked as Contacted'); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, lastContactedAt: lead.lastContactedAt, contactAttempts: lead.contactAttempts, notes: lead.notes }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Contacted ✓'); }
 function showFollowUpPicker() {
   if (!currentLeadId) return;
   var row = el('followUpPickerRow'); if (!row) return;
@@ -1816,14 +1846,15 @@ function saveFollowUpDate() {
   if (!date) { showToast('Pick a date'); return; }
   var lead = leadsStorage.find(l => l.id === currentLeadId);
   lead.status = 'follow_up_scheduled'; lead.followUpAt = date; lead.followUpNotes = notes; lead.updatedAt = new Date().toISOString();
-  saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, followUpAt: date, followUpNotes: notes });
+  pushLeadAuditNote(lead, 'Follow-up scheduled for ' + date + (notes ? ' · ' + notes : ''));
+  saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, followUpAt: date, followUpNotes: notes, notes: lead.notes });
   el('followUpPickerRow').classList.add('hidden');
   if (el('followUpDateInput')) el('followUpDateInput').value = '';
   if (el('followUpNotesInput')) el('followUpNotesInput').value = '';
   closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Follow-up scheduled ✓');
 }
-function markLeadBooked() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'booked'; lead.bookedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: lead.bookedAt }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Booked ✓'); }
-function markLeadClosed() { if (!currentLeadId || !confirm('Mark as closed/lost?')) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'closed_lost'; lead.closedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, closedAt: lead.closedAt }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Closed ✓'); }
+function markLeadBooked() { if (!currentLeadId) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'booked'; lead.bookedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); pushLeadAuditNote(lead, 'Marked as Booked'); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: lead.bookedAt, notes: lead.notes }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Booked ✓'); }
+function markLeadClosed() { if (!currentLeadId || !confirm('Mark as closed/lost?')) return; var lead = leadsStorage.find(l => l.id === currentLeadId); lead.status = 'closed_lost'; lead.closedAt = new Date().toISOString(); lead.updatedAt = new Date().toISOString(); pushLeadAuditNote(lead, 'Marked as Closed/Lost'); saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, closedAt: lead.closedAt, notes: lead.notes }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Closed ✓'); }
 
 
 function editLead(leadId) {
@@ -2092,7 +2123,7 @@ function openTicketDetail(ticketId) {
   html += '</div></div>';
   if (ticket.notes && ticket.notes.length) {
     html += '<div style="margin-top:16px;"><strong>Notes</strong>';
-    ticket.notes.slice().reverse().forEach(function(n) { html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;">' + n.text + '<div style="font-size:11px;color:var(--muted);">' + new Date(n.createdAt).toLocaleString() + '</div></div>'; });
+    ticket.notes.slice().reverse().forEach(function(n) { html += '<div style="margin-top:8px;padding:8px;background:var(--surface2);border-radius:8px;font-size:13px;">' + (n.text||'').replace(/\n/g,'<br>') + (n.author ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:4px;">' + new Date(n.createdAt).toLocaleString() + '</div>') + '</div>'; });
     html += '</div>';
   }
   el('ticketDetailContent').innerHTML = html;
@@ -2112,6 +2143,7 @@ function advanceTicketStatus(ticketId) {
   if (idx < 0 || idx >= stages.length - 1) return;
   ticket.status = stages[idx + 1];
   ticket.updatedAt = new Date().toISOString();
+  pushTicketAuditNote(ticket, 'Status → ' + (labels[ticket.status] || ticket.status));
   saveTicketsToStorage(); syncTicket(ticket); updateTicketsBadge(); updateFollowUpBadge();
   showToast((labels[ticket.status] || ticket.status) + ' ✓');
   renderTicketsList(); openTicketDetail(ticketId);
@@ -2247,7 +2279,7 @@ function addTicketNote() {
   if (!currentTicketId) return;
   var note = el('ticketNoteText').value.trim(); if (!note) return;
   var ticket = ticketsStorage.find(function(t) { return t.id === currentTicketId; }); if (!ticket) return;
-  ticket.notes.push({ text: note, createdAt: new Date().toISOString() });
+  ticket.notes.push({ text: fmtNotePrefix() + '\n' + note, createdAt: new Date().toISOString(), author: currentUser || 'staff' });
   ticket.updatedAt = new Date().toISOString();
   saveTicketsToStorage(); syncTicket(ticket); closeTicketDetail(); renderTicketsList(); showToast('Note added');
 }
