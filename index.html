@@ -936,7 +936,7 @@ function tryRenderQuote() {
   const p = getPrice1(); if (p <= 0) { hideQuote(); return; }
   const total = p + mobileFee;
   if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileFee > 0) { sub.textContent = 'includes mobile service fee'; sub.classList.remove('hidden'); } else sub.classList.add('hidden'); }
-  else { el('quoteAmt').textContent = 'Part + Part + ❤️'; el('quoteAmt').className = 'qa demo-price'; const sub = el('mobileSubline'); if (mobileFee > 0) { sub.textContent = '☕'; sub.classList.remove('hidden'); } else sub.classList.add('hidden'); }
+  else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; const sub = el('mobileSubline'); if (mobileFee > 0) { sub.innerHTML = '+ <span style="font-size:22px">☕</span>'; sub.classList.remove('hidden'); } else sub.classList.add('hidden'); }
   el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
@@ -1058,7 +1058,7 @@ function on2ndRepairChange() {
 function renderDeal() {
   const p1=getPrice1(), p2=getPrice2(); if (p1<=0 || p2<=0) return;
   const fullTotal = p1+p2, discounted2 = Math.ceil(p2 / 2), dealTotal = p1 + discounted2, savings = fullTotal - dealTotal;
-  el('normalTotal').textContent=isAuth() ? '$'+fullTotal : 'Part + Part + ❤️'; el('dealTotal').textContent=isAuth() ? '$'+dealTotal : 'Part + Part + ❤️';
+  el('normalTotal').textContent=isAuth() ? '$'+fullTotal : 'part + tax + ❤️'; el('dealTotal').textContent=isAuth() ? '$'+dealTotal : 'part + tax + ❤️';
   el('savingsPill').textContent=isAuth() ? 'Saving $'+savings : 'They save 🤝'; el('dealResult').classList.remove('hidden');
 }
 function resetSecond() { secondOpen=false; type2=''; cost2=0; el('secondSw').classList.remove('on'); el('secondToggle').classList.remove('active'); el('secondCard').classList.add('hidden'); el('repair2Type').value=''; el('cost2Wrap').classList.add('hidden'); el('dealResult').classList.add('hidden'); }
