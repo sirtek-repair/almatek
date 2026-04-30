@@ -439,6 +439,10 @@
     </div>
   </div>
 
+  <div id="quoteNotesRow" class="hidden" style="margin-bottom:8px;">
+    <textarea id="quoteNotes" placeholder="Notes for this repair (optional)..." rows="2" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+  </div>
+
   <div id="quoteCard" class="quote-card hidden">
     <div class="ql">Quote to Customer</div>
     <div class="qa" id="quoteAmt">$—</div>
@@ -965,10 +969,10 @@ function tryRenderQuote() {
   const total = p + mobileFee;
   if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileOpen) { sub.textContent = 'includes mobile service'; sub.classList.remove('hidden'); } else { sub.textContent = ''; sub.classList.add('hidden'); } }
   else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
-  el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
+  el('quoteNotesRow').classList.remove('hidden'); el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
-function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); }
+function hideQuote() { el('quoteNotesRow').classList.add('hidden'); el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); }
 
 var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Swap', battery:'Battery', ipad:'iPad', android:'Android', laptop:'Laptop' };
 
@@ -1003,7 +1007,8 @@ function showAddToTicketModal() {
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('attQuoteSummary').innerHTML = rows.join('');
-  ['attName','attPhone','attEmail','attDeposit','attNotes'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
+  ['attName','attPhone','attEmail','attDeposit'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
+  var qn = el('attNotes'); if (qn) qn.value = (el('quoteNotes') ? el('quoteNotes').value : '');
   var detectedFlow = detectTicketFlow();
   attFlow = detectedFlow;
   setTicketFlow(detectedFlow);
@@ -1028,7 +1033,8 @@ function showAddToLeadModal() {
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('atlQuoteSummary').innerHTML = rows.join('');
-  ['atlName','atlPhone','atlEmail','atlNotes'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
+  ['atlName','atlPhone','atlEmail'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
+  var qnl = el('atlNotes'); if (qnl) qnl.value = (el('quoteNotes') ? el('quoteNotes').value : '');
   el('addToLeadModal').classList.remove('hidden');
   setTimeout(function() { var n = el('atlName'); if (n) n.focus(); }, 50);
 }
