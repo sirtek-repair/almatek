@@ -634,10 +634,7 @@
   <header style="padding:16px 0 20px;text-align:center;">
     <img src="line-logo.jpg" width="48" height="48" style="display:block;margin:0 auto 6px;border-radius:10px;" alt="AlmaTek" />
     <h1 style="font-size:26px;font-family:Georgia,serif;font-weight:normal;text-transform:none;letter-spacing:0.01em;"><span class="brand">LeadTek</span></h1>
-    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
-      <button id="newLeadBtn" onclick="showNewLeadForm()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
-      <button onclick="copySwan(this)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">🦢</button>
-    </div>
+    <button id="newLeadBtn" onclick="showNewLeadForm()" style="margin-top:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
   </header>
 
   <div class="orders-tab-nav" style="display:flex;align-items:center;gap:4px;">
@@ -902,6 +899,7 @@ function setQuoteSupplier(name) {
 const el = id => document.getElementById(id);
 
 function fullPrice(cost, type) { return Math.ceil(cost * 1.2 + LABOR[type]); }
+function withTax(price) { return Math.ceil(price * 1.12875); }
 function getPrice1() {
   if (type1 === 'iphone_screen') { if (mode1 === 'select') { if (!model1 || !tier1) return 0; return SCREEN_PRICES[model1]?.[tier1] || 0; } else { return cost1 > 0 ? fullPrice(cost1, 'iphone_screen') : 0; } }
   if (type1 === 'back_glass') { return cost1 > 0 ? fullPrice(cost1, 'back_glass') : 0; }
@@ -971,7 +969,7 @@ function onCost2Change() { const inputId = type2==='iphone_screen' ? 'partCostIp
 
 function tryRenderQuote() {
   const p = getPrice1(); if (p <= 0) { hideQuote(); return; }
-  const total = p + mobileFee;
+  const total = withTax(p + mobileFee);
   if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileOpen) { sub.textContent = 'includes mobile service'; sub.classList.remove('hidden'); } else { sub.textContent = ''; sub.classList.add('hidden'); } }
   else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
   el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
@@ -1004,7 +1002,7 @@ function detectTicketFlow() {
 }
 function showAddToTicketModal() {
   var price = getPrice1();
-  var total = price + mobileFee;
+  var total = withTax(price + mobileFee);
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
   var rows = [];
   if (model1) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Device</span><span style="font-weight:600;">' + model1 + '</span></div>');
@@ -1030,7 +1028,7 @@ function showNewTicketManual() {
 }
 function showAddToLeadModal() {
   var price = getPrice1();
-  var total = price + mobileFee;
+  var total = withTax(price + mobileFee);
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
   var rows = [];
   if (model1) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Device</span><span style="font-weight:600;">' + model1 + '</span></div>');
@@ -1048,7 +1046,7 @@ function saveLeadFromQuote() {
   if (_savingLead) return; _savingLead = true; setTimeout(function(){ _savingLead = false; }, 2000);
   var name = (el('atlName').value || '').trim(), phone = (el('atlPhone').value || '').trim();
   if (!name || !phone) { _savingLead = false; showToast('Name and phone required'); return; }
-  var price = getPrice1(), total = price + mobileFee;
+  var price = getPrice1(), total = withTax(price + mobileFee);
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
   var deviceStr = model1 || typeLabel;
   var issueStr = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + (mobileFee > 0 ? ' · Mobile' : '');
@@ -1067,7 +1065,7 @@ function saveTicketFromQuote() {
   if (_savingTicket) return; _savingTicket = true; setTimeout(function(){ _savingTicket = false; }, 2000);
   var name = (el('attName').value || '').trim(), phone = (el('attPhone').value || '').trim();
   if (!name || !phone) { _savingTicket = false; showToast('Name and phone required'); return; }
-  var price = getPrice1(), total = price + mobileFee;
+  var price = getPrice1(), total = withTax(price + mobileFee);
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
   var deviceStr = model1 || typeLabel;
   var issueStr = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + (mobileFee > 0 ? ' · Mobile' : '');
@@ -1113,7 +1111,7 @@ function on2ndRepairChange() {
 }
 function renderDeal() {
   const p1=getPrice1(), p2=getPrice2(); if (p1<=0 || p2<=0) return;
-  const fullTotal = p1+p2, discounted2 = Math.ceil(p2 / 2), dealTotal = p1 + discounted2, savings = fullTotal - dealTotal;
+  const fullTotal = withTax(p1+p2), discounted2 = Math.ceil(p2 / 2), dealTotal = withTax(p1 + discounted2), savings = fullTotal - dealTotal;
   el('normalTotal').textContent=isAuth() ? '$'+fullTotal : 'part + tax + ❤️'; el('dealTotal').textContent=isAuth() ? '$'+dealTotal : 'part + tax + ❤️';
   el('savingsPill').textContent=isAuth() ? 'Saving $'+savings : 'They save 🤝'; el('dealResult').classList.remove('hidden');
 }
@@ -1814,7 +1812,7 @@ function shareQuote() {
   if (model1) lines.push(model1);
   lines.push(typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : ''));
   if (isAuth()) {
-    var p = getPrice1(), total = p + mobileFee;
+    var p = getPrice1(), total = withTax(p + mobileFee);
     lines.push('Quote: $' + total);
     if (mobileOpen) lines.push(mobileFee > 0 ? 'Includes mobile service fee ($' + mobileFee + ')' : 'Includes mobile service');
   } else {
