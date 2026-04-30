@@ -448,6 +448,7 @@
   <div id="quoteCard" class="quote-card hidden">
     <div class="ql">Quote to Customer</div>
     <div class="qa" id="quoteAmt">$—</div>
+    <div class="qsub hidden" id="taxIncludedLine">tax included</div>
     <div class="qsub hidden" id="mobileSubline">includes mobile service fee</div>
     <div class="qsub hidden" id="quoteStockLine"></div>
     <button onclick="showAddToTicketModal()" style="margin-top:16px;width:100%;padding:10px 0;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">🎫 Add to Ticket</button>
@@ -932,8 +933,8 @@ function onModel1Change() { model1 = el('modelSelect1').value; tier1=''; hideQuo
 function updateTierDisplay1() {
   if (!model1) { el('tierOptions1').classList.add('hidden'); return; }
   const p = SCREEN_PRICES[model1] || {}; el('tierOptions1').classList.remove('hidden');
-  if (p.premium) { el('tierBox1Prem').classList.remove('na'); el('tierPrice1Prem').textContent = isAuth() ? '$' + p.premium : '$—'; } else { el('tierBox1Prem').classList.add('na'); el('tierPrice1Prem').textContent = 'N/A'; }
-  if (p.standard) { el('tierBox1Std').classList.remove('na'); el('tierPrice1Std').textContent = isAuth() ? '$' + p.standard : '$—'; } else { el('tierBox1Std').classList.add('na'); el('tierPrice1Std').textContent = 'N/A'; }
+  if (p.premium) { el('tierBox1Prem').classList.remove('na'); el('tierPrice1Prem').textContent = isAuth() ? '$' + withTax(p.premium) : '$—'; } else { el('tierBox1Prem').classList.add('na'); el('tierPrice1Prem').textContent = 'N/A'; }
+  if (p.standard) { el('tierBox1Std').classList.remove('na'); el('tierPrice1Std').textContent = isAuth() ? '$' + withTax(p.standard) : '$—'; } else { el('tierBox1Std').classList.add('na'); el('tierPrice1Std').textContent = 'N/A'; }
   var lbl1 = el('factoryLabel1'), ftype1 = FACTORY_SCREEN_TYPE[model1];
   if (ftype1) { lbl1.textContent = 'Factory Screen: ' + ftype1.toUpperCase(); lbl1.className = 'factory-label ' + ftype1; lbl1.style.display = 'block'; }
   else { lbl1.style.display = 'none'; }
@@ -951,8 +952,8 @@ function onModel2Change() { model2 = el('modelSelect2').value; tier2=''; el('dea
 function updateTierDisplay2() {
   if (!model2) { el('tierOptions2').classList.add('hidden'); return; }
   const p = SCREEN_PRICES[model2] || {}; el('tierOptions2').classList.remove('hidden');
-  if (p.premium) { el('tierBox2Prem').classList.remove('na'); el('tierPrice2Prem').textContent = isAuth() ? '$' + p.premium : '$—'; } else { el('tierBox2Prem').classList.add('na'); el('tierPrice2Prem').textContent = 'N/A'; }
-  if (p.standard) { el('tierBox2Std').classList.remove('na'); el('tierPrice2Std').textContent = isAuth() ? '$' + p.standard : '$—'; } else { el('tierBox2Std').classList.add('na'); el('tierPrice2Std').textContent = 'N/A'; }
+  if (p.premium) { el('tierBox2Prem').classList.remove('na'); el('tierPrice2Prem').textContent = isAuth() ? '$' + withTax(p.premium) : '$—'; } else { el('tierBox2Prem').classList.add('na'); el('tierPrice2Prem').textContent = 'N/A'; }
+  if (p.standard) { el('tierBox2Std').classList.remove('na'); el('tierPrice2Std').textContent = isAuth() ? '$' + withTax(p.standard) : '$—'; } else { el('tierBox2Std').classList.add('na'); el('tierPrice2Std').textContent = 'N/A'; }
   var lbl2 = el('factoryLabel2'), ftype2 = FACTORY_SCREEN_TYPE[model2];
   if (ftype2) { lbl2.textContent = 'Factory Screen: ' + ftype2.toUpperCase(); lbl2.className = 'factory-label ' + ftype2; lbl2.style.display = 'block'; }
   else { lbl2.style.display = 'none'; }
@@ -970,8 +971,8 @@ function onCost2Change() { const inputId = type2==='iphone_screen' ? 'partCostIp
 function tryRenderQuote() {
   const p = getPrice1(); if (p <= 0) { hideQuote(); return; }
   const total = withTax(p + mobileFee);
-  if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileOpen) { sub.textContent = 'includes mobile service'; sub.classList.remove('hidden'); } else { sub.textContent = ''; sub.classList.add('hidden'); } }
-  else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
+  if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; el('taxIncludedLine').classList.remove('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.textContent = 'includes mobile service'; sub.classList.remove('hidden'); } else { sub.textContent = ''; sub.classList.add('hidden'); } }
+  else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; el('taxIncludedLine').classList.add('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
   el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
