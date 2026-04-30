@@ -2002,14 +2002,15 @@ function deleteLead(leadId) { if (!confirm('Delete this lead?')) return; leadsSt
 function convertLeadToTicket() {
   if (!currentLeadId) return;
   var lead = leadsStorage.find(function(l) { return l.id === currentLeadId; }); if (!lead) return;
+  if (lead.status === 'converted') { showToast('Already converted to a ticket'); return; }
   var now = new Date().toISOString();
+  lead.status = 'converted'; lead.bookedAt = now; lead.updatedAt = now;
+  saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: now });
   var leadInitItems = lead.quote > 0 ? [{ label: lead.issue || lead.device || 'Repair', price: lead.quote }] : [];
   var transferredNotes = (lead.notes || []).slice();
   transferredNotes.push({ text: fmtNotePrefix() + '\nConverted from lead to ticket', createdAt: now, author: currentUser || 'staff' });
   var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, mobileFee: 0, mobileFeeMiles: 0, tier: lead.tier || 'standard', items: leadInitItems, notes: transferredNotes, createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage(); syncTicketCreate(newTicket);
-  lead.status = 'converted'; lead.bookedAt = now; lead.updatedAt = now;
-  saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: now });
   closeLeadDetail(); renderLeadsList(); updateTicketsBadge(); updateFollowUpBadge();
   switchLeadSubTab('tickets');
   setTimeout(function() { openTicketDetail(newTicket.id); }, 80);
