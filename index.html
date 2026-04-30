@@ -674,6 +674,10 @@
 
   </div><!-- end leadViewLeads -->
   <div id="leadViewTickets" class="hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 10px;">
+      <span style="font-size:13px;font-weight:600;color:var(--muted);">Tickets</span>
+      <button onclick="showNewTicketManual()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">+ New Ticket</button>
+    </div>
     <div id="ticketsList"></div>
   </div>
   <div id="leadViewFollowUp" class="hidden">
@@ -737,9 +741,10 @@
     <input type="text" id="attName" placeholder="Customer Name *" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
     <input type="text" id="attPhone" placeholder="Phone Number *" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
     <input type="email" id="attEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
-    <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
       <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Deposit Paid</div><input type="number" id="attDeposit" placeholder="$0" min="0" step="1" style="width:100%;box-sizing:border-box;" /></div>
     </div>
+    <textarea id="attNotes" placeholder="Notes (optional)" rows="2" style="width:100%;margin-bottom:14px;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;"></textarea>
     <div style="display:flex;gap:8px;">
       <button onclick="saveTicketFromQuote()" style="flex:1;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Create Ticket</button>
       <button onclick="closeAddToTicketModal()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
@@ -757,7 +762,8 @@
     <div id="atlQuoteSummary" style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;"></div>
     <input type="text" id="atlName" placeholder="Customer Name *" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
     <input type="text" id="atlPhone" placeholder="Phone Number *" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
-    <input type="email" id="atlEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:14px;box-sizing:border-box;" />
+    <input type="email" id="atlEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
+    <textarea id="atlNotes" placeholder="Notes (optional)" rows="2" style="width:100%;margin-bottom:14px;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;"></textarea>
     <div style="display:flex;gap:8px;">
       <button onclick="saveLeadFromQuote()" style="flex:1;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Create Lead</button>
       <button onclick="closeAddToLeadModal()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
@@ -997,7 +1003,7 @@ function showAddToTicketModal() {
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('attQuoteSummary').innerHTML = rows.join('');
-  ['attName','attPhone','attEmail','attDeposit'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
+  ['attName','attPhone','attEmail','attDeposit','attNotes'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
   var detectedFlow = detectTicketFlow();
   attFlow = detectedFlow;
   setTicketFlow(detectedFlow);
@@ -1005,6 +1011,13 @@ function showAddToTicketModal() {
   setTimeout(function() { var n = el('attName'); if (n) n.focus(); }, 50);
 }
 function closeAddToTicketModal() { el('addToTicketModal').classList.add('hidden'); }
+function showNewTicketManual() {
+  el('attQuoteSummary').innerHTML = '<div style="color:var(--muted);font-size:13px;">Manual ticket — no quote attached</div>';
+  ['attName','attPhone','attEmail','attDeposit','attNotes'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
+  attFlow = 'in_stock'; setTicketFlow('in_stock');
+  el('addToTicketModal').classList.remove('hidden');
+  setTimeout(function() { var n = el('attName'); if (n) n.focus(); }, 50);
+}
 function showAddToLeadModal() {
   var price = getPrice1();
   var total = price + mobileFee;
@@ -1015,7 +1028,7 @@ function showAddToLeadModal() {
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('atlQuoteSummary').innerHTML = rows.join('');
-  ['atlName','atlPhone','atlEmail'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
+  ['atlName','atlPhone','atlEmail','atlNotes'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
   el('addToLeadModal').classList.remove('hidden');
   setTimeout(function() { var n = el('atlName'); if (n) n.focus(); }, 50);
 }
@@ -1028,7 +1041,9 @@ function saveLeadFromQuote() {
   var deviceStr = model1 || typeLabel;
   var issueStr = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + (mobileFee > 0 ? ' · Mobile' : '');
   var now = new Date().toISOString();
-  var newLead = { id: 'lead_' + Date.now(), name: name, phone: phone, email: (el('atlEmail').value||'').trim(), device: deviceStr, issue: issueStr, status: 'new', followUpAt: '', followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: total, deposit: 0, tier: tier1 === 'premium' ? 'premium' : 'standard', createdAt: now, updatedAt: now };
+  var atlNotesVal = (el('atlNotes') ? el('atlNotes').value : '').trim();
+  var initLeadNotes = atlNotesVal ? [{ text: fmtNotePrefix() + '\n' + atlNotesVal, createdAt: now, author: currentUser || 'staff' }] : [];
+  var newLead = { id: 'lead_' + Date.now(), name: name, phone: phone, email: (el('atlEmail').value||'').trim(), device: deviceStr, issue: issueStr, status: 'new', followUpAt: '', followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: initLeadNotes, quote: total, deposit: 0, tier: tier1 === 'premium' ? 'premium' : 'standard', createdAt: now, updatedAt: now };
   leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead);
   closeAddToLeadModal(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('leads');
@@ -1048,7 +1063,9 @@ function saveTicketFromQuote() {
   var repairLabel = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '');
   var initItems = price > 0 ? [{ label: repairLabel, price: price }] : [];
   var miles = parseFloat((el('milesInput') ? el('milesInput').value : '') || 0) || 0;
-  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', supplier: quoteSupplier || '', orderRef: quoteOrderRef || '', items: initItems, notes: [], createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
+  var attNotesVal = (el('attNotes') ? el('attNotes').value : '').trim();
+  var initTicketNotes = attNotesVal ? [{ text: fmtNotePrefix() + '\n' + attNotesVal, createdAt: now, author: currentUser || 'staff' }] : [];
+  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', supplier: quoteSupplier || '', orderRef: quoteOrderRef || '', items: initItems, notes: initTicketNotes, createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage(); syncTicketCreate(newTicket);
   closeAddToTicketModal(); updateTicketsBadge(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('tickets');
