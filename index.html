@@ -1142,7 +1142,6 @@ function switchLeadSubTab(tab) {
   if (isFollowUp) renderFollowUpTab();
   else if (isTickets) renderTicketsList();
   else if (typeof renderLeadsList === 'function') renderLeadsList();
-  syncFromSheets();
 }
 
 // Worker + Airtable config
@@ -1656,7 +1655,7 @@ function loadLeadsFromStorage() {
   if (leadsStorage.length !== raw.length) localStorage.setItem('almatek_leads', JSON.stringify(leadsStorage));
   renderLeadsList(); updateFollowUpBadge();
 }
-function saveLeadsToStorage() { localStorage.setItem('almatek_leads', JSON.stringify(leadsStorage)); }
+function saveLeadsToStorage() { var s={}; leadsStorage=leadsStorage.filter(function(l){if(s[l.id])return false;s[l.id]=true;return true;}); localStorage.setItem('almatek_leads', JSON.stringify(leadsStorage)); }
 
 function syncLeadToSheet(lead) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'createLead', lead: lead }); }
 function syncUpdateToSheet(leadId, updates) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'updateLead', leadId: leadId, updates: updates }); }
@@ -1683,13 +1682,17 @@ function setSyncStatus(state) {
   else { btn.textContent = '↻'; btn.style.opacity = '1'; btn.disabled = false; }
 }
 
+var _syncing = false;
 function syncFromSheets() {
   if (!USERS_SCRIPT_URL) return;
+  if (_syncing) return;
+  _syncing = true;
   setSyncStatus('syncing');
   var up = { leads: 0, tickets: 0 }, dn = { leads: 0, tickets: 0 };
   var done = 0;
   function finish(msg) {
     if (++done < 2) return;
+    _syncing = false;
     setSyncStatus('idle');
     var parts = [];
     if (up.leads || up.tickets) parts.push('↑ ' + [up.leads && up.leads + ' lead' + (up.leads !== 1 ? 's' : ''), up.tickets && up.tickets + ' ticket' + (up.tickets !== 1 ? 's' : '')].filter(Boolean).join(', '));
@@ -1738,7 +1741,7 @@ function syncFromSheets() {
         return new Date(s.updatedAt||0) >= new Date(loc.updatedAt||0) ? s : loc;
       });
       ticketsStorage.forEach(function(t) { if (!sheetMap[t.id]) merged.push(t); });
-      ticketsStorage = merged;
+      var seenTIds = {}; ticketsStorage = merged.filter(function(t) { if (seenTIds[t.id]) return false; seenTIds[t.id] = true; return true; });
       saveTicketsToStorage();
       updateTicketsBadge();
       updateFollowUpBadge();
@@ -2092,7 +2095,7 @@ loadLeadsFromStorage();
 
 var ticketsStorage = [];
 function loadTicketsFromStorage() { try { ticketsStorage = JSON.parse(localStorage.getItem('almatek_tickets') || '[]'); } catch(e) { ticketsStorage = []; } updateTicketsBadge(); updateFollowUpBadge(); }
-function saveTicketsToStorage() { localStorage.setItem('almatek_tickets', JSON.stringify(ticketsStorage)); }
+function saveTicketsToStorage() { var s={}; ticketsStorage=ticketsStorage.filter(function(t){if(s[t.id])return false;s[t.id]=true;return true;}); localStorage.setItem('almatek_tickets', JSON.stringify(ticketsStorage)); }
 loadTicketsFromStorage();
 
 // Sync from Sheets on startup if already authenticated (skips login flow)
