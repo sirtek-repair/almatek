@@ -431,7 +431,7 @@
   </div>
 
   <div id="mobileToggleRow" class="toggle-row hidden" onclick="onToggleMobile()">
-    <div class="toggle-text"><div class="tl">Mobile repair service?</div><div class="ts" id="mobileSub">$15 flat · +$9/mile after 3</div></div>
+    <div class="toggle-text"><div class="tl">Mobile repair service?</div><div class="ts" id="mobileSub"></div></div>
     <div class="switch" id="mobileSw"></div>
   </div>
   <div id="mobileCard" class="mobile-fee-card hidden">
@@ -939,7 +939,7 @@ function tryRenderQuote() {
   const total = p + mobileFee;
   if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
   else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; el('mobileSubline').innerHTML = ''; el('mobileSubline').classList.add('hidden'); }
-  el('quoteCard').classList.remove('hidden'); if (isAuth()) { el('mobileToggleRow').classList.remove('hidden'); } else { el('mobileToggleRow').classList.add('hidden'); } el('secondToggle').classList.remove('hidden');
+  el('quoteCard').classList.remove('hidden'); if (isAuth()) { el('mobileToggleRow').classList.remove('hidden'); el('mobileSub').textContent = '$15 flat · +$9/mi after 3'; } else { el('mobileToggleRow').classList.add('hidden'); el('mobileSub').textContent = ''; } el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
 function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); }
