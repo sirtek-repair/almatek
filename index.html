@@ -2436,6 +2436,9 @@ function dismissInstallBanner() {
 }
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }
 </script>
-<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;">v2026-04-23n</div>
+<div style="text-align:center;padding:8px 0 16px;font-size:10px;color:#444;letter-spacing:0.04em;" id="appVersionLine"></div>
+<script>
+  (function(){var d=new Date(document.lastModified);var s='v'+d.getFullYear()+'-'+(d.getMonth()<9?'0':'')+(d.getMonth()+1)+'-'+(d.getDate()<10?'0':'')+d.getDate();el('appVersionLine').textContent=s;})();
+</script>
 </body>
 </html>
