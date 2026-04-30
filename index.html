@@ -1563,7 +1563,7 @@ function tryAuth() {
       var hash = Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
       if (hash === OWNER_PASS_HASH) {
         localStorage.setItem('almatek_pass', '_auth_'); localStorage.setItem('almatek_is_owner', 'true');
-        authPass = '_auth_'; authd = true; isOwner = true;
+        authPass = '_auth_'; authd = true; isOwner = true; currentUser = 'Sir'; localStorage.setItem('almatek_current_user', 'Sir');
         el('authOverlay').classList.add('hidden');
         updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
         syncFromSheets();
@@ -1589,7 +1589,8 @@ function onStaffLoginSuccess(pass, name, structure, sheetApiPass) {
 }
 function updateAuthBtn() {
   var btn = el('authBtn'), btnInv = el('authBtnInv');
-  var label = authd ? ((isOwner ? 'Owner' : (currentUser || 'Staff')) + ' · Log Out') : '🔒 Demo Mode';
+  var role = isOwner ? 'Owner' : 'Staff';
+  var label = authd ? ((currentUser || role) + ' · ' + role + ' · Log Out') : '🔒 Demo Mode';
   btn.textContent = label;
   btn.className = authd ? (isOwner ? 'owner-badge' : 'staff-badge') : 'demo-badge';
   if (btnInv) btnInv.textContent = authd ? label : '🔒 Log In';
