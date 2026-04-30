@@ -1790,7 +1790,7 @@ function getStatusColor(s) { var colors = { new:'#3b82f6', contacted:'#10b981', 
 function renderLeadsList() {
   if (!authd) { el('leadsList').innerHTML = '<div class="demo-inv-note">Sample Data · Log in to see real data</div>' + DEMO_LEADS.map(function(l) { var badge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>'; var dateStr = new Date(l.createdAt).toLocaleDateString('en-US', {month:'short', day:'numeric'}); return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name">' + l.name + '</div><div class="inv-item-model">' + l.phone + (l.device?' · '+l.device:'') + '</div></div>' + badge + '</div>' + (l.issue?'<div class="inv-item-meta">'+l.issue.substring(0,60)+'</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + '</div></div>'; }).join(''); return; }
   var search = (el('leadSearch')?.value || '').toLowerCase();
-  var filtered = leadsStorage.filter(l => { var match = !search || (l.name||'').toLowerCase().includes(search) || (l.phone||'').includes(search); return match && (leadFilterStatus === 'all' || l.status === leadFilterStatus); });
+  var filtered = leadsStorage.filter(l => { if (l.status === 'converted') return false; var match = !search || (l.name||'').toLowerCase().includes(search) || (l.phone||'').includes(search); return match && (leadFilterStatus === 'all' || l.status === leadFilterStatus); });
   filtered.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   el('leadsList').innerHTML = filtered.length ? filtered.map(l => {
     var mainBadge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
@@ -2008,7 +2008,7 @@ function convertLeadToTicket() {
   transferredNotes.push({ text: fmtNotePrefix() + '\nConverted from lead to ticket', createdAt: now, author: currentUser || 'staff' });
   var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, mobileFee: 0, mobileFeeMiles: 0, tier: lead.tier || 'standard', items: leadInitItems, notes: transferredNotes, createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage(); syncTicketCreate(newTicket);
-  lead.status = 'booked'; lead.bookedAt = now; lead.updatedAt = now;
+  lead.status = 'converted'; lead.bookedAt = now; lead.updatedAt = now;
   saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { status: lead.status, bookedAt: now });
   closeLeadDetail(); renderLeadsList(); updateTicketsBadge(); updateFollowUpBadge();
   switchLeadSubTab('tickets');
@@ -2021,7 +2021,7 @@ function getLeadsNeedingFollowUp() {
   var today = new Date(); today.setHours(23, 59, 59, 999);
   var twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
   var overdue = leadsStorage.filter(function(l) {
-    return l.followUpAt && new Date(l.followUpAt) <= today && l.status !== 'booked' && l.status !== 'closed_lost';
+    return l.followUpAt && new Date(l.followUpAt) <= today && l.status !== 'booked' && l.status !== 'closed_lost' && l.status !== 'converted';
   });
   var uncontacted = leadsStorage.filter(function(l) {
     return l.status === 'new' && new Date(l.createdAt) <= twoDaysAgo && !l.followUpAt;
