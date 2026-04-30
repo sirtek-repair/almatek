@@ -77,7 +77,7 @@
     .quote-card .qa { font-size: 64px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
     .quote-card .qsub { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 8px; }
     @keyframes coffee-pop { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 65% { transform: scale(1.4) rotate(8deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
-    .coffee-emoji { display: inline-block; font-size: 36px; animation: coffee-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    .coffee-emoji { display: inline-block; font-size: 44px; animation: coffee-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards; }
 
     .toggle-row { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; margin-bottom: 12px; cursor: pointer; user-select: none; transition: border-color 0.15s; }
     .toggle-row:hover { border-color: #52525b; }
@@ -955,8 +955,8 @@ function tryRenderQuote() {
   const p = getPrice1(); if (p <= 0) { hideQuote(); return; }
   const total = p + mobileFee;
   if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
-  else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; el('mobileSubline').innerHTML = ''; el('mobileSubline').classList.add('hidden'); }
-  el('quoteCard').classList.remove('hidden'); if (isAuth()) { el('mobileToggleRow').classList.remove('hidden'); } else { el('mobileToggleRow').classList.add('hidden'); } el('secondToggle').classList.remove('hidden');
+  else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '<span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
+  el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
 function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); }
