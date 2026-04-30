@@ -1878,7 +1878,12 @@ function getTicketsNeedingFollowUp() {
 
 function updateFollowUpBadge() {
   var badge = el('followUpBadge'); if (!badge) return;
-  var count = getLeadsNeedingFollowUp().length + getTicketsNeedingFollowUp().length;
+  var count;
+  if (!authd) {
+    count = DEMO_LEADS.filter(function(l) { return l.status === 'follow_up_scheduled' || l.status === 'new'; }).length + DEMO_TICKETS.filter(function(t) { return t.status === 'ready_for_pickup' || t.status === 'part_arrived'; }).length;
+  } else {
+    count = getLeadsNeedingFollowUp().length + getTicketsNeedingFollowUp().length;
+  }
   badge.textContent = count;
   badge.classList.toggle('hidden', count === 0);
 }
@@ -1886,6 +1891,15 @@ function updateFollowUpBadge() {
 function renderFollowUpTab() {
   var list = el('followUpList'); if (!list) return;
   var info = el('followUpSyncInfo');
+  if (!authd) {
+    var demoLeads = DEMO_LEADS.filter(function(l) { return l.status === 'follow_up_scheduled' || l.status === 'new'; });
+    var demoTickets = DEMO_TICKETS.filter(function(t) { return t.status === 'ready_for_pickup' || t.status === 'part_arrived'; });
+    if (info) info.textContent = DEMO_LEADS.length + ' leads · ' + DEMO_TICKETS.length + ' tickets loaded';
+    var demoTicketHtml = demoTickets.map(function(t) { var labels = t.flow==='in_stock' ? REPAIR_LABELS : SO_LABELS; var colors = t.flow==='in_stock' ? REPAIR_COLORS : SO_COLORS; var color = colors[t.status]||'#3b82f6'; var tag = '<span class="stock-badge" style="background:'+color+'20;color:'+color+';">🎫 '+(labels[t.status]||t.status)+'</span>'; return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name">'+t.name+'</div><div class="inv-item-model">'+t.phone+' · '+t.device+'</div></div>'+tag+'</div><div class="inv-item-meta">'+(t.flow==='in_stock'?'In-Stock Repair':'Special Order')+' · '+t.issue.substring(0,40)+'</div></div>'; }).join('');
+    var demoLeadHtml = demoLeads.map(function(l) { var isScheduled = l.status === 'follow_up_scheduled'; var tag = isScheduled ? '<span class="stock-badge low">Follow-up</span>' : '<span class="stock-badge low">Uncontacted</span>'; var sub = l.followUpAt ? 'Follow-up: ' + l.followUpAt : 'Created: ' + new Date(l.createdAt).toLocaleDateString(); return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name">'+l.name+'</div><div class="inv-item-model">'+l.phone+' · '+l.device+'</div></div>'+tag+'</div><div class="inv-item-meta">'+sub+'</div></div>'; }).join('');
+    list.innerHTML = (demoTicketHtml + demoLeadHtml) || '<div class="orders-empty-state">No follow-ups needed right now</div>';
+    return;
+  }
   if (info) info.textContent = leadsStorage.length + ' leads · ' + ticketsStorage.length + ' tickets loaded';
   var leads = getLeadsNeedingFollowUp();
   var tickets = getTicketsNeedingFollowUp();
