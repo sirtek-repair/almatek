@@ -247,6 +247,8 @@
     .tier-option-price { font-size: 20px; font-weight: 700; color: var(--text); }
     body.demo-mode .tier-option-price { visibility: hidden; }
     body.demo-mode .quote-price-tag { display: none; }
+    body.demo-mode #tabBookerBtn { display: none !important; }
+    body.demo-mode .inv-actions { display: none !important; }
     .tier-option .stock-row { margin-top: 8px; padding: 7px 10px; }
     
     .hlink-copied { background: rgba(16,185,129,0.15) !important; border-color: var(--green) !important; color: var(--green) !important; }
@@ -1144,7 +1146,7 @@ function atFetch(path, opts) { opts = opts || {}; return fetch(WORKER_URL + '/v0
 
 function initInventory() { if (!invLoaded) loadInventory(); loadOrders(); }
 function loadInventory() {
-  if (!authd) { el('invLoading').classList.add('hidden'); el('invList').innerHTML = '<div class="orders-empty-state" style="padding:40px 20px;">🔒 Log in to view inventory</div>'; return; }
+  if (!authd) { allInvRecords = DEMO_INV; invLoaded = true; el('invLoading').classList.add('hidden'); renderInventory(); return; }
   var cached = getCache('almatek_inv_cache');
   if (cached) { allInvRecords = cached; invLoaded = true; el('invLoading').classList.add('hidden'); renderInventory(); return; }
   el('invLoading').classList.remove('hidden'); el('invList').innerHTML = ''; allInvRecords = []; loadInventoryPage(null, false);
@@ -1185,6 +1187,26 @@ function markUsed(id, name) { atFetch(AT_BASE + '/' + AT_SOLD, { method: 'POST',
 function removeItem(id, name) { if (!confirm('Remove 1 unit?')) return; atFetch(AT_BASE + '/tblFoAyBRZ0KLuYQl', { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' removed ✓'); clearCache('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
 
 var ordersLoaded = false, DEMO_ORDERS = [{ id:'o1', fields:{ 'fldF0TJARgHugOh83':'Order: iPhone 16 Pro Max Screen', 'fldbKVKkNgZtShHwh':3, 'fldVq43gyw9HVLYNI':'Mobilink', 'fldeHBNhXCrqAJrjp':'2026-03-28', 'fldwGKyfgOuue1eyE':true } }];
+var DEMO_LEADS = [
+  { id:'dl1', name:'Marcus T.', phone:'(347) 555-0182', device:'iPhone 14 Pro', issue:'Cracked screen, touch not responding', status:'new', quote:0, createdAt:'2026-04-28T14:30:00Z', updatedAt:'2026-04-28T14:30:00Z', notes:[] },
+  { id:'dl2', name:'Brianna K.', phone:'(718) 555-0247', device:'Samsung Galaxy S23', issue:'Battery draining fast, gets hot', status:'contacted', quote:0, createdAt:'2026-04-27T10:15:00Z', updatedAt:'2026-04-29T09:00:00Z', notes:[] },
+  { id:'dl3', name:'James O.', phone:'(646) 555-0391', device:'iPhone 13', issue:'Back glass shattered', status:'follow_up_scheduled', quote:0, followUpAt:'2026-05-01', createdAt:'2026-04-26T16:45:00Z', updatedAt:'2026-04-29T11:30:00Z', notes:[] },
+  { id:'dl4', name:'Yolanda M.', phone:'(917) 555-0128', device:'iPad Air 5th Gen', issue:'Screen flickering, not charging', status:'booked', quote:0, createdAt:'2026-04-25T09:20:00Z', updatedAt:'2026-04-28T15:00:00Z', notes:[] }
+];
+var DEMO_TICKETS = [
+  { id:'dt1', name:'Carlos R.', phone:'(347) 555-0174', device:'iPhone 15 Pro Max', issue:'iPhone Screen · Standard', flow:'in_stock', status:'in_repair', quote:299, deposit:50, tier:'standard', createdAt:'2026-04-29T08:00:00Z', updatedAt:'2026-04-29T13:00:00Z', notes:[], items:[] },
+  { id:'dt2', name:'Tanya B.', phone:'(718) 555-0263', device:'iPhone 13', issue:'Battery · Standard', flow:'in_stock', status:'waiting_for_repair', quote:89, deposit:0, tier:'standard', createdAt:'2026-04-29T11:30:00Z', updatedAt:'2026-04-29T11:30:00Z', notes:[], items:[] },
+  { id:'dt3', name:'Devon W.', phone:'(646) 555-0315', device:'Samsung S24', issue:'Android Screen · Standard', flow:'special_order', status:'part_ordered', quote:199, deposit:100, tier:'standard', createdAt:'2026-04-28T14:00:00Z', updatedAt:'2026-04-29T09:30:00Z', notes:[], items:[] },
+  { id:'dt4', name:'Keisha L.', phone:'(917) 555-0447', device:'iPhone 14', issue:'Back Glass · Standard', flow:'in_stock', status:'ready_for_pickup', quote:149, deposit:149, tier:'standard', createdAt:'2026-04-27T10:00:00Z', updatedAt:'2026-04-29T16:00:00Z', notes:[], items:[] }
+];
+var DEMO_INV = [
+  { id:'di1', fields:{ 'fldWzYeFcqm0qnxD8':'iPhone 15 Pro Max Screen', 'fldV0jSP3xJuinS8t':'iPhone 15 Pro Max', 'fldvwFFYSxAJlcFpp':3, 'fldB16jlPFHm11tfW':2, 'fldZEvcZT2JnX5kwh':'In Stock', 'fldxQhVZSYmXNK6CW':'iphone_screen' } },
+  { id:'di2', fields:{ 'fldWzYeFcqm0qnxD8':'iPhone 14 Pro Screen', 'fldV0jSP3xJuinS8t':'iPhone 14 Pro', 'fldvwFFYSxAJlcFpp':1, 'fldB16jlPFHm11tfW':2, 'fldZEvcZT2JnX5kwh':'In Stock', 'fldxQhVZSYmXNK6CW':'iphone_screen' } },
+  { id:'di3', fields:{ 'fldWzYeFcqm0qnxD8':'iPhone 13 Screen', 'fldV0jSP3xJuinS8t':'iPhone 13', 'fldvwFFYSxAJlcFpp':5, 'fldB16jlPFHm11tfW':2, 'fldZEvcZT2JnX5kwh':'In Stock', 'fldxQhVZSYmXNK6CW':'iphone_screen' } },
+  { id:'di4', fields:{ 'fldWzYeFcqm0qnxD8':'Samsung S24 Screen', 'fldV0jSP3xJuinS8t':'Samsung S24', 'fldvwFFYSxAJlcFpp':0, 'fldB16jlPFHm11tfW':1, 'fldZEvcZT2JnX5kwh':'O.O.S.', 'fldxQhVZSYmXNK6CW':'android' } },
+  { id:'di5', fields:{ 'fldWzYeFcqm0qnxD8':'iPhone 15 Battery', 'fldV0jSP3xJuinS8t':'iPhone 15', 'fldvwFFYSxAJlcFpp':8, 'fldB16jlPFHm11tfW':3, 'fldZEvcZT2JnX5kwh':'In Stock', 'fldxQhVZSYmXNK6CW':'battery' } },
+  { id:'di6', fields:{ 'fldWzYeFcqm0qnxD8':'iPhone 14 Battery', 'fldV0jSP3xJuinS8t':'iPhone 14', 'fldvwFFYSxAJlcFpp':2, 'fldB16jlPFHm11tfW':2, 'fldZEvcZT2JnX5kwh':'In Stock', 'fldxQhVZSYmXNK6CW':'battery' } }
+];
 function loadOrders() { if (!isAuth()) { renderOrders(DEMO_ORDERS); return; } el('ordersLoading').classList.remove('hidden'); atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(data => { el('ordersLoading').classList.add('hidden'); if (data.error) return; renderOrders(data.records || []); }); }
 function renderOrders(records) { if (!records.length) { el('ordersList').innerHTML = '<div class="loading-msg">No orders yet.</div>'; return; } el('ordersList').innerHTML = records.map(r => '<div class="order-item"><div class="order-item-top"><div><div class="order-item-name">' + (r.fields['fldF0TJARgHugOh83']||'—') + '</div><div class="order-item-meta">Qty: ' + (r.fields['fldbKVKkNgZtShHwh']||'?') + '</div></div><span class="order-status ' + (r.fields['fldwGKyfgOuue1eyE']?'received':'pending') + '">' + (r.fields['fldwGKyfgOuue1eyE']?'✓ Received':'⏳ Pending') + '</span></div></div>').join(''); }
 
@@ -1721,7 +1743,7 @@ function getStatusLabel(s) { var labels = { new:'New', contacted:'Contacted', fo
 function getStatusColor(s) { var colors = { new:'#3b82f6', contacted:'#10b981', follow_up_scheduled:'#8b5cf6', booked:'#06b6d4', closed_lost:'#ef4444' }; return colors[s] || '#6b7280'; }
 
 function renderLeadsList() {
-  if (!authd) { el('leadsList').innerHTML = '<div class="orders-empty-state">🔒 Log in to view leads</div>'; return; }
+  if (!authd) { el('leadsList').innerHTML = DEMO_LEADS.map(function(l) { var badge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>'; return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name">' + l.name + '</div><div class="inv-item-model">' + l.phone + (l.device?' · '+l.device:'') + '</div></div>' + badge + '</div>' + (l.issue?'<div class="inv-item-meta">'+l.issue.substring(0,60)+'</div>':'') + '</div>'; }).join(''); return; }
   var search = (el('leadSearch')?.value || '').toLowerCase();
   var filtered = leadsStorage.filter(l => { var match = !search || (l.name||'').toLowerCase().includes(search) || (l.phone||'').includes(search); return match && (leadFilterStatus === 'all' || l.status === leadFilterStatus); });
   filtered.sort((a,b) => new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt));
@@ -1914,7 +1936,7 @@ function updateTicketsBadge() {
 
 function renderTicketsList() {
   var container = el('ticketsList'); if (!container) return;
-  if (!authd) { container.innerHTML = '<div class="orders-empty-state">🔒 Log in to view tickets</div>'; return; }
+  if (!authd) { container.innerHTML = DEMO_TICKETS.map(function(t) { var labels = t.flow==='in_stock' ? REPAIR_LABELS : SO_LABELS; var colors = t.flow==='in_stock' ? REPAIR_COLORS : SO_COLORS; var color = colors[t.status]||'#3b82f6'; var badge = '<span class="stock-badge" style="background:'+color+'20;color:'+color+';">'+(labels[t.status]||t.status)+'</span>'; var flowIcon = t.flow==='in_stock' ? '✅' : '📦'; return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name">'+t.name+' <span style="font-size:11px;color:var(--muted);">'+flowIcon+'</span></div><div class="inv-item-model">'+(t.phone||'')+' · '+t.device+'</div></div>'+badge+'</div>'+(t.issue?'<div class="inv-item-meta">'+t.issue.substring(0,60)+'</div>':'')+'</div>'; }).join(''); return; }
   if (!ticketsStorage.length) { container.innerHTML = '<div class="orders-empty-state">No tickets yet — create one from the Quote tab</div>'; return; }
   var sorted = ticketsStorage.slice().sort(function(a, b) { return new Date(b.updatedAt||b.createdAt) - new Date(a.updatedAt||a.createdAt); });
   container.innerHTML = sorted.map(function(t) {
