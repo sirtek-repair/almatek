@@ -860,11 +860,12 @@
   <header style="text-align:center;padding:16px 0 12px;">
     <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">📊 Reports</h1>
   </header>
-  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;">
+  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
     <button class="orders-tab-btn active" id="rptBtnDay" onclick="setReportPeriod('day',this)">Today</button>
     <button class="orders-tab-btn" id="rptBtnWeek" onclick="setReportPeriod('week',this)">Week</button>
     <button class="orders-tab-btn" id="rptBtnMonth" onclick="setReportPeriod('month',this)">Month</button>
     <button class="orders-tab-btn" id="rptBtnYTD" onclick="setReportPeriod('ytd',this)">YTD</button>
+    <button id="rptShareBtn" onclick="shareReport()" style="margin-left:auto;padding:6px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share</button>
   </div>
   <div id="reportsSummary"></div>
   <div id="reportsTicketList" style="margin-top:12px;"></div>
@@ -2807,6 +2808,21 @@ function renderReports() {
       (t.issue?'<div class="inv-item-meta">'+t.issue.substring(0,60)+'</div>':'') +
       '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Closed ' + dateStr + '</div></div>';
   }).join('');
+}
+function shareReport() {
+  var start = getReportRange(reportPeriod);
+  var closed = ticketsStorage.filter(function(t) { return t.status === 'completed' && t.closedAt && new Date(t.closedAt) >= start; });
+  closed.sort(function(a,b) { return new Date(b.closedAt) - new Date(a.closedAt); });
+  var total = closed.reduce(function(sum, t) { return sum + (t.quote || 0); }, 0);
+  var periodLabel = { day:'Today', week:'This Week', month:'This Month', ytd:'This Year' }[reportPeriod];
+  var lines = ['📊 AlmaTek Reports — ' + periodLabel, closed.length + ' completed repair' + (closed.length !== 1 ? 's' : '') + ' · $' + total.toLocaleString() + ' total', ''];
+  closed.forEach(function(t) {
+    var dateStr = new Date(t.closedAt).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    lines.push('• ' + (t.name||'Unnamed') + (t.device ? ' · ' + t.device : '') + ' · $' + (t.quote||0) + ' (' + dateStr + ')');
+  });
+  var text = lines.join('\n');
+  if (navigator.share) { navigator.share({ title: 'AlmaTek Reports', text: text }).catch(function(){}); }
+  else { navigator.clipboard?.writeText(text).then(function() { var btn = el('rptShareBtn'); var orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(function() { btn.textContent = orig; }, 1800); }); }
 }
 </script>
 <div id="leadSelectBar" class="sel-action-bar hidden">
