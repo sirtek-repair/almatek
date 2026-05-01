@@ -355,13 +355,26 @@
       <div class="hlink-dropdown" id="suppliersDropdown" style="display:none;">
         <button class="hlink" id="suppliersBtn" onclick="toggleSuppliers(event)">Parts ▾</button>
         <div class="hlink-dropdown-menu hidden" id="suppliersMenu">
-          <a href="https://www.mobilesentrix.com" target="_blank" class="hlink" id="sentrixLink">Mobile Sentrix (Virginia) ↗</a>
+          <a href="tel:+19177909209" class="hlink" id="kimiLink">Kimi Soho ☎</a>
           <a href="https://brosphoneparts.com/" target="_blank" class="hlink" id="brosLink">Bros Phone Parts (Bklyn) ↗</a>
           <a href="https://parts4cells.com/" target="_blank" class="hlink" id="p4cLink">Parts4Cells (Houston) ↗</a>
-          <a href="tel:+19177909209" class="hlink" id="kimiLink">Kimi Soho ☎</a>
+          <a href="https://www.mobilesentrix.com" target="_blank" class="hlink" id="sentrixLink">Mobile Sentrix (Virginia) ↗</a>
         </div>
       </div>
-      <button class="hlink" onclick="copySwan(this)">🦢</button>
+      <div class="hlink-dropdown" id="contactsDropdown">
+        <button class="hlink" id="contactsBtn" onclick="toggleContacts(event)">Contacts ▾</button>
+        <div class="hlink-dropdown-menu hidden" id="contactsMenu" style="min-width:240px;">
+          <button class="hlink" onclick="copyContact(this,'1048 Bedford Ave, Brooklyn NY, 11205')">🦢 Swan · Copy Address</button>
+          <div style="display:flex;gap:4px;">
+            <button class="hlink" style="flex:1;width:auto;" onclick="copyContact(this,'259 B Canal St, NY, NY 10013')">Kimi Soho 📋</button>
+            <a href="tel:+19177909209" class="hlink" style="width:auto;flex-shrink:0;">☎ Call</a>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button class="hlink" style="flex:1;width:auto;" onclick="copyContact(this,'6016 5th Ave Brooklyn, NY')">SkyMobile 📋</button>
+            <a href="tel:+19293666664" class="hlink" style="width:auto;flex-shrink:0;">☎ Call</a>
+          </div>
+        </div>
+      </div>
       <button class="hlink" id="repairedBtn" onclick="copyLink(this, 'https://repairedcollective.com', 'Repaired Collective')"><span class="brand" style="font-weight:300;">Repaired</span> <span class="brand" style="font-weight:400;">Collective</span></button>
       <button class="hlink" id="reviewBtn" onclick="copyLink(this, 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D', 'Review link')">⭐ Review Link</button>
       <span class="hlink" id="supplierDemo" style="display:none;">your part supplier</span>
@@ -904,7 +917,7 @@ const SCREEN_PRICES = {
 };
 
 let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2='', mode1='select', mode2='select', secondOpen=false, mobileOpen=false, mobileFee=0;
-var SUPPLIERS = ['Mobile Sentrix (Virginia)','Bros Phone Parts (Bklyn)','Parts4Cells (Houston)','Kimi Soho'];
+var SUPPLIERS = ['Kimi Soho','Bros Phone Parts (Bklyn)','Parts4Cells (Houston)','Mobile Sentrix (Virginia)'];
 var quoteSupplier = '', quoteOrderRef = '';
 function renderSupplierBtns() {
   ['supplierBtns1','supplierBtns2'].forEach(function(id) {
@@ -1658,8 +1671,10 @@ function updateAuthBtn() {
   updateCartTabBadge();
 }
 
-function toggleSuppliers(e) { e.stopPropagation(); el('suppliersMenu').classList.toggle('hidden'); }
-document.addEventListener('click', () => el('suppliersMenu')?.classList.add('hidden'));
+function toggleSuppliers(e) { e.stopPropagation(); el('suppliersMenu').classList.toggle('hidden'); el('contactsMenu')?.classList.add('hidden'); }
+function toggleContacts(e) { e.stopPropagation(); el('contactsMenu').classList.toggle('hidden'); el('suppliersMenu')?.classList.add('hidden'); }
+function copyContact(btn, addr) { navigator.clipboard?.writeText(addr).then(function() { var orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(function() { btn.textContent = orig; }, 1800); }); }
+document.addEventListener('click', () => { el('suppliersMenu')?.classList.add('hidden'); el('contactsMenu')?.classList.add('hidden'); });
 
 function copyLink(btn, url, label) { navigator.clipboard?.writeText(url).then(() => { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = label; }, 1800); }); }
 function copySwan(btn) { var addr = '1048 Bedford Ave, Brooklyn NY, 11205'; navigator.clipboard?.writeText(addr).then(function() { var orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(function() { btn.textContent = orig; }, 1800); }); }
