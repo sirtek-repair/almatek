@@ -1898,9 +1898,9 @@ function shareQuote() {
     else { fb.push('Quote: part + tax'); if (mobileOpen) fb.push('+ Mobile service'); }
     text = fb.join('\n');
   }
+  if (navigator.clipboard) { navigator.clipboard.writeText(text).catch(function(){}); }
   if (navigator.share) { navigator.share({ title: 'Quote', text: text }).catch(function(){}); }
-  else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function(){ showToast('Copied ✓'); }); }
-  else { showToast('Share not supported'); }
+  else { showToast('Copied ✓'); }
 }
 
 function shareLeadCard(leadId, e) {
