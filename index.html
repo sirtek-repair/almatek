@@ -1863,19 +1863,41 @@ function pushLeadAuditNote(lead, msg) { lead.notes.push({ text: fmtNotePrefix() 
 function pushTicketAuditNote(ticket, msg) { ticket.notes.push({ text: fmtNotePrefix() + '\n' + msg, createdAt: new Date().toISOString(), author: currentUser || 'staff' }); }
 
 function shareQuote() {
-  var typeLabel = ATL_TYPE_LABELS[type1] || type1;
-  var lines = [];
-  if (model1) lines.push(model1);
-  lines.push(typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : ''));
-  if (isAuth()) {
-    var p = getPrice1(), total = withTax(p + mobileFee);
-    lines.push('Quote: $' + total);
-    if (mobileOpen) lines.push(mobileFee > 0 ? 'Includes mobile service fee ($' + mobileFee + ')' : 'Includes mobile service');
-  } else {
-    lines.push('Quote: part + tax');
-    if (mobileOpen) lines.push('+ Mobile service');
+  var text;
+  if (type1 === 'iphone_screen' && model1 && mode1 === 'select' && isAuth()) {
+    var prices = SCREEN_PRICES[model1] || {};
+    var hasStd = prices.standard != null, hasPrem = prices.premium != null;
+    if (hasStd || hasPrem) {
+      var lines = [];
+      if (hasStd && hasPrem) {
+        lines.push('We have two options available:');
+        lines.push('');
+        lines.push('STANDARD - $' + withTax(prices.standard + mobileFee) + ' (tax included) LCD screen that looks & functions just like the original. Main difference: the frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re keeping your phone for the next year or upgrading soon.');
+        lines.push('');
+        lines.push('PREMIUM - $' + withTax(prices.premium + mobileFee) + ' (tax included) Soft OLED screen (OEM-quality). Same exact specs as original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
+        lines.push('');
+        lines.push('Both come with warranty and we can come to you. Which works better for you?');
+      } else if (hasPrem) {
+        lines.push('PREMIUM - $' + withTax(prices.premium + mobileFee) + ' (tax included) Soft OLED screen (OEM-quality). Same exact specs as original Apple screen. Thinner frame, perfect fit.');
+        lines.push('');
+        lines.push('Comes with warranty and we can come to you.');
+      } else {
+        lines.push('STANDARD - $' + withTax(prices.standard + mobileFee) + ' (tax included) LCD screen that looks & functions just like the original. Main difference: the frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re keeping your phone for the next year or upgrading soon.');
+        lines.push('');
+        lines.push('Comes with warranty and we can come to you.');
+      }
+      text = lines.join('\n');
+    }
   }
-  var text = lines.join('\n');
+  if (!text) {
+    var typeLabel = ATL_TYPE_LABELS[type1] || type1;
+    var fb = [];
+    if (model1) fb.push(model1);
+    fb.push(typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : ''));
+    if (isAuth()) { var p = getPrice1(), total = withTax(p + mobileFee); fb.push('Quote: $' + total + ' (tax included)'); if (mobileOpen) fb.push('Includes mobile service'); }
+    else { fb.push('Quote: part + tax'); if (mobileOpen) fb.push('+ Mobile service'); }
+    text = fb.join('\n');
+  }
   if (navigator.share) { navigator.share({ title: 'Quote', text: text }).catch(function(){}); }
   else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function(){ showToast('Copied ✓'); }); }
   else { showToast('Share not supported'); }
