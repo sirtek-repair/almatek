@@ -34,8 +34,9 @@
     header h1 { font-size: 26px; font-weight: normal; letter-spacing: 0.01em; text-transform: none; }
     header p { color: var(--muted); font-size: 12px; margin-top: 3px; letter-spacing: 0.06em; font-weight: 300; }
     .header-links { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
-    .hlink { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; color: var(--muted); font-size: 12px; font-weight: 400; text-decoration: none; letter-spacing: 0.02em; transition: all 0.15s; }
+    .hlink { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; color: var(--muted); font-size: 12px; font-weight: 400; text-decoration: none; letter-spacing: 0.02em; transition: all 0.15s; cursor: pointer; touch-action: manipulation; }
     .hlink:hover { border-color: #52525b; color: var(--text); }
+    button { touch-action: manipulation; }
 
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
     .field-label { display: block; font-size: 11px; font-weight: 400; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 10px; }
@@ -1732,11 +1733,13 @@ function updateAuthBtn() {
   updateCartTabBadge();
 }
 
-function toggleSuppliers(e) { e.stopPropagation(); el('suppliersMenu').classList.toggle('hidden'); el('contactsMenu')?.classList.add('hidden'); }
-function toggleContacts(e) { e.stopPropagation(); el('contactsMenu').classList.toggle('hidden'); el('suppliersMenu')?.classList.add('hidden'); el('contactsMenu3')?.classList.add('hidden'); }
-function toggleContacts3(e) { e.stopPropagation(); el('contactsMenu3').classList.toggle('hidden'); el('suppliersMenu')?.classList.add('hidden'); el('contactsMenu')?.classList.add('hidden'); }
+function closeAllMenus() { el('suppliersMenu')?.classList.add('hidden'); el('contactsMenu')?.classList.add('hidden'); el('contactsMenu3')?.classList.add('hidden'); }
+function toggleSuppliers(e) { e.stopPropagation(); e.preventDefault(); var m = el('suppliersMenu'); var open = !m.classList.contains('hidden'); closeAllMenus(); if (!open) m.classList.remove('hidden'); }
+function toggleContacts(e) { e.stopPropagation(); e.preventDefault(); var m = el('contactsMenu'); var open = !m.classList.contains('hidden'); closeAllMenus(); if (!open) m.classList.remove('hidden'); }
+function toggleContacts3(e) { e.stopPropagation(); e.preventDefault(); var m = el('contactsMenu3'); var open = !m.classList.contains('hidden'); closeAllMenus(); if (!open) m.classList.remove('hidden'); }
 function copyContact(btn, addr) { navigator.clipboard?.writeText(addr).then(function() { var orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(function() { btn.textContent = orig; }, 1800); }); }
-document.addEventListener('click', () => { el('suppliersMenu')?.classList.add('hidden'); el('contactsMenu')?.classList.add('hidden'); el('contactsMenu3')?.classList.add('hidden'); });
+document.addEventListener('click', closeAllMenus);
+document.addEventListener('touchstart', function(e) { if (!e.target.closest('.hlink-dropdown')) closeAllMenus(); }, { passive: true });
 
 function copyLink(btn, url, label) { navigator.clipboard?.writeText(url).then(() => { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = label; }, 1800); }); }
 function copySwan(btn) { var addr = '1048 Bedford Ave, Brooklyn NY, 11205'; navigator.clipboard?.writeText(addr).then(function() { var orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(function() { btn.textContent = orig; }, 1800); }); }
@@ -1808,8 +1811,8 @@ function setSyncStatus(state) {
 
 var _syncing = false, _syncWatchdog = null;
 function syncFromSheets() {
-  if (!USERS_SCRIPT_URL) return;
-  if (_syncing) return;
+  if (!USERS_SCRIPT_URL) { showToast('No sync URL — set Script URL in Settings'); return; }
+  if (_syncing) { showToast('Already syncing…'); return; }
   _syncing = true;
   setSyncStatus('syncing');
   if (_syncWatchdog) clearTimeout(_syncWatchdog);
