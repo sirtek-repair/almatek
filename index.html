@@ -663,6 +663,7 @@
   <div class="orders-tab-nav" style="display:flex;align-items:center;gap:4px;">
     <button class="orders-tab-btn active" id="leadSubBtnLeads" onclick="switchLeadSubTab('leads')">Leads</button>
     <button class="orders-tab-btn" id="leadSubBtnTickets" onclick="switchLeadSubTab('tickets')">🎫 Tickets <span id="ticketsBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+    <button class="orders-tab-btn" id="leadSubBtnPickedUp" onclick="switchLeadSubTab('pickedup')">✅ Picked Up</button>
     <button class="orders-tab-btn" id="leadSubBtnFollowUp" onclick="switchLeadSubTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button id="syncBtn" onclick="syncFromSheets()" title="Sync with cloud" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;padding:4px 8px;color:var(--muted);line-height:1;">↻</button>
   </div>
@@ -711,6 +712,9 @@
       </div>
     </div>
     <div id="ticketsList"></div>
+  </div>
+  <div id="leadViewPickedUp" class="hidden">
+    <div id="pickedUpList" style="margin-top:4px;"></div>
   </div>
   <div id="leadViewFollowUp" class="hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 4px;">
@@ -1175,16 +1179,19 @@ function switchTab(tab) {
 var leadSubTab = 'leads';
 function switchLeadSubTab(tab) {
   leadSubTab = tab;
-  var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup';
+  var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup', isPickedUp = tab === 'pickedup';
   el('leadViewLeads').classList.toggle('hidden', !isLeads);
   el('leadViewTickets').classList.toggle('hidden', !isTickets);
   el('leadViewFollowUp').classList.toggle('hidden', !isFollowUp);
+  el('leadViewPickedUp').classList.toggle('hidden', !isPickedUp);
   el('leadSubBtnLeads').classList.toggle('active', isLeads);
   el('leadSubBtnTickets').classList.toggle('active', isTickets);
   el('leadSubBtnFollowUp').classList.toggle('active', isFollowUp);
+  el('leadSubBtnPickedUp').classList.toggle('active', isPickedUp);
   var newLeadBtn = el('newLeadBtn'); if (newLeadBtn) newLeadBtn.style.display = isLeads ? '' : 'none';
   if (isFollowUp) renderFollowUpTab();
   else if (isTickets) renderTicketsList();
+  else if (isPickedUp) renderPickedUpList();
   else if (typeof renderLeadsList === 'function') renderLeadsList();
 }
 
@@ -2134,6 +2141,22 @@ function updateFollowUpBadge() {
   }
   badge.textContent = count;
   badge.classList.toggle('hidden', count === 0);
+}
+
+function renderPickedUpList() {
+  var listEl = el('pickedUpList'); if (!listEl) return;
+  var completed = ticketsStorage.filter(function(t) { return t.status === 'completed'; });
+  completed.sort(function(a,b) { return new Date(b.closedAt || b.updatedAt || 0) - new Date(a.closedAt || a.updatedAt || 0); });
+  if (!completed.length) { listEl.innerHTML = '<div class="orders-empty-state">No picked up tickets yet</div>'; return; }
+  listEl.innerHTML = completed.map(function(t) {
+    var dateStr = t.closedAt ? new Date(t.closedAt).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '';
+    return '<div class="inv-item" onclick="openTicketDetail(\'' + t.id + '\')" style="cursor:pointer;">' +
+      '<div class="inv-item-top"><div><div class="inv-item-name">' + (t.name||'Unnamed') + '</div>' +
+      '<div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div>' +
+      '<span style="font-size:14px;font-weight:700;color:#10b981;">' + (t.quote ? '$'+t.quote : '') + '</span></div>' +
+      (t.issue?'<div class="inv-item-meta">'+t.issue.substring(0,60)+'</div>':'') +
+      '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Picked up ' + dateStr + '</div></div>';
+  }).join('');
 }
 
 function renderFollowUpTab() {
