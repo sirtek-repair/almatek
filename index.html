@@ -472,7 +472,10 @@
     <div class="qsub hidden" id="quoteStockLine"></div>
     <button onclick="showAddToTicketModal()" style="margin-top:16px;width:100%;padding:10px 0;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">🎫 Add to Ticket</button>
     <button onclick="showAddToLeadModal()" style="margin-top:8px;width:100%;padding:10px 0;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">👤 Add to Lead</button>
-    <button onclick="shareQuote()" style="margin-top:8px;width:100%;padding:9px 0;background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.65);border-radius:10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share Quote</button>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button onclick="copyQuote(this)" style="flex:1;padding:9px 0;background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.65);border-radius:10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
+      <button onclick="shareQuote()" style="flex:1;padding:9px 0;background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.65);border-radius:10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>
+    </div>
   </div>
 
   <div id="mobileToggleRow" class="toggle-row hidden" onclick="onToggleMobile()">
@@ -1862,7 +1865,7 @@ function fmtNotePrefix() {
 function pushLeadAuditNote(lead, msg) { lead.notes.push({ text: fmtNotePrefix() + '\n' + msg, createdAt: new Date().toISOString(), author: currentUser || 'staff' }); }
 function pushTicketAuditNote(ticket, msg) { ticket.notes.push({ text: fmtNotePrefix() + '\n' + msg, createdAt: new Date().toISOString(), author: currentUser || 'staff' }); }
 
-function shareQuote() {
+function buildQuoteText() {
   var text;
   if (type1 === 'iphone_screen' && model1 && mode1 === 'select' && isAuth()) {
     var prices = SCREEN_PRICES[model1] || {};
@@ -1898,6 +1901,14 @@ function shareQuote() {
     else { fb.push('Quote: part + tax'); if (mobileOpen) fb.push('+ Mobile service'); }
     text = fb.join('\n');
   }
+  return text;
+}
+function copyQuote(btn) {
+  var text = buildQuoteText();
+  navigator.clipboard?.writeText(text).then(function() { var orig = btn.innerHTML; btn.innerHTML = '✓ Copied!'; setTimeout(function() { btn.innerHTML = orig; }, 1800); });
+}
+function shareQuote() {
+  var text = buildQuoteText();
   if (navigator.clipboard) { navigator.clipboard.writeText(text).catch(function(){}); }
   if (navigator.share) { navigator.share({ title: 'Quote', text: text }).catch(function(){}); }
   else { showToast('Copied ✓'); }
