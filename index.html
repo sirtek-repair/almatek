@@ -1796,6 +1796,18 @@ function loadLeadsFromStorage() {
 function saveLeadsToStorage() { var s={}; leadsStorage=leadsStorage.filter(function(l){if(s[l.id])return false;s[l.id]=true;return true;}); localStorage.setItem('almatek_leads', JSON.stringify(leadsStorage)); }
 
 function syncLeadToSheet(lead) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'createLead', lead: lead }); }
+function syncLeadUpdate(lead) {
+  if (!USERS_SCRIPT_URL) return;
+  sheetsCall({ action: 'updateLead', leadId: lead.id, updates: {
+    name: lead.name, phone: lead.phone, email: lead.email, device: lead.device,
+    issue: lead.issue, status: lead.status, followUpAt: lead.followUpAt||'',
+    followUpNotes: lead.followUpNotes||'', assignedTo: lead.assignedTo||'',
+    lastContactedAt: lead.lastContactedAt||'', contactAttempts: lead.contactAttempts||0,
+    bookedAt: lead.bookedAt||'', closedAt: lead.closedAt||'', notes: lead.notes||[],
+    quote: lead.quote||0, deposit: lead.deposit||0, tier: lead.tier||'standard',
+    repairType: lead.repairType||'', repairModel: lead.repairModel||'', updatedAt: lead.updatedAt
+  }});
+}
 function syncUpdateToSheet(leadId, updates) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'updateLead', leadId: leadId, updates: updates }); }
 
 function syncTicketCreate(ticket) { if (!USERS_SCRIPT_URL || !ticket) return; sheetsCall({ action: 'createTicket', ticket: ticket }); }
@@ -1853,7 +1865,7 @@ function syncFromSheets() {
         if (!sheetMap[local.id]) {
           if (!_knownSheetLeadIds.has(local.id)) { sheetsCall({ action: 'createLead', lead: local }); up.leads++; }
           else { deletedLeadIds.add(local.id); saveDeletedLeads(); }
-        } else if (new Date(local.updatedAt||0) > new Date(sheetMap[local.id].updatedAt||0)) { syncLeadToSheet(local); up.leads++; }
+        } else if (new Date(local.updatedAt||0) > new Date(sheetMap[local.id].updatedAt||0)) { syncLeadUpdate(local); up.leads++; }
       });
       var merged = data.leads.filter(function(s) { return !deletedLeadIds.has(s.id); }).map(function(s) {
         var loc = localMap[s.id];
