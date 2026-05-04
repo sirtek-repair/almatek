@@ -715,7 +715,30 @@
   </div><!-- end leadViewLeads -->
   <div id="leadViewTickets" class="hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 10px;">
-      <button onclick="copySwan(this)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">🦢</button>
+      <div class="hlink-dropdown" id="contactsDropdown2" style="position:relative;">
+        <button class="hlink" id="contactsBtn2" onclick="toggleContacts2(event)">Contacts ▾</button>
+        <div class="hlink-dropdown-menu hidden" id="contactsMenu2" style="min-width:240px;">
+          <div style="display:flex;gap:4px;">
+            <a href="https://maps.google.com/?q=1048+Bedford+Ave,+Brooklyn+NY+11205" target="_blank" class="hlink" style="flex:1;width:auto;">🦢 Swan 🗺️</a>
+            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'1048 Bedford Ave, Brooklyn NY, 11205')">📋</button>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <a href="https://maps.google.com/?q=259+B+Canal+St,+New+York,+NY+10013" target="_blank" class="hlink" style="flex:1;width:auto;">Kimi Soho 🗺️</a>
+            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'259 B Canal St, NY, NY 10013')">📋</button>
+            <a href="tel:+19177909209" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <a href="https://maps.google.com/?q=6016+5th+Ave,+Brooklyn,+NY" target="_blank" class="hlink" style="flex:1;width:auto;">SkyMobile 🗺️</a>
+            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'6016 5th Ave Brooklyn, NY')">📋</button>
+            <a href="tel:+19293666664" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <a href="https://maps.google.com/?q=9+E+Broadway,+New+York,+NY+10002" target="_blank" class="hlink" style="flex:1;width:auto;">A.B.A. 🗺️</a>
+            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'9 E Broadway, New York, NY 10002')">📋</button>
+            <a href="tel:+19178553451" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+          </div>
+        </div>
+      </div>
       <div style="display:flex;gap:6px;align-items:center;">
         <button onclick="toggleTicketSelectMode()" id="ticketSelectModeBtn" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">☐ Select</button>
         <button onclick="showNewTicketManual()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">+ New Ticket</button>
@@ -1697,9 +1720,10 @@ function updateAuthBtn() {
 }
 
 function toggleSuppliers(e) { e.stopPropagation(); el('suppliersMenu').classList.toggle('hidden'); el('contactsMenu')?.classList.add('hidden'); }
-function toggleContacts(e) { e.stopPropagation(); el('contactsMenu').classList.toggle('hidden'); el('suppliersMenu')?.classList.add('hidden'); }
+function toggleContacts(e) { e.stopPropagation(); el('contactsMenu').classList.toggle('hidden'); el('suppliersMenu')?.classList.add('hidden'); el('contactsMenu2')?.classList.add('hidden'); }
+function toggleContacts2(e) { e.stopPropagation(); el('contactsMenu2').classList.toggle('hidden'); el('suppliersMenu')?.classList.add('hidden'); el('contactsMenu')?.classList.add('hidden'); }
 function copyContact(btn, addr) { navigator.clipboard?.writeText(addr).then(function() { var orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(function() { btn.textContent = orig; }, 1800); }); }
-document.addEventListener('click', () => { el('suppliersMenu')?.classList.add('hidden'); el('contactsMenu')?.classList.add('hidden'); });
+document.addEventListener('click', () => { el('suppliersMenu')?.classList.add('hidden'); el('contactsMenu')?.classList.add('hidden'); el('contactsMenu2')?.classList.add('hidden'); });
 
 function copyLink(btn, url, label) { navigator.clipboard?.writeText(url).then(() => { btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = label; }, 1800); }); }
 function copySwan(btn) { var addr = '1048 Bedford Ave, Brooklyn NY, 11205'; navigator.clipboard?.writeText(addr).then(function() { var orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(function() { btn.textContent = orig; }, 1800); }); }
