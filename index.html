@@ -1912,11 +1912,8 @@ function buildQuoteText() {
   if (!text) {
     var typeLabel = ATL_TYPE_LABELS[type1] || type1;
     var fb = [];
-    if (model1) fb.push(model1);
-    fb.push(typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : ''));
-    if (isAuth()) { var p = getPrice1(), total = withTax(p + mobileFee); fb.push('Quote: $' + total + ' (tax included)'); if (mobileOpen) fb.push('Includes mobile service'); }
-    else { fb.push('Quote: part + tax'); if (mobileOpen) fb.push('+ Mobile service'); }
-    text = fb.join('\n');
+    if (isAuth()) { var p = getPrice1(), total = withTax(p + mobileFee); var fb = ['The quote for your Repair is: $' + total + ' (tax included)']; if (mobileOpen) fb.push('Includes mobile service'); text = fb.join('\n'); }
+    else { text = 'The quote for your Repair is: part + tax'; }
   }
   return text;
 }
