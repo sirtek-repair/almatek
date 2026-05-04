@@ -1767,6 +1767,10 @@ var deletedLeadIds = new Set(JSON.parse(localStorage.getItem('almatek_deleted_le
 var deletedTicketIds = new Set(JSON.parse(localStorage.getItem('almatek_deleted_tickets') || '[]'));
 function saveDeletedLeads() { localStorage.setItem('almatek_deleted_leads', JSON.stringify([...deletedLeadIds])); }
 function saveDeletedTickets() { localStorage.setItem('almatek_deleted_tickets', JSON.stringify([...deletedTicketIds])); }
+var _knownSheetLeadIds = new Set(JSON.parse(localStorage.getItem('almatek_known_leads') || '[]'));
+var _knownSheetTicketIds = new Set(JSON.parse(localStorage.getItem('almatek_known_tickets') || '[]'));
+function saveKnownSheetLeads() { localStorage.setItem('almatek_known_leads', JSON.stringify([..._knownSheetLeadIds])); }
+function saveKnownSheetTickets() { localStorage.setItem('almatek_known_tickets', JSON.stringify([..._knownSheetTicketIds])); }
 var leadSelectMode = false, selectedLeadIds = new Set();
 var ticketSelectMode = false, selectedTicketIds = new Set();
 
@@ -1825,13 +1829,16 @@ function syncFromSheets() {
   sheetsCall({ action: 'getLeads' }).then(function(data) {
     if (data && data.ok && Array.isArray(data.leads)) {
       var sheetMap = {};
-      data.leads.forEach(function(l) { sheetMap[l.id] = l; });
+      data.leads.forEach(function(l) { sheetMap[l.id] = l; _knownSheetLeadIds.add(l.id); });
+      saveKnownSheetLeads();
       var localMap = {};
       leadsStorage.forEach(function(l) { localMap[l.id] = l; });
       leadsStorage.forEach(function(local) {
         if (deletedLeadIds.has(local.id)) return;
-        if (!sheetMap[local.id]) { sheetsCall({ action: 'createLead', lead: local }); up.leads++; }
-        else if (new Date(local.updatedAt||0) > new Date(sheetMap[local.id].updatedAt||0)) { syncLeadToSheet(local); up.leads++; }
+        if (!sheetMap[local.id]) {
+          if (!_knownSheetLeadIds.has(local.id)) { sheetsCall({ action: 'createLead', lead: local }); up.leads++; }
+          else { deletedLeadIds.add(local.id); saveDeletedLeads(); }
+        } else if (new Date(local.updatedAt||0) > new Date(sheetMap[local.id].updatedAt||0)) { syncLeadToSheet(local); up.leads++; }
       });
       var merged = data.leads.filter(function(s) { return !deletedLeadIds.has(s.id); }).map(function(s) {
         var loc = localMap[s.id];
@@ -1853,13 +1860,16 @@ function syncFromSheets() {
   sheetsCall({ action: 'getTickets' }).then(function(data) {
     if (data && data.ok && Array.isArray(data.tickets)) {
       var sheetMap = {};
-      data.tickets.forEach(function(t) { sheetMap[t.id] = t; });
+      data.tickets.forEach(function(t) { sheetMap[t.id] = t; _knownSheetTicketIds.add(t.id); });
+      saveKnownSheetTickets();
       var localMap = {};
       ticketsStorage.forEach(function(t) { localMap[t.id] = t; });
       ticketsStorage.forEach(function(local) {
         if (deletedTicketIds.has(local.id)) return;
-        if (!sheetMap[local.id]) { sheetsCall({ action: 'createTicket', ticket: local }); up.tickets++; }
-        else if (new Date(local.updatedAt||0) > new Date(sheetMap[local.id].updatedAt||0)) { syncTicket(local); up.tickets++; }
+        if (!sheetMap[local.id]) {
+          if (!_knownSheetTicketIds.has(local.id)) { sheetsCall({ action: 'createTicket', ticket: local }); up.tickets++; }
+          else { deletedTicketIds.add(local.id); saveDeletedTickets(); }
+        } else if (new Date(local.updatedAt||0) > new Date(sheetMap[local.id].updatedAt||0)) { syncTicket(local); up.tickets++; }
       });
       var merged = data.tickets.filter(function(s) { return !deletedTicketIds.has(s.id); }).map(function(s) {
         var loc = localMap[s.id];
