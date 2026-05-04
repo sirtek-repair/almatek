@@ -1820,16 +1820,19 @@ function setSyncStatus(state) {
   else { btn.textContent = '↻'; btn.style.opacity = '1'; btn.disabled = false; }
 }
 
-var _syncing = false;
+var _syncing = false, _syncWatchdog = null;
 function syncFromSheets() {
   if (!USERS_SCRIPT_URL) return;
   if (_syncing) return;
   _syncing = true;
   setSyncStatus('syncing');
+  if (_syncWatchdog) clearTimeout(_syncWatchdog);
+  _syncWatchdog = setTimeout(function() { _syncing = false; setSyncStatus('idle'); showToast('Sync timed out — tap ↻ to retry'); }, 30000);
   var up = { leads: 0, tickets: 0 }, dn = { leads: 0, tickets: 0 };
   var done = 0;
   function finish(msg) {
     if (++done < 2) return;
+    if (_syncWatchdog) { clearTimeout(_syncWatchdog); _syncWatchdog = null; }
     _syncing = false;
     setSyncStatus('idle');
     var parts = [];
@@ -2321,7 +2324,7 @@ var currentTicketId = null;
 
 function updateTicketsBadge() {
   var badge = el('ticketsBadge'); if (!badge) return;
-  var active = ticketsStorage.filter(function(t) { return t.status !== 'repair_done' && t.status !== 'ready_for_pickup'; });
+  var active = ticketsStorage.filter(function(t) { return t.status !== 'completed'; });
   badge.textContent = active.length;
   badge.classList.toggle('hidden', active.length === 0);
 }
