@@ -1859,13 +1859,15 @@ function syncFromSheets() {
       var sheetMap = {};
       data.leads.forEach(function(l) { sheetMap[l.id] = l; _knownSheetLeadIds.add(l.id); });
       saveKnownSheetLeads();
+      var lChanged = false;
+      data.leads.forEach(function(s) { if (deletedLeadIds.has(s.id)) { deletedLeadIds.delete(s.id); lChanged = true; } });
+      if (lChanged) saveDeletedLeads();
       var localMap = {};
       leadsStorage.forEach(function(l) { localMap[l.id] = l; });
       leadsStorage.forEach(function(local) {
         if (deletedLeadIds.has(local.id)) return;
         if (!sheetMap[local.id]) {
           if (!_knownSheetLeadIds.has(local.id)) { sheetsCall({ action: 'createLead', lead: local }); up.leads++; }
-          else { deletedLeadIds.add(local.id); saveDeletedLeads(); }
         } else if (new Date(local.updatedAt||0) > new Date(sheetMap[local.id].updatedAt||0)) { syncLeadUpdate(local); up.leads++; }
       });
       var merged = data.leads.filter(function(s) { return !deletedLeadIds.has(s.id); }).map(function(s) {
@@ -1890,13 +1892,15 @@ function syncFromSheets() {
       var sheetMap = {};
       data.tickets.forEach(function(t) { sheetMap[t.id] = t; _knownSheetTicketIds.add(t.id); });
       saveKnownSheetTickets();
+      var tChanged = false;
+      data.tickets.forEach(function(s) { if (deletedTicketIds.has(s.id)) { deletedTicketIds.delete(s.id); tChanged = true; } });
+      if (tChanged) saveDeletedTickets();
       var localMap = {};
       ticketsStorage.forEach(function(t) { localMap[t.id] = t; });
       ticketsStorage.forEach(function(local) {
         if (deletedTicketIds.has(local.id)) return;
         if (!sheetMap[local.id]) {
           if (!_knownSheetTicketIds.has(local.id)) { sheetsCall({ action: 'createTicket', ticket: local }); up.tickets++; }
-          else { deletedTicketIds.add(local.id); saveDeletedTickets(); }
         } else if (new Date(local.updatedAt||0) > new Date(sheetMap[local.id].updatedAt||0)) { syncTicket(local); up.tickets++; }
       });
       var merged = data.tickets.filter(function(s) { return !deletedTicketIds.has(s.id); }).map(function(s) {
