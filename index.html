@@ -162,8 +162,10 @@
     .inv-inline input:focus { border-color: var(--accent); }
     .inv-inline button { padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; border: none; background: var(--accent); color: #fff; }
     .inv-inline .cancel-btn { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-    .inv-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #18181b; border: 1px solid var(--green); color: var(--green); font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 100px; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .inv-toast { position: fixed; bottom: max(80px, calc(env(safe-area-inset-bottom, 0px) + 72px)); left: 50%; transform: translateX(-50%); background: #18181b; border: 1px solid var(--green); color: var(--green); font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 100px; z-index: 1001; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
     .inv-toast.show { opacity: 1; }
+    @keyframes spin-icon { to { transform: rotate(360deg); } }
+    .sync-spinning { display: inline-block; animation: spin-icon 0.8s linear infinite; }
     .token-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
     .token-card p { font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
     .token-row { display: flex; gap: 8px; }
@@ -1810,14 +1812,24 @@ function setSyncStatus(state) {
   var btns = [el('syncBtn'), el('leadsRefreshBtn'), el('ticketsRefreshBtn')];
   btns.forEach(function(btn) {
     if (!btn) return;
-    if (state === 'syncing') { btn.textContent = '↻'; btn.style.opacity = '0.4'; btn.disabled = true; }
-    else { btn.textContent = '↻'; btn.style.opacity = '1'; btn.disabled = false; }
+    if (state === 'syncing') {
+      btn.innerHTML = '<span class="sync-spinning">↻</span>';
+      btn.style.opacity = '0.6'; btn.disabled = true;
+    } else {
+      btn.textContent = '↻'; btn.style.opacity = '1'; btn.disabled = false;
+    }
   });
 }
 
 var _syncing = false, _syncWatchdog = null;
 function syncFromSheets() {
-  if (!USERS_SCRIPT_URL) { showToast('No sync URL — set Script URL in Settings'); return; }
+  if (!USERS_SCRIPT_URL) {
+    el('authInput').value = ''; el('authError').textContent = '';
+    el('authOverlay').classList.remove('hidden');
+    el('authSetupBox').classList.remove('hidden');
+    el('authSetupUrl').value = ''; setTimeout(function() { el('authSetupUrl').focus(); }, 100);
+    return;
+  }
   if (_syncing) { showToast('Already syncing…'); return; }
   _syncing = true;
   setSyncStatus('syncing');
