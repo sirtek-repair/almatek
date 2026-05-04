@@ -1705,6 +1705,10 @@ if (authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
 // ============================================
 
 var leadsStorage = [], leadFilterStatus = 'all', currentLeadId = null;
+var deletedLeadIds = new Set(JSON.parse(localStorage.getItem('almatek_deleted_leads') || '[]'));
+var deletedTicketIds = new Set(JSON.parse(localStorage.getItem('almatek_deleted_tickets') || '[]'));
+function saveDeletedLeads() { localStorage.setItem('almatek_deleted_leads', JSON.stringify([...deletedLeadIds])); }
+function saveDeletedTickets() { localStorage.setItem('almatek_deleted_tickets', JSON.stringify([...deletedTicketIds])); }
 var leadSelectMode = false, selectedLeadIds = new Set();
 var ticketSelectMode = false, selectedTicketIds = new Set();
 
@@ -1767,14 +1771,14 @@ function syncFromSheets() {
       var localMap = {};
       leadsStorage.forEach(function(l) { localMap[l.id] = l; });
       leadsStorage.forEach(function(local) {
-        if (!sheetMap[local.id]) { sheetsCall({ action: 'createLead', lead: local }); up.leads++; }
+        if (!sheetMap[local.id] && !deletedLeadIds.has(local.id)) { sheetsCall({ action: 'createLead', lead: local }); up.leads++; }
       });
-      var merged = data.leads.map(function(s) {
+      var merged = data.leads.filter(function(s) { return !deletedLeadIds.has(s.id); }).map(function(s) {
         var loc = localMap[s.id];
         if (!loc) { dn.leads++; return s; }
         return new Date(s.updatedAt||0) >= new Date(loc.updatedAt||0) ? s : loc;
       });
-      leadsStorage.forEach(function(l) { if (!sheetMap[l.id]) merged.push(l); });
+      leadsStorage.forEach(function(l) { if (!sheetMap[l.id] && !deletedLeadIds.has(l.id)) merged.push(l); });
       var seenIds = {}; leadsStorage = merged.filter(function(l) { if (seenIds[l.id]) return false; seenIds[l.id] = true; return true; });
       saveLeadsToStorage();
       if (leadSubTab === 'leads' && typeof renderLeadsList === 'function') renderLeadsList();
@@ -1793,14 +1797,14 @@ function syncFromSheets() {
       var localMap = {};
       ticketsStorage.forEach(function(t) { localMap[t.id] = t; });
       ticketsStorage.forEach(function(local) {
-        if (!sheetMap[local.id]) { sheetsCall({ action: 'createTicket', ticket: local }); up.tickets++; }
+        if (!sheetMap[local.id] && !deletedTicketIds.has(local.id)) { sheetsCall({ action: 'createTicket', ticket: local }); up.tickets++; }
       });
-      var merged = data.tickets.map(function(s) {
+      var merged = data.tickets.filter(function(s) { return !deletedTicketIds.has(s.id); }).map(function(s) {
         var loc = localMap[s.id];
         if (!loc) { dn.tickets++; return s; }
         return new Date(s.updatedAt||0) >= new Date(loc.updatedAt||0) ? s : loc;
       });
-      ticketsStorage.forEach(function(t) { if (!sheetMap[t.id]) merged.push(t); });
+      ticketsStorage.forEach(function(t) { if (!sheetMap[t.id] && !deletedTicketIds.has(t.id)) merged.push(t); });
       var seenTIds = {}; ticketsStorage = merged.filter(function(t) { if (seenTIds[t.id]) return false; seenTIds[t.id] = true; return true; });
       saveTicketsToStorage();
       updateTicketsBadge();
@@ -2095,7 +2099,7 @@ function updateExistingLead() {
   lead.name = el('leadName').value.trim(); lead.phone = el('leadPhone').value.trim(); lead.email = el('leadEmail').value.trim(); lead.device = el('leadDevice').value.trim(); lead.issue = el('leadIssue').value.trim(); lead.updatedAt = new Date().toISOString();
   saveLeadsToStorage(); syncUpdateToSheet(currentLeadId, { name: lead.name, phone: lead.phone, email: lead.email, device: lead.device, issue: lead.issue }); hideNewLeadForm(); renderLeadsList(); showToast('Lead updated ✓');
 }
-function deleteLead(leadId) { if (!confirm('Delete this lead?')) return; leadsStorage = leadsStorage.filter(l => l.id !== leadId); saveLeadsToStorage(); if (USERS_SCRIPT_URL) sheetsCall({ action: 'deleteLead', leadId: leadId }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead deleted ✓'); }
+function deleteLead(leadId) { if (!confirm('Delete this lead?')) return; leadsStorage = leadsStorage.filter(l => l.id !== leadId); saveLeadsToStorage(); deletedLeadIds.add(leadId); saveDeletedLeads(); if (USERS_SCRIPT_URL) sheetsCall({ action: 'deleteLead', leadId: leadId }); closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead deleted ✓'); }
 
 function convertLeadToTicket() {
   if (!currentLeadId) return;
@@ -2544,7 +2548,7 @@ function addTicketNote() {
 function deleteTicket(ticketId) {
   if (!confirm('Delete this ticket?')) return;
   ticketsStorage = ticketsStorage.filter(function(t) { return t.id !== ticketId; });
-  saveTicketsToStorage(); syncTicketDelete(ticketId); closeTicketDetail(); renderTicketsList(); updateTicketsBadge(); updateFollowUpBadge(); showToast('Ticket deleted ✓');
+  saveTicketsToStorage(); deletedTicketIds.add(ticketId); saveDeletedTickets(); syncTicketDelete(ticketId); closeTicketDetail(); renderTicketsList(); updateTicketsBadge(); updateFollowUpBadge(); showToast('Ticket deleted ✓');
 }
 
 // Booker Pay Calculator
@@ -2753,9 +2757,10 @@ function deleteSelectedLeads() {
   if (!selectedLeadIds.size || !confirm('Delete ' + selectedLeadIds.size + ' lead(s)?')) return;
   selectedLeadIds.forEach(function(id) {
     leadsStorage = leadsStorage.filter(function(l) { return l.id !== id; });
+    deletedLeadIds.add(id);
     if (USERS_SCRIPT_URL) sheetsCall({ action: 'deleteLead', leadId: id });
   });
-  saveLeadsToStorage(); selectedLeadIds.clear(); leadSelectMode = false;
+  saveLeadsToStorage(); saveDeletedLeads(); selectedLeadIds.clear(); leadSelectMode = false;
   el('leadSelectBar').classList.add('hidden');
   renderLeadsList(); updateFollowUpBadge(); showToast('Deleted ✓');
 }
@@ -2797,9 +2802,10 @@ function deleteSelectedTickets() {
   if (!selectedTicketIds.size || !confirm('Delete ' + selectedTicketIds.size + ' ticket(s)?')) return;
   selectedTicketIds.forEach(function(id) {
     ticketsStorage = ticketsStorage.filter(function(t) { return t.id !== id; });
+    deletedTicketIds.add(id);
     syncTicketDelete(id);
   });
-  saveTicketsToStorage(); selectedTicketIds.clear(); ticketSelectMode = false;
+  saveTicketsToStorage(); saveDeletedTickets(); selectedTicketIds.clear(); ticketSelectMode = false;
   el('ticketSelectBar').classList.add('hidden');
   renderTicketsList(); updateTicketsBadge(); updateFollowUpBadge(); showToast('Deleted ✓');
 }
