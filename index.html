@@ -729,21 +729,25 @@
 
   <input type="text" id="leadSearch" placeholder="Search leads..." oninput="filterLeads()" style="width:100%;margin:12px 0;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;" />
 
-  <div class="filter-row" id="leadFilters">
-    <button class="filter-btn active" onclick="filterLeadsByStatus('all', this)">All</button>
-    <button class="filter-btn" onclick="filterLeadsByStatus('new', this)">New</button>
-    <button class="filter-btn" onclick="filterLeadsByStatus('contacted', this)">Contacted</button>
-    <button class="filter-btn" onclick="filterLeadsByStatus('follow_up_scheduled', this)">Follow-up</button>
-    <button class="filter-btn" onclick="filterLeadsByStatus('booked', this)">Booked</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
+    <div class="filter-row" id="leadFilters" style="margin:0;flex:1;">
+      <button class="filter-btn active" onclick="filterLeadsByStatus('all', this)">All</button>
+      <button class="filter-btn" onclick="filterLeadsByStatus('new', this)">New</button>
+      <button class="filter-btn" onclick="filterLeadsByStatus('contacted', this)">Contacted</button>
+      <button class="filter-btn" onclick="filterLeadsByStatus('follow_up_scheduled', this)">Follow-up</button>
+      <button class="filter-btn" onclick="filterLeadsByStatus('booked', this)">Booked</button>
+    </div>
+    <button onclick="syncFromSheets()" id="leadsRefreshBtn" style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:14px;color:var(--muted);cursor:pointer;flex-shrink:0;">↻</button>
   </div>
 
   <div id="leadsList"></div>
 
   </div><!-- end leadViewLeads -->
   <div id="leadViewTickets" class="hidden">
-    <div style="display:flex;gap:6px;padding:8px 0 6px;">
+    <div style="display:flex;align-items:center;gap:6px;padding:8px 0 6px;">
       <button class="orders-tab-btn active" id="ticketSubBtnActive" onclick="switchTicketSubView('active')">Active</button>
       <button class="orders-tab-btn" id="ticketSubBtnClosed" onclick="switchTicketSubView('closed')">Closed Tickets</button>
+      <button onclick="syncFromSheets()" id="ticketsRefreshBtn" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:14px;color:var(--muted);cursor:pointer;">↻</button>
     </div>
     <div id="ticketSubViewActive">
       <div style="display:flex;justify-content:flex-end;gap:6px;padding:4px 0 10px;">
@@ -1803,10 +1807,12 @@ function syncTicket(ticket) {
 }
 
 function setSyncStatus(state) {
-  var btn = el('syncBtn');
-  if (!btn) return;
-  if (state === 'syncing') { btn.textContent = '↻'; btn.style.opacity = '0.5'; btn.disabled = true; }
-  else { btn.textContent = '↻'; btn.style.opacity = '1'; btn.disabled = false; }
+  var btns = [el('syncBtn'), el('leadsRefreshBtn'), el('ticketsRefreshBtn')];
+  btns.forEach(function(btn) {
+    if (!btn) return;
+    if (state === 'syncing') { btn.textContent = '↻'; btn.style.opacity = '0.4'; btn.disabled = true; }
+    else { btn.textContent = '↻'; btn.style.opacity = '1'; btn.disabled = false; }
+  });
 }
 
 var _syncing = false, _syncWatchdog = null;
