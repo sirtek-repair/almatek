@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -465,7 +465,7 @@
 
   <div id="quoteNotesRow" style="margin-bottom:8px;">
     <label class="field-label" style="margin-bottom:6px;display:block;">Notes</label>
-    <textarea id="quoteNotes" placeholder="Customer notes, special instructions..." rows="2" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+    <textarea id="quoteNotes" placeholder="Add a message to include in the quote sent to the customer..." rows="2" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
   </div>
 
   <div id="quoteCard" class="quote-card hidden">
@@ -1915,6 +1915,8 @@ function buildQuoteText() {
     if (isAuth()) { var p = getPrice1(), total = withTax(p + mobileFee); var fb = ['The quote for your Repair is: $' + total + ' (tax included)']; if (mobileOpen) fb.push('Includes mobile service'); text = fb.join('\n'); }
     else { text = 'The quote for your Repair is: part + tax'; }
   }
+  var note = (el('quoteNotes') ? el('quoteNotes').value : '').trim();
+  if (note) text += '\n\n' + note;
   return text;
 }
 function copyQuote(btn) {
