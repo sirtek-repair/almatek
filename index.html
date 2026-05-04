@@ -376,6 +376,10 @@
             <button class="hlink" style="flex:1;width:auto;" onclick="copyContact(this,'6016 5th Ave Brooklyn, NY')">SkyMobile 📋</button>
             <a href="tel:+19293666664" class="hlink" style="width:auto;flex-shrink:0;">☎ Call</a>
           </div>
+          <div style="display:flex;gap:4px;">
+            <button class="hlink" style="flex:1;width:auto;" onclick="copyContact(this,'9 E Broadway, New York, NY 10002')">A.B.A. 📋</button>
+            <a href="tel:+19178553451" class="hlink" style="width:auto;flex-shrink:0;">☎ Call</a>
+          </div>
         </div>
       </div>
       <button class="hlink" id="repairedBtn" onclick="copyLink(this, 'https://repairedcollective.com', 'Repaired Collective')"><span class="brand" style="font-weight:300;">Repaired</span> <span class="brand" style="font-weight:400;">Collective</span></button>
@@ -1101,7 +1105,7 @@ function saveLeadFromQuote() {
   var now = new Date().toISOString();
   var atlNotesVal = (el('atlNotes') ? el('atlNotes').value : '').trim();
   var initLeadNotes = atlNotesVal ? [{ text: fmtNotePrefix() + '\n' + atlNotesVal, createdAt: now, author: currentUser || 'staff' }] : [];
-  var newLead = { id: 'lead_' + Date.now(), name: name, phone: phone, email: (el('atlEmail').value||'').trim(), device: deviceStr, issue: issueStr, status: 'new', followUpAt: '', followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: initLeadNotes, quote: total, deposit: 0, tier: tier1 === 'premium' ? 'premium' : 'standard', createdAt: now, updatedAt: now };
+  var newLead = { id: 'lead_' + Date.now(), name: name, phone: phone, email: (el('atlEmail').value||'').trim(), device: deviceStr, issue: issueStr, status: 'new', followUpAt: '', followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: initLeadNotes, quote: total, deposit: 0, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', createdAt: now, updatedAt: now };
   leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead);
   closeAddToLeadModal(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('leads');
@@ -1121,7 +1125,7 @@ function saveTicketFromQuote() {
   var now = new Date().toISOString();
   var initStatus = attFlow === 'in_stock' ? 'waiting_for_repair' : 'need_to_order';
   var repairLabel = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '');
-  var initItems = price > 0 ? [{ label: repairLabel, price: price }] : [];
+  var initItems = price > 0 ? [{ label: repairLabel, price: withTax(price) }] : [];
   var miles = parseFloat((el('milesInput') ? el('milesInput').value : '') || 0) || 0;
   var attNotesVal = (el('attNotes') ? el('attNotes').value : '').trim();
   var initTicketNotes = attNotesVal ? [{ text: fmtNotePrefix() + '\n' + attNotesVal, createdAt: now, author: currentUser || 'staff' }] : [];
@@ -2101,7 +2105,7 @@ function convertLeadToTicket() {
   var leadInitItems = lead.quote > 0 ? [{ label: lead.issue || lead.device || 'Repair', price: lead.quote }] : [];
   var transferredNotes = (lead.notes || []).slice();
   transferredNotes.push({ text: fmtNotePrefix() + '\nConverted from lead to ticket', createdAt: now, author: currentUser || 'staff' });
-  var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, mobileFee: 0, mobileFeeMiles: 0, tier: lead.tier || 'standard', items: leadInitItems, notes: transferredNotes, createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
+  var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, mobileFee: 0, mobileFeeMiles: 0, tier: lead.tier || 'standard', repairType: lead.repairType || '', repairModel: lead.repairModel || lead.device || '', items: leadInitItems, notes: transferredNotes, createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage(); syncTicketCreate(newTicket);
   closeLeadDetail(); renderLeadsList(); updateTicketsBadge(); updateFollowUpBadge();
   switchLeadSubTab('tickets');
@@ -2451,7 +2455,7 @@ function setTicketTier(tier, ticketId) {
   var modelKey = ticket.repairModel || ticket.device || '';
   var prices = SCREEN_PRICES[modelKey];
   if (prices && prices[tier] != null) {
-    var newPrice = prices[tier];
+    var newPrice = withTax(prices[tier]);
     if (!ticket.items) ticket.items = [];
     var tierLabel = tier === 'premium' ? 'Premium' : 'Standard';
     var itemLabel = (ATL_TYPE_LABELS['iphone_screen'] || 'iPhone Screen') + ' · ' + tierLabel;
