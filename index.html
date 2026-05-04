@@ -1868,6 +1868,7 @@ function syncFromSheets() {
       updateTicketsBadge();
       updateFollowUpBadge();
       if (leadSubTab === 'tickets' && typeof renderTicketsList === 'function') renderTicketsList();
+      if (leadSubTab === 'pickedup' && typeof renderPickedUpList === 'function') renderPickedUpList();
       if (leadSubTab === 'followup') renderFollowUpTab();
     } else if (data && data.error) {
       // Old script deployment — push local tickets anyway, server deduplicates
@@ -2277,6 +2278,14 @@ loadTicketsFromStorage();
 
 // Sync from Sheets on startup if already authenticated (skips login flow)
 if (authd) setTimeout(syncFromSheets, 500);
+
+// Auto-sync every 90 seconds while the app is open
+setInterval(function() { if (authd && !_syncing) syncFromSheets(); }, 90000);
+
+// Sync whenever the user switches back to this tab/app
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden && authd && !_syncing) syncFromSheets();
+});
 
 var currentTicketId = null;
 
