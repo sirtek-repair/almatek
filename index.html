@@ -699,7 +699,6 @@
   <div class="orders-tab-nav" style="display:flex;align-items:center;gap:4px;">
     <button class="orders-tab-btn active" id="leadSubBtnLeads" onclick="switchLeadSubTab('leads')">Leads</button>
     <button class="orders-tab-btn" id="leadSubBtnTickets" onclick="switchLeadSubTab('tickets')">🎫 Tickets <span id="ticketsBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
-    <button class="orders-tab-btn" id="leadSubBtnPickedUp" onclick="switchLeadSubTab('pickedup')">✅ Picked Up</button>
     <button class="orders-tab-btn" id="leadSubBtnFollowUp" onclick="switchLeadSubTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button id="syncBtn" onclick="syncFromSheets()" title="Sync with cloud" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;padding:4px 8px;color:var(--muted);line-height:1;">↻</button>
   </div>
@@ -740,40 +739,46 @@
 
   </div><!-- end leadViewLeads -->
   <div id="leadViewTickets" class="hidden">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 10px;">
-      <div class="hlink-dropdown" id="contactsDropdown2" style="position:relative;">
-        <button class="hlink" id="contactsBtn2" onclick="toggleContacts2(event)">Contacts ▾</button>
-        <div class="hlink-dropdown-menu hidden" id="contactsMenu2" style="min-width:240px;">
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=1048+Bedford+Ave,+Brooklyn+NY+11205" target="_blank" class="hlink" style="flex:1;width:auto;">🦢 Swan 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'1048 Bedford Ave, Brooklyn NY, 11205')">📋</button>
-          </div>
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=259+B+Canal+St,+New+York,+NY+10013" target="_blank" class="hlink" style="flex:1;width:auto;">Kimi Soho 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'259 B Canal St, NY, NY 10013')">📋</button>
-            <a href="tel:+19177909209" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
-          </div>
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=6016+5th+Ave,+Brooklyn,+NY" target="_blank" class="hlink" style="flex:1;width:auto;">SkyMobile 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'6016 5th Ave Brooklyn, NY')">📋</button>
-            <a href="tel:+19293666664" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
-          </div>
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=9+E+Broadway,+New+York,+NY+10002" target="_blank" class="hlink" style="flex:1;width:auto;">A.B.A. 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'9 E Broadway, New York, NY 10002')">📋</button>
-            <a href="tel:+19178553451" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+    <div style="display:flex;gap:6px;padding:8px 0 6px;">
+      <button class="orders-tab-btn active" id="ticketSubBtnActive" onclick="switchTicketSubView('active')">Active</button>
+      <button class="orders-tab-btn" id="ticketSubBtnClosed" onclick="switchTicketSubView('closed')">Closed Tickets</button>
+    </div>
+    <div id="ticketSubViewActive">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 10px;">
+        <div class="hlink-dropdown" id="contactsDropdown2" style="position:relative;">
+          <button class="hlink" id="contactsBtn2" onclick="toggleContacts2(event)">Contacts ▾</button>
+          <div class="hlink-dropdown-menu hidden" id="contactsMenu2" style="min-width:240px;">
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=1048+Bedford+Ave,+Brooklyn+NY+11205" target="_blank" class="hlink" style="flex:1;width:auto;">🦢 Swan 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'1048 Bedford Ave, Brooklyn NY, 11205')">📋</button>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=259+B+Canal+St,+New+York,+NY+10013" target="_blank" class="hlink" style="flex:1;width:auto;">Kimi Soho 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'259 B Canal St, NY, NY 10013')">📋</button>
+              <a href="tel:+19177909209" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=6016+5th+Ave,+Brooklyn,+NY" target="_blank" class="hlink" style="flex:1;width:auto;">SkyMobile 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'6016 5th Ave Brooklyn, NY')">📋</button>
+              <a href="tel:+19293666664" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=9+E+Broadway,+New+York,+NY+10002" target="_blank" class="hlink" style="flex:1;width:auto;">A.B.A. 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'9 E Broadway, New York, NY 10002')">📋</button>
+              <a href="tel:+19178553451" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+            </div>
           </div>
         </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button onclick="toggleTicketSelectMode()" id="ticketSelectModeBtn" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">☐ Select</button>
+          <button onclick="showNewTicketManual()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">+ New Ticket</button>
+        </div>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <button onclick="toggleTicketSelectMode()" id="ticketSelectModeBtn" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">☐ Select</button>
-        <button onclick="showNewTicketManual()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">+ New Ticket</button>
-      </div>
+      <div id="ticketsList"></div>
     </div>
-    <div id="ticketsList"></div>
-  </div>
-  <div id="leadViewPickedUp" class="hidden">
-    <div id="pickedUpList" style="margin-top:4px;"></div>
+    <div id="ticketSubViewClosed" class="hidden">
+      <div id="pickedUpList" style="margin-top:4px;"></div>
+    </div>
   </div>
   <div id="leadViewFollowUp" class="hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 4px;">
@@ -1237,21 +1242,28 @@ function switchTab(tab) {
 }
 
 var leadSubTab = 'leads';
+var ticketSubView = 'active';
+function switchTicketSubView(view) {
+  ticketSubView = view;
+  var isActive = view === 'active';
+  el('ticketSubViewActive').classList.toggle('hidden', !isActive);
+  el('ticketSubViewClosed').classList.toggle('hidden', isActive);
+  el('ticketSubBtnActive').classList.toggle('active', isActive);
+  el('ticketSubBtnClosed').classList.toggle('active', !isActive);
+  if (!isActive) renderPickedUpList(); else renderTicketsList();
+}
 function switchLeadSubTab(tab) {
   leadSubTab = tab;
-  var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup', isPickedUp = tab === 'pickedup';
+  var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup';
   el('leadViewLeads').classList.toggle('hidden', !isLeads);
   el('leadViewTickets').classList.toggle('hidden', !isTickets);
   el('leadViewFollowUp').classList.toggle('hidden', !isFollowUp);
-  el('leadViewPickedUp').classList.toggle('hidden', !isPickedUp);
   el('leadSubBtnLeads').classList.toggle('active', isLeads);
   el('leadSubBtnTickets').classList.toggle('active', isTickets);
   el('leadSubBtnFollowUp').classList.toggle('active', isFollowUp);
-  el('leadSubBtnPickedUp').classList.toggle('active', isPickedUp);
   var newLeadBtn = el('newLeadBtn'); if (newLeadBtn) newLeadBtn.style.display = isLeads ? '' : 'none';
   if (isFollowUp) renderFollowUpTab();
-  else if (isTickets) renderTicketsList();
-  else if (isPickedUp) renderPickedUpList();
+  else if (isTickets) { if (ticketSubView === 'closed') renderPickedUpList(); else renderTicketsList(); }
   else if (typeof renderLeadsList === 'function') renderLeadsList();
 }
 
@@ -1882,7 +1894,7 @@ function syncFromSheets() {
       updateTicketsBadge();
       updateFollowUpBadge();
       if (leadSubTab === 'tickets' && typeof renderTicketsList === 'function') renderTicketsList();
-      if (leadSubTab === 'pickedup' && typeof renderPickedUpList === 'function') renderPickedUpList();
+      if (leadSubTab === 'tickets' && ticketSubView === 'closed' && typeof renderPickedUpList === 'function') renderPickedUpList();
       if (leadSubTab === 'followup') renderFollowUpTab();
     } else if (data && data.error) {
       // Old script deployment — push local tickets anyway, server deduplicates
@@ -1893,7 +1905,11 @@ function syncFromSheets() {
   }).catch(finish);
 }
 
-function showNewLeadForm() { el('newLeadForm').classList.remove('hidden'); el('newLeadBtn').style.display = 'none'; }
+function showNewLeadForm() {
+  el('newLeadForm').classList.remove('hidden'); el('newLeadBtn').style.display = 'none';
+  var d = new Date(); d.setDate(d.getDate() + 3);
+  var fup = el('leadFollowUp'); if (fup && !fup.value) fup.value = d.toISOString().split('T')[0];
+}
 var leadTier = 'standard';
 function toggleLeadTier(val) {
   leadTier = val;
@@ -1907,7 +1923,7 @@ var SO_COLORS = { need_to_order:'#f59e0b', part_ordered:'#3b82f6', part_arrived:
 var REPAIR_STAGES = ['waiting_for_repair','in_repair','ready_for_pickup'];
 var REPAIR_LABELS = { waiting_for_repair:'Waiting for Repair', in_repair:'In Repair', ready_for_pickup:'Ready for Pickup' };
 var REPAIR_COLORS = { waiting_for_repair:'#f59e0b', in_repair:'#3b82f6', ready_for_pickup:'#10b981' };
-function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue','leadFollowUp'].forEach(id => { var e = el(id); if (e) e.value = ''; }); toggleLeadTier('standard'); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
+function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue'].forEach(id => { var e = el(id); if (e) e.value = ''; }); var fup = el('leadFollowUp'); if (fup) fup.value = ''; toggleLeadTier('standard'); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
 
 var _savingLead = false;
 function createNewLead() {
