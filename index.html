@@ -1217,7 +1217,7 @@ function on2ndRepairChange() {
 }
 function renderDeal() {
   const p1=getPrice1(), p2=getPrice2(); if (p1<=0 || p2<=0) return;
-  const fullTotal = withTax(p1+p2), discounted2 = Math.ceil(p2 / 2), dealTotal = withTax(p1 + discounted2), savings = fullTotal - dealTotal;
+  const fullTotal = withTax(p1+p2), discounted2 = Math.ceil(withTax(p2) / 2), dealTotal = withTax(p1) + discounted2, savings = fullTotal - dealTotal;
   el('normalTotal').textContent=isAuth() ? '$'+fullTotal : 'part + tax + ❤️'; el('dealTotal').textContent=isAuth() ? '$'+dealTotal : 'part + tax + ❤️';
   el('savingsPill').textContent=isAuth() ? 'Saving $'+savings : 'They save 🤝'; el('dealResult').classList.remove('hidden');
 }
@@ -2058,13 +2058,13 @@ function buildQuoteText() {
   } else if (hasSecond) {
     // ── Two-repair combo deal ──────────────────────────────────
     var full1 = withTax(p1 + mobileFee), full2 = withTax(p2), fullTotal = withTax(p1 + p2 + mobileFee);
-    var discounted2 = Math.ceil(p2 / 2), dealTotal = withTax(p1 + discounted2 + mobileFee);
+    var discounted2 = Math.ceil(withTax(p2) / 2), dealTotal = withTax(p1 + mobileFee) + discounted2;
     var savings = fullTotal - dealTotal;
 
     lines.push('Great news — since we\'re already in your device, we can bundle both repairs and save you money!');
     lines.push('');
     lines.push('Repair 1 — ' + label1 + tier1Label + ': $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ' · includes mobile service' : ''));
-    lines.push('Repair 2 — ' + label2 + tier2Label + ': normally $' + full2 + ', but with the combo deal only $' + withTax(discounted2) + ' (50% off, tax included)');
+    lines.push('Repair 2 — ' + label2 + tier2Label + ': normally $' + full2 + ', but with the combo deal only $' + discounted2 + ' (50% off, tax included)');
     lines.push('');
     lines.push('Regular price for both: $' + fullTotal + ' (tax included)');
     lines.push('Your combo deal: $' + dealTotal + ' total (tax included)');
