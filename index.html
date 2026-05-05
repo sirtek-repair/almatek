@@ -942,7 +942,7 @@
 <div class="inv-toast" id="invToast"></div>
 
 <script>
-const LABOR = { iphone_screen:80, back_glass:100, back_glass_swap:100, battery:65, ipad:85, android:85, laptop:85 };
+const LABOR = { iphone_screen:80, back_glass:80, back_glass_swap:100, battery:65, ipad:85, android:85, laptop:85 };
 const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', android:'Android Repair', laptop:'MacBook / Laptop' };
 const SHARE_ICON = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
 
@@ -1000,12 +1000,12 @@ function fullPrice(cost, type) { return Math.ceil(cost * 1.2 + LABOR[type]); }
 function withTax(price) { return Math.ceil(price * 1.12875); }
 function getPrice1() {
   if (type1 === 'iphone_screen') { if (mode1 === 'select') { if (!model1 || !tier1) return 0; return SCREEN_PRICES[model1]?.[tier1] || 0; } else { return cost1 > 0 ? fullPrice(cost1, 'iphone_screen') : 0; } }
-  if (type1 === 'back_glass') { return cost1; }
+  if (type1 === 'back_glass') { return cost1 > 0 ? fullPrice(cost1, 'back_glass') : 0; }
   return cost1 > 0 ? fullPrice(cost1, type1) : 0;
 }
 function getPrice2() {
   if (type2 === 'iphone_screen') { if (mode2 === 'select') { if (!model2 || !tier2) return 0; return SCREEN_PRICES[model2]?.[tier2] || 0; } else { return cost2 > 0 ? fullPrice(cost2, 'iphone_screen') : 0; } }
-  if (type2 === 'back_glass') { return cost2; }
+  if (type2 === 'back_glass') { return cost2 > 0 ? fullPrice(cost2, 'back_glass') : 0; }
   return cost2 > 0 ? fullPrice(cost2, type2) : 0;
 }
 
