@@ -2060,6 +2060,8 @@ function buildQuoteText() {
     lines.push('Regular price for both: $' + fullTotal);
     lines.push('Your combo deal: $' + dealTotal + ' total (tax included)');
     lines.push('You save: $' + savings + ' 🎉');
+    lines.push('');
+    lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
   } else if (type1 === 'iphone_screen' && model1 && mode1 === 'select') {
     // ── iPhone screen — standard / premium choice ─────────────
     var prices = SCREEN_PRICES[model1] || {};
@@ -2074,15 +2076,17 @@ function buildQuoteText() {
       lines.push('Soft OLED screen (OEM-quality) — same exact specs as the original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
       lines.push('');
       lines.push('Both come with a warranty' + (mobileFee > 0 ? ' and include mobile service' : '') + '. Which works better for you?');
+      lines.push('');
+      lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
     } else {
       var opt = hasPrem ? 'premium' : 'standard', price = prices[opt];
       lines.push(opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(price + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
-      lines.push('Comes with a warranty.');
+      lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
     }
   } else {
     // ── Single non-screen repair ───────────────────────────────
     lines.push(label1 + tier1Label + ' repair — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
-    lines.push('Comes with a warranty.');
+    lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
   }
 
   var note = (el('quoteNotes') ? el('quoteNotes').value : '').trim();
