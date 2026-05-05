@@ -27,10 +27,32 @@ function handleAction(p) {
     case 'login': {
       var sheet = getOrCreate('Users', ['name','pass','structure']);
       var rows = sheet.getDataRange().getValues();
+      var props = PropertiesService.getScriptProperties();
+      var cfApiPass = props.getProperty('cf_api_pass') || '';
+      var scriptUrl = ScriptApp.getService().getUrl();
       for (var i = 1; i < rows.length; i++) {
-        if (rows[i][1] === p.pass) return { ok: true, name: rows[i][0], structure: rows[i][2] || 'standard' };
+        if (rows[i][1] === p.pass) return {
+          ok: true,
+          name: rows[i][0],
+          structure: rows[i][2] || 'standard',
+          apiPass: cfApiPass,
+          scriptUrl: scriptUrl
+        };
       }
       return { ok: false };
+    }
+    case 'getConfig': {
+      var props = PropertiesService.getScriptProperties();
+      return {
+        ok: true,
+        apiPass: props.getProperty('cf_api_pass') || '',
+        scriptUrl: ScriptApp.getService().getUrl()
+      };
+    }
+    case 'saveConfig': {
+      var props = PropertiesService.getScriptProperties();
+      if (p.apiPass !== undefined) props.setProperty('cf_api_pass', p.apiPass);
+      return { ok: true };
     }
     case 'list': {
       var sheet = getOrCreate('Users', ['name','pass','structure']);
