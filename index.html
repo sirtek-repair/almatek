@@ -331,12 +331,11 @@
     <button class="auth-dismiss" onclick="el('authOverlay').classList.add('hidden')">Continue in Demo Mode</button>
     <button class="auth-setup-toggle" onclick="toggleAuthSetup()">⚙ connection setup</button>
     <div id="authSetupBox" class="auth-setup-box hidden">
-      <div id="authSetupCopyRow" class="hidden" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;">
-        <span style="font-size:12px;color:var(--muted);">Script link saved on this device</span>
-        <button onclick="copyScriptUrl()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;">Copy Link</button>
-      </div>
       <input type="url" id="authSetupUrl" placeholder="Paste link" autocomplete="off" style="width:100%;box-sizing:border-box;" />
-      <button onclick="pasteAndSaveUrl()" style="margin-top:6px;width:100%;">Paste &amp; Save</button>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button onclick="pasteAndSaveUrl()" style="flex:1;">Paste &amp; Save</button>
+        <button id="authCopyLinkBtn" onclick="copyScriptUrl()" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Copy Link</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1665,15 +1664,17 @@ function onAuthBtnClick() {
 function toggleAuthSetup() {
   var box = el('authSetupBox'); box.classList.toggle('hidden');
   if (!box.classList.contains('hidden')) {
-    var copyRow = el('authSetupCopyRow');
-    if (USERS_SCRIPT_URL) {
-      copyRow.style.display = 'flex'; copyRow.classList.remove('hidden');
-      el('authSetupUrl').value = '';
-    } else {
-      copyRow.style.display = 'none';
-      el('authSetupUrl').value = '';
-      el('authSetupUrl').focus();
-    }
+    el('authSetupUrl').value = '';
+    updateCopyLinkBtn();
+    if (!USERS_SCRIPT_URL) el('authSetupUrl').focus();
+  }
+}
+function updateCopyLinkBtn() {
+  var btn = el('authCopyLinkBtn'); if (!btn) return;
+  if (USERS_SCRIPT_URL) {
+    btn.style.background = 'var(--accent)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--accent)'; btn.disabled = false;
+  } else {
+    btn.style.background = 'var(--surface2)'; btn.style.color = 'var(--muted)'; btn.style.borderColor = 'var(--border)'; btn.disabled = true;
   }
 }
 function copyScriptUrl() {
@@ -1702,10 +1703,12 @@ function saveAuthSetup() {
   var url = (el('authSetupUrl').value || '').trim();
   if (!url || !url.startsWith('https://')) { el('authSetupUrl').style.borderColor = '#ef4444'; return; }
   USERS_SCRIPT_URL = url; localStorage.setItem('almatek_script_url', url);
-  el('authSetupBox').classList.add('hidden');
-  el('authError').textContent = 'Connection configured ✓';
+  updateCopyLinkBtn();
+  el('authSetupUrl').value = '';
+  el('authSetupUrl').style.borderColor = '';
+  el('authError').textContent = 'Saved ✓ — tap Copy Link to share with staff';
   el('authError').style.color = 'var(--green)';
-  setTimeout(function() { el('authError').textContent = ''; el('authError').style.color = ''; }, 2000);
+  setTimeout(function() { el('authError').textContent = ''; el('authError').style.color = ''; }, 3000);
 }
 
 function tryAuth() {
