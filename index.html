@@ -2036,41 +2036,58 @@ function pushLeadAuditNote(lead, msg) { lead.notes.push({ text: fmtNotePrefix() 
 function pushTicketAuditNote(ticket, msg) { ticket.notes.push({ text: fmtNotePrefix() + '\n' + msg, createdAt: new Date().toISOString(), author: currentUser || 'staff' }); }
 
 function buildQuoteText() {
-  var text;
-  if (type1 === 'iphone_screen' && model1 && mode1 === 'select' && isAuth()) {
+  var p1 = getPrice1(), p2 = secondOpen ? getPrice2() : 0;
+  var hasSecond = secondOpen && p2 > 0;
+  var label1 = ATL_TYPE_LABELS[type1] || type1;
+  var label2 = ATL_TYPE_LABELS[type2] || type2;
+  var tier1Label = tier1 ? ' (' + tier1.charAt(0).toUpperCase() + tier1.slice(1) + ')' : '';
+  var tier2Label = tier2 ? ' (' + tier2.charAt(0).toUpperCase() + tier2.slice(1) + ')' : '';
+  var lines = [];
+
+  if (!isAuth()) {
+    lines.push('The quote for your repair is: part + tax' + (hasSecond ? ' (combo deal available!)' : ''));
+  } else if (hasSecond) {
+    // ── Two-repair combo deal ──────────────────────────────────
+    var full1 = withTax(p1 + mobileFee), full2 = withTax(p2), fullTotal = withTax(p1 + p2 + mobileFee);
+    var discounted2 = Math.ceil(p2 / 2), dealTotal = withTax(p1 + discounted2 + mobileFee);
+    var savings = fullTotal - dealTotal;
+
+    lines.push('Great news — since we\'re already in your device, we can bundle both repairs and save you money!');
+    lines.push('');
+    lines.push('Repair 1 — ' + label1 + tier1Label + ': $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ' · includes mobile service' : ''));
+    lines.push('Repair 2 — ' + label2 + tier2Label + ': normally $' + full2 + ', but with the combo deal only $' + withTax(discounted2) + ' (50% off, tax included)');
+    lines.push('');
+    lines.push('Regular price for both: $' + fullTotal);
+    lines.push('Your combo deal: $' + dealTotal + ' total (tax included)');
+    lines.push('You save: $' + savings + ' 🎉');
+  } else if (type1 === 'iphone_screen' && model1 && mode1 === 'select') {
+    // ── iPhone screen — standard / premium choice ─────────────
     var prices = SCREEN_PRICES[model1] || {};
     var hasStd = prices.standard != null, hasPrem = prices.premium != null;
-    if (hasStd || hasPrem) {
-      var lines = [];
-      if (hasStd && hasPrem) {
-        lines.push('We have two options available:');
-        lines.push('');
-        lines.push('STANDARD - $' + withTax(prices.standard + mobileFee) + ' (tax included) LCD screen that looks & functions just like the original. Main difference: the frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re keeping your phone for the next year or upgrading soon.');
-        lines.push('');
-        lines.push('PREMIUM - $' + withTax(prices.premium + mobileFee) + ' (tax included) Soft OLED screen (OEM-quality). Same exact specs as original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
-        lines.push('');
-        lines.push('Both come with warranty and we can come to you. Which works better for you?');
-      } else if (hasPrem) {
-        lines.push('PREMIUM - $' + withTax(prices.premium + mobileFee) + ' (tax included) Soft OLED screen (OEM-quality). Same exact specs as original Apple screen. Thinner frame, perfect fit.');
-        lines.push('');
-        lines.push('Comes with warranty and we can come to you.');
-      } else {
-        lines.push('STANDARD - $' + withTax(prices.standard + mobileFee) + ' (tax included) LCD screen that looks & functions just like the original. Main difference: the frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re keeping your phone for the next year or upgrading soon.');
-        lines.push('');
-        lines.push('Comes with warranty and we can come to you.');
-      }
-      text = lines.join('\n');
+    if (hasStd && hasPrem) {
+      lines.push('We have two options available:');
+      lines.push('');
+      lines.push('STANDARD — $' + withTax(prices.standard + mobileFee) + ' (tax included)');
+      lines.push('LCD screen that looks & functions just like the original. The frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re upgrading soon or keeping your phone under a year.');
+      lines.push('');
+      lines.push('PREMIUM — $' + withTax(prices.premium + mobileFee) + ' (tax included)');
+      lines.push('Soft OLED screen (OEM-quality) — same exact specs as the original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
+      lines.push('');
+      lines.push('Both come with a warranty' + (mobileFee > 0 ? ' and include mobile service' : '') + '. Which works better for you?');
+    } else {
+      var opt = hasPrem ? 'premium' : 'standard', price = prices[opt];
+      lines.push(opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(price + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
+      lines.push('Comes with a warranty.');
     }
+  } else {
+    // ── Single non-screen repair ───────────────────────────────
+    lines.push(label1 + tier1Label + ' repair — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
+    lines.push('Comes with a warranty.');
   }
-  if (!text) {
-    var typeLabel = ATL_TYPE_LABELS[type1] || type1;
-    var fb = [];
-    if (isAuth()) { var p = getPrice1(), total = withTax(p + mobileFee); var fb = ['The quote for your Repair is: $' + total + ' (tax included)']; if (mobileOpen) fb.push('Includes mobile service'); text = fb.join('\n'); }
-    else { text = 'The quote for your Repair is: part + tax'; }
-  }
+
   var note = (el('quoteNotes') ? el('quoteNotes').value : '').trim();
-  if (note) text += '\n\n' + note;
-  return text;
+  if (note) { lines.push(''); lines.push(note); }
+  return lines.join('\n');
 }
 function copyQuote(btn) {
   var text = buildQuoteText();
