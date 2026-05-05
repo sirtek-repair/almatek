@@ -457,9 +457,9 @@
     <div id="glassSection" class="hidden">
       <label class="field-label">iPhone Model Group — Set Price</label>
       <div class="model-grid">
-        <button class="model-btn" onclick="onGlassSelect(50, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag">$50</strong></button>
-        <button class="model-btn" onclick="onGlassSelect(60, this)">14 · 15<strong class="quote-price-tag">$60</strong></button>
-        <button class="model-btn" onclick="onGlassSelect(70, this)">16<strong class="quote-price-tag">$70</strong></button>
+        <button class="model-btn" onclick="onGlassSelect(50, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice50">$159</strong></button>
+        <button class="model-btn" onclick="onGlassSelect(60, this)">14 · 15<strong class="quote-price-tag" id="glassPrice60">$172</strong></button>
+        <button class="model-btn" onclick="onGlassSelect(70, this)">16<strong class="quote-price-tag" id="glassPrice70">$186</strong></button>
       </div>
     </div>
 
@@ -555,9 +555,9 @@
       <div id="glassSection2" class="hidden">
         <label class="field-label">iPhone Model Group — Set Price</label>
         <div class="model-grid">
-          <button class="model-btn" onclick="onGlassSelect2(50, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag">$50</strong></button>
-          <button class="model-btn" onclick="onGlassSelect2(60, this)">14 · 15<strong class="quote-price-tag">$60</strong></button>
-          <button class="model-btn" onclick="onGlassSelect2(70, this)">16<strong class="quote-price-tag">$70</strong></button>
+          <button class="model-btn" onclick="onGlassSelect2(50, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice2_50">$159</strong></button>
+          <button class="model-btn" onclick="onGlassSelect2(60, this)">14 · 15<strong class="quote-price-tag" id="glassPrice2_60">$172</strong></button>
+          <button class="model-btn" onclick="onGlassSelect2(70, this)">16<strong class="quote-price-tag" id="glassPrice2_70">$186</strong></button>
         </div>
       </div>
 
@@ -998,6 +998,12 @@ const el = id => document.getElementById(id);
 
 function fullPrice(cost, type) { return Math.ceil(cost * 1.2 + LABOR[type]); }
 function withTax(price) { return Math.ceil(price * 1.12875); }
+function initGlassPriceTags() {
+  [50, 60, 70].forEach(function(c) {
+    var p = '$' + withTax(fullPrice(c, 'back_glass'));
+    ['glassPrice'+c, 'glassPrice2_'+c].forEach(function(id) { var el2 = el(id); if (el2) el2.textContent = p; });
+  });
+}
 function getPrice1() {
   if (type1 === 'iphone_screen') { if (mode1 === 'select') { if (!model1 || !tier1) return 0; return SCREEN_PRICES[model1]?.[tier1] || 0; } else { return cost1 > 0 ? fullPrice(cost1, 'iphone_screen') : 0; } }
   if (type1 === 'back_glass') { return cost1 > 0 ? fullPrice(cost1, 'back_glass') : 0; }
@@ -2399,6 +2405,8 @@ var ticketsStorage = [];
 function loadTicketsFromStorage() { try { ticketsStorage = JSON.parse(localStorage.getItem('almatek_tickets') || '[]'); } catch(e) { ticketsStorage = []; } updateTicketsBadge(); updateFollowUpBadge(); }
 function saveTicketsToStorage() { var s={}; ticketsStorage=ticketsStorage.filter(function(t){if(s[t.id])return false;s[t.id]=true;return true;}); localStorage.setItem('almatek_tickets', JSON.stringify(ticketsStorage)); }
 loadTicketsFromStorage();
+
+initGlassPriceTags();
 
 // Sync from Sheets on startup if already authenticated (skips login flow)
 if (authd) setTimeout(syncFromSheets, 500);
