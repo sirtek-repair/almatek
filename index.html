@@ -3059,39 +3059,64 @@ function getReportRange(period) {
 function renderReports() {
   var start = getReportRange(reportPeriod);
   var closed = ticketsStorage.filter(function(t) {
-    return t.status === 'completed' && t.closedAt && new Date(t.closedAt) >= start;
+    if (t.status !== 'completed') return false;
+    var d = new Date(t.closedAt || t.updatedAt || 0);
+    return d >= start;
   });
-  closed.sort(function(a,b) { return new Date(b.closedAt) - new Date(a.closedAt); });
-  var total = closed.reduce(function(sum, t) { return sum + (t.quote || 0); }, 0);
+  closed.sort(function(a,b) { return new Date(b.closedAt || b.updatedAt || 0) - new Date(a.closedAt || a.updatedAt || 0); });
+  var totalBilled   = closed.reduce(function(s,t) { return s + (parseFloat(t.quote)||0); }, 0);
+  var totalDeposit  = closed.reduce(function(s,t) { return s + (parseFloat(t.deposit)||0); }, 0);
+  var totalPickup   = totalBilled - totalDeposit;
   var periodLabel = { day:'Today', week:'This Week', month:'This Month', ytd:'This Year' }[reportPeriod];
   var summaryEl = el('reportsSummary');
-  summaryEl.innerHTML = '<div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);border-radius:14px;padding:20px;text-align:center;margin-bottom:4px;">' +
-    '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">' + periodLabel + ' · ' + closed.length + ' ticket' + (closed.length !== 1 ? 's' : '') + '</div>' +
-    '<div style="font-size:36px;font-weight:800;color:#fff;">$' + total.toLocaleString() + '</div>' +
-    '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;">completed repairs</div>' +
+  summaryEl.innerHTML =
+    '<div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);border-radius:14px;padding:20px;text-align:center;margin-bottom:8px;">' +
+      '<div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">' + periodLabel + ' · ' + closed.length + ' ticket' + (closed.length !== 1 ? 's' : '') + '</div>' +
+      '<div style="font-size:38px;font-weight:800;color:#fff;">$' + totalBilled.toLocaleString() + '</div>' +
+      '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;">total billed</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;margin-bottom:4px;">' +
+      '<div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">' +
+        '<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Deposits</div>' +
+        '<div style="font-size:20px;font-weight:700;color:#10b981;">$' + totalDeposit.toLocaleString() + '</div>' +
+      '</div>' +
+      '<div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">' +
+        '<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Collected at Pickup</div>' +
+        '<div style="font-size:20px;font-weight:700;color:#3b82f6;">$' + totalPickup.toLocaleString() + '</div>' +
+      '</div>' +
     '</div>';
   var listEl = el('reportsTicketList');
   if (!closed.length) { listEl.innerHTML = '<div class="orders-empty-state">No completed tickets ' + periodLabel.toLowerCase() + '</div>'; return; }
   listEl.innerHTML = closed.map(function(t) {
-    var dateStr = new Date(t.closedAt).toLocaleDateString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+    var d = new Date(t.closedAt || t.updatedAt || 0);
+    var dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+    var quote = parseFloat(t.quote)||0, dep = parseFloat(t.deposit)||0, bal = quote - dep;
+    var amtDetail = dep > 0 ? '<span style="font-size:11px;color:var(--muted);margin-top:2px;display:block;">$' + dep + ' dep · $' + bal + ' at pickup</span>' : '';
     return '<div class="inv-item" onclick="openTicketDetail(\'' + t.id + '\')" style="cursor:pointer;">' +
       '<div class="inv-item-top"><div><div class="inv-item-name cx-name">' + (t.name||'Unnamed') + '</div>' +
       '<div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div>' +
-      '<span style="font-size:15px;font-weight:700;color:#10b981;">$' + (t.quote||0) + '</span></div>' +
+      '<div style="text-align:right;"><span style="font-size:15px;font-weight:700;color:#10b981;">$' + quote + '</span>' + amtDetail + '</div></div>' +
       (t.issue?'<div class="inv-item-meta">'+t.issue.substring(0,60)+'</div>':'') +
       '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Closed ' + dateStr + '</div></div>';
   }).join('');
 }
 function shareReport() {
   var start = getReportRange(reportPeriod);
-  var closed = ticketsStorage.filter(function(t) { return t.status === 'completed' && t.closedAt && new Date(t.closedAt) >= start; });
-  closed.sort(function(a,b) { return new Date(b.closedAt) - new Date(a.closedAt); });
-  var total = closed.reduce(function(sum, t) { return sum + (t.quote || 0); }, 0);
+  var closed = ticketsStorage.filter(function(t) {
+    if (t.status !== 'completed') return false;
+    return new Date(t.closedAt || t.updatedAt || 0) >= start;
+  });
+  closed.sort(function(a,b) { return new Date(b.closedAt || b.updatedAt || 0) - new Date(a.closedAt || a.updatedAt || 0); });
+  var total = closed.reduce(function(sum, t) { return sum + (parseFloat(t.quote)||0); }, 0);
+  var totalDep = closed.reduce(function(sum, t) { return sum + (parseFloat(t.deposit)||0); }, 0);
   var periodLabel = { day:'Today', week:'This Week', month:'This Month', ytd:'This Year' }[reportPeriod];
-  var lines = ['📊 AlmaTek Reports — ' + periodLabel, closed.length + ' completed repair' + (closed.length !== 1 ? 's' : '') + ' · $' + total.toLocaleString() + ' total', ''];
+  var lines = ['📊 AlmaTek Reports — ' + periodLabel,
+    closed.length + ' completed repair' + (closed.length !== 1 ? 's' : '') + ' · $' + total.toLocaleString() + ' billed · $' + totalDep.toLocaleString() + ' deposits', ''];
   closed.forEach(function(t) {
-    var dateStr = new Date(t.closedAt).toLocaleDateString('en-US', { month:'short', day:'numeric' });
-    lines.push('• ' + (t.name||'Unnamed') + (t.device ? ' · ' + t.device : '') + ' · $' + (t.quote||0) + ' (' + dateStr + ')');
+    var d = new Date(t.closedAt || t.updatedAt || 0);
+    var dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    var dep = parseFloat(t.deposit)||0;
+    lines.push('• ' + (t.name||'Unnamed') + (t.device ? ' · ' + t.device : '') + ' · $' + (parseFloat(t.quote)||0) + (dep ? ' (dep $'+dep+')' : '') + ' — ' + dateStr);
   });
   var text = lines.join('\n');
   if (navigator.share) { navigator.share({ title: 'AlmaTek Reports', text: text }).catch(function(){}); }
