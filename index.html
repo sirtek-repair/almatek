@@ -571,8 +571,8 @@
     <div id="dealResult" class="hidden">
       <div class="deal-header">Since you're already in the device:</div>
       <div class="deal-grid">
-        <div class="deal-box"><div class="dl">Without deal</div><div class="da" id="normalTotal">$—</div><div class="ds">both full price</div></div>
-        <div class="deal-box win"><div class="dl">Their deal 🎉</div><div class="da" id="dealTotal">$—</div><div class="ds" id="dealDesc"></div></div>
+        <div class="deal-box"><div class="dl">Without deal</div><div class="da" id="normalTotal">$—</div><div class="ds">both full price, tax incl.</div></div>
+        <div class="deal-box win"><div class="dl">Their deal 🎉</div><div class="da" id="dealTotal">$—</div><div class="ds">tax included</div></div>
       </div>
       <div class="savings-row"><span class="savings-pill" id="savingsPill">Saving $—</span></div>
     </div>
@@ -2066,7 +2066,7 @@ function buildQuoteText() {
     lines.push('Repair 1 — ' + label1 + tier1Label + ': $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ' · includes mobile service' : ''));
     lines.push('Repair 2 — ' + label2 + tier2Label + ': normally $' + full2 + ', but with the combo deal only $' + withTax(discounted2) + ' (50% off, tax included)');
     lines.push('');
-    lines.push('Regular price for both: $' + fullTotal);
+    lines.push('Regular price for both: $' + fullTotal + ' (tax included)');
     lines.push('Your combo deal: $' + dealTotal + ' total (tax included)');
     lines.push('You save: $' + savings + ' 🎉');
     lines.push('');
