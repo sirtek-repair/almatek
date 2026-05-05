@@ -332,8 +332,11 @@
     <button class="auth-setup-toggle" onclick="toggleAuthSetup()">⚙ connection setup</button>
     <div id="authSetupBox" class="auth-setup-box hidden">
       <label>Google Script URL</label>
-      <input type="url" id="authSetupUrl" placeholder="https://script.google.com/macros/..." autocomplete="off" />
-      <button onclick="saveAuthSetup()">Save</button>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input type="url" id="authSetupUrl" placeholder="https://script.google.com/macros/..." autocomplete="off" style="flex:1;min-width:0;" />
+        <button onclick="pasteScriptUrl()" title="Paste from clipboard" style="flex-shrink:0;padding:7px 10px;font-size:15px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--text);">📋</button>
+      </div>
+      <button onclick="saveAuthSetup()" style="margin-top:6px;width:100%;">Save</button>
     </div>
   </div>
 </div>
@@ -1662,6 +1665,28 @@ function onAuthBtnClick() {
 function toggleAuthSetup() {
   var box = el('authSetupBox'); box.classList.toggle('hidden');
   if (!box.classList.contains('hidden')) { el('authSetupUrl').value = USERS_SCRIPT_URL; el('authSetupUrl').focus(); }
+}
+function pasteScriptUrl() {
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText().then(function(text) {
+      text = text.trim();
+      if (text.startsWith('https://')) {
+        el('authSetupUrl').value = text;
+        el('authSetupUrl').style.borderColor = '';
+        saveAuthSetup();
+      } else {
+        el('authSetupUrl').value = text;
+        el('authSetupUrl').style.borderColor = '#ef4444';
+        el('authSetupUrl').focus();
+      }
+    }).catch(function() {
+      el('authSetupUrl').focus();
+      showToast('Tap the field and long-press Paste');
+    });
+  } else {
+    el('authSetupUrl').focus();
+    showToast('Tap the field and long-press Paste');
+  }
 }
 function saveAuthSetup() {
   var url = (el('authSetupUrl').value || '').trim();
