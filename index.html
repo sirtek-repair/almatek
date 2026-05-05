@@ -2046,6 +2046,7 @@ function buildQuoteText() {
 
   if (!isAuth()) {
     lines.push('The quote for your repair is: part + tax' + (hasSecond ? ' (combo deal available!)' : ''));
+    lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
   } else if (hasSecond) {
     // ── Two-repair combo deal ──────────────────────────────────
     var full1 = withTax(p1 + mobileFee), full2 = withTax(p2), fullTotal = withTax(p1 + p2 + mobileFee);
