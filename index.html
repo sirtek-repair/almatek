@@ -464,7 +464,7 @@
     </div>
 
     <div id="freeSection" class="hidden">
-      <label class="field-label" for="partCost">Part Cost</label>
+      <label class="field-label" for="partCost" id="partCostLabel">Part Cost</label>
       <input type="number" id="partCost" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
       <p class="hint">Round up to whole dollar</p>
       <div id="supplierRow2" style="margin-top:8px;margin-bottom:4px;">
@@ -562,7 +562,7 @@
       </div>
 
       <div id="freeSection2" class="hidden">
-        <label class="field-label" for="partCost2">Part Cost — Mobile Sentrix</label>
+        <label class="field-label" for="partCost2" id="partCostLabel2">Part Cost</label>
         <input type="number" id="partCost2" placeholder="$0" min="0" step="1" oninput="onCost2Change()" />
         <p class="hint">Round up to whole dollar</p>
       </div>
@@ -1023,7 +1023,8 @@ function onRepairChange() {
   el('costCard').classList.remove('hidden'); el('quoteCard').classList.add('hidden');
   if (type1 === 'iphone_screen') { el('iphoneSection').classList.remove('hidden'); setMode1('select'); el('partCostIphone').value = ''; el('modelSelect1').value = ''; el('tierOptions1').classList.add('hidden'); }
   else if (type1 === 'back_glass') { el('glassSection').classList.remove('hidden'); clearBtns('#glassSection'); }
-  else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value=''; }
+  else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value='';
+    var lbl = el('partCostLabel'); if (lbl) lbl.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[type1]||0) + ' + tax)' : 'Part Cost'; }
 }
 
 function setMode1(m) {
@@ -1211,7 +1212,8 @@ function on2ndRepairChange() {
   el('cost2Wrap').classList.remove('hidden');
   if (type2==='iphone_screen') { el('iphoneSection2').classList.remove('hidden'); setMode2('select'); }
   else if (type2==='back_glass') { el('glassSection2').classList.remove('hidden'); clearBtns('#glassSection2'); }
-  else { el('freeSection2').classList.remove('hidden'); }
+  else { el('freeSection2').classList.remove('hidden');
+    var lbl2 = el('partCostLabel2'); if (lbl2) lbl2.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[type2]||0) + ' + tax)' : 'Part Cost'; }
 }
 function renderDeal() {
   const p1=getPrice1(), p2=getPrice2(); if (p1<=0 || p2<=0) return;
