@@ -1805,7 +1805,7 @@ function applyLoginConfig(data) {
 function loadCachedPricing() {
   try {
     var cached = JSON.parse(localStorage.getItem('almatek_pricing') || 'null');
-    if (cached && cached.prices) Object.assign(SCREEN_PRICES, cached.prices);
+    if (cached && cached.prices) Object.keys(cached.prices).forEach(function(m) { SCREEN_PRICES[m] = Object.assign({}, SCREEN_PRICES[m]||{}, cached.prices[m]); });
   } catch(e) {}
 }
 function refreshPricingIfStale() {
@@ -1816,7 +1816,7 @@ function refreshPricingIfStale() {
   } catch(e) {}
   sheetsCall({ action: 'getPricing' }).then(function(data) {
     if (data && data.ok && data.prices) {
-      Object.assign(SCREEN_PRICES, data.prices);
+      Object.keys(data.prices).forEach(function(m) { SCREEN_PRICES[m] = Object.assign({}, SCREEN_PRICES[m]||{}, data.prices[m]); });
       localStorage.setItem('almatek_pricing', JSON.stringify({ prices: data.prices, ts: Date.now() }));
       initGlassPriceTags();
       if (model1) updateTierDisplay1();
