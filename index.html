@@ -361,6 +361,7 @@
   <header>
     <img src="line-logo.jpg" width="48" height="48" style="display:block;margin:0 auto 6px;border-radius:10px;" alt="AlmaTek" />
     <h1>AlmaTek</h1>
+    <div id="demoModeLabel" style="font-style:italic;font-size:13px;color:var(--muted);margin-top:2px;margin-bottom:4px;">Demo Mode</div>
     <div class="header-links" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;">
       <div class="hlink-dropdown" id="suppliersDropdown" style="display:none;">
         <button class="hlink" id="suppliersBtn" onclick="toggleSuppliers(event)">Parts ▾</button>
@@ -401,7 +402,7 @@
       <button class="hlink" id="repairedBtn" onclick="copyLink(this, 'https://repairedcollective.com', 'Repaired Collective')"><span class="brand" style="font-weight:300;">Repaired</span> <span class="brand" style="font-weight:400;">Collective</span></button>
       <button class="hlink" id="reviewBtn" onclick="copyLink(this, 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D', 'Review link')">⭐ Review Link</button>
       <span class="hlink" id="supplierDemo" style="display:none;">your part supplier</span>
-      <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Demo Mode</button>
+      <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Log In</button>
       <button id="chpassBtn" class="chpass-link" onclick="showChangePass()">Change Password</button>
     </div>
     <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST2">—</div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT2">—</div></div></div>
@@ -1822,10 +1823,11 @@ function onStaffLoginSuccess(pass, name, structure, data) {
 function updateAuthBtn() {
   var btn = el('authBtn'), btnInv = el('authBtnInv');
   var role = isOwner ? 'Owner' : 'Staff';
-  var label = authd ? ((currentUser || role) + ' · ' + role + ' · Log Out') : '🔒 Demo Mode';
+  var label = authd ? ((currentUser || role) + ' · ' + role + ' · Log Out') : '🔒 Log In';
   btn.textContent = label;
   btn.className = authd ? (isOwner ? 'owner-badge' : 'staff-badge') : 'demo-badge';
   if (btnInv) btnInv.textContent = authd ? label : '🔒 Log In';
+  var demoLbl = el('demoModeLabel'); if (demoLbl) demoLbl.style.display = authd ? 'none' : '';
   el('tabStaffBtn').classList.toggle('hidden', !isOwner);
   el('tabReportsBtn').classList.toggle('hidden', !authd);
   var chp = el('chpassBtn'); if (chp) chp.style.display = (authd && !isOwner) ? 'inline' : 'none';
