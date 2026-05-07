@@ -166,6 +166,9 @@
     .inv-toast.show { opacity: 1; }
     @keyframes spin-icon { to { transform: rotate(360deg); } }
     .sync-spinning { display: inline-block; animation: spin-icon 0.8s linear infinite; }
+    .demo-mode .world-clock { display: none !important; }
+    .demo-mode .auth-only { display: none !important; }
+    .auth-mode .demo-only { display: none !important; }
     .world-clock { display:flex; gap:16px; justify-content:center; margin-top:10px; }
     .wc-item { display:flex; flex-direction:column; align-items:center; gap:1px; }
     .wc-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); }
@@ -308,7 +311,7 @@
     .chpass-link { background: none; border: none; color: var(--muted); font-size: 11px; font-family: inherit; cursor: pointer; padding: 2px 4px; text-decoration: underline; display: none; }
   </style>
 </head>
-<body>
+<body class="demo-mode">
 <!-- Install Banner (Android) -->
 <div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 16px;z-index:500;align-items:center;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,0.4);">
   <img src="line-logo.jpg" width="38" height="38" style="border-radius:9px;flex-shrink:0;" alt="AlmaTek" />
@@ -378,29 +381,36 @@
       <div class="hlink-dropdown" id="contactsDropdown">
         <button class="hlink" id="contactsBtn" onclick="toggleContacts(event)">Contacts ▾</button>
         <div class="hlink-dropdown-menu hidden" id="contactsMenu" style="min-width:240px;">
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=1048+Bedford+Ave,+Brooklyn+NY+11205" target="_blank" class="hlink" style="flex:1;width:auto;">🦢 Swan 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'1048 Bedford Ave, Brooklyn NY, 11205')">📋</button>
+          <div class="auth-only">
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=1048+Bedford+Ave,+Brooklyn+NY+11205" target="_blank" class="hlink" style="flex:1;width:auto;">🦢 Swan 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'1048 Bedford Ave, Brooklyn NY, 11205')">📋</button>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=259+B+Canal+St,+New+York,+NY+10013" target="_blank" class="hlink" style="flex:1;width:auto;">Kimi Soho 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'259 B Canal St, NY, NY 10013')">📋</button>
+              <a href="tel:+19177909209" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=6016+5th+Ave,+Brooklyn,+NY" target="_blank" class="hlink" style="flex:1;width:auto;">SkyMobile 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'6016 5th Ave Brooklyn, NY')">📋</button>
+              <a href="tel:+19293666664" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=9+E+Broadway,+New+York,+NY+10002" target="_blank" class="hlink" style="flex:1;width:auto;">A.B.A. 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'9 E Broadway, New York, NY 10002')">📋</button>
+              <a href="tel:+19178553451" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+            </div>
           </div>
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=259+B+Canal+St,+New+York,+NY+10013" target="_blank" class="hlink" style="flex:1;width:auto;">Kimi Soho 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'259 B Canal St, NY, NY 10013')">📋</button>
-            <a href="tel:+19177909209" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
-          </div>
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=6016+5th+Ave,+Brooklyn,+NY" target="_blank" class="hlink" style="flex:1;width:auto;">SkyMobile 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'6016 5th Ave Brooklyn, NY')">📋</button>
-            <a href="tel:+19293666664" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
-          </div>
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=9+E+Broadway,+New+York,+NY+10002" target="_blank" class="hlink" style="flex:1;width:auto;">A.B.A. 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'9 E Broadway, New York, NY 10002')">📋</button>
-            <a href="tel:+19178553451" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+          <div class="demo-only">
+            <div style="display:flex;gap:4px;"><span class="hlink" style="flex:1;width:auto;">🏪 Your Shop 🗺️</span></div>
+            <div style="display:flex;gap:4px;"><span class="hlink" style="flex:1;width:auto;">📦 Parts Supplier A 🗺️</span><span class="hlink" style="width:auto;flex-shrink:0;">☎</span></div>
+            <div style="display:flex;gap:4px;"><span class="hlink" style="flex:1;width:auto;">📦 Parts Supplier B 🗺️</span><span class="hlink" style="width:auto;flex-shrink:0;">☎</span></div>
           </div>
         </div>
       </div>
       <button class="hlink" id="repairedBtn" onclick="copyLink(this, 'https://repairedcollective.com', 'Repaired Collective')"><span class="brand" style="font-weight:300;">Repaired</span> <span class="brand" style="font-weight:400;">Collective</span></button>
-      <button class="hlink" id="reviewBtn" onclick="copyLink(this, 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D', 'Review link')">⭐ Review Link</button>
+      <button class="hlink" id="reviewBtn" onclick="onReviewClick(this)">⭐ Your Review Link</button>
       <span class="hlink" id="supplierDemo" style="display:none;">your part supplier</span>
       <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Log In</button>
       <button id="chpassBtn" class="chpass-link" onclick="showChangePass()">Change Password</button>
@@ -685,24 +695,31 @@
       <div class="hlink-dropdown" id="contactsDropdown3" style="position:relative;">
         <button class="hlink" id="contactsBtn3" onclick="toggleContacts3(event)">Contacts ▾</button>
         <div class="hlink-dropdown-menu hidden" id="contactsMenu3" style="min-width:240px;">
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=1048+Bedford+Ave,+Brooklyn+NY+11205" target="_blank" class="hlink" style="flex:1;width:auto;">🦢 Swan 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'1048 Bedford Ave, Brooklyn NY, 11205')">📋</button>
+          <div class="auth-only">
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=1048+Bedford+Ave,+Brooklyn+NY+11205" target="_blank" class="hlink" style="flex:1;width:auto;">🦢 Swan 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'1048 Bedford Ave, Brooklyn NY, 11205')">📋</button>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=259+B+Canal+St,+New+York,+NY+10013" target="_blank" class="hlink" style="flex:1;width:auto;">Kimi Soho 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'259 B Canal St, NY, NY 10013')">📋</button>
+              <a href="tel:+19177909209" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=6016+5th+Ave,+Brooklyn,+NY" target="_blank" class="hlink" style="flex:1;width:auto;">SkyMobile 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'6016 5th Ave Brooklyn, NY')">📋</button>
+              <a href="tel:+19293666664" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <a href="https://maps.google.com/?q=9+E+Broadway,+New+York,+NY+10002" target="_blank" class="hlink" style="flex:1;width:auto;">A.B.A. 🗺️</a>
+              <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'9 E Broadway, New York, NY 10002')">📋</button>
+              <a href="tel:+19178553451" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+            </div>
           </div>
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=259+B+Canal+St,+New+York,+NY+10013" target="_blank" class="hlink" style="flex:1;width:auto;">Kimi Soho 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'259 B Canal St, NY, NY 10013')">📋</button>
-            <a href="tel:+19177909209" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
-          </div>
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=6016+5th+Ave,+Brooklyn,+NY" target="_blank" class="hlink" style="flex:1;width:auto;">SkyMobile 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'6016 5th Ave Brooklyn, NY')">📋</button>
-            <a href="tel:+19293666664" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
-          </div>
-          <div style="display:flex;gap:4px;">
-            <a href="https://maps.google.com/?q=9+E+Broadway,+New+York,+NY+10002" target="_blank" class="hlink" style="flex:1;width:auto;">A.B.A. 🗺️</a>
-            <button class="hlink" style="width:auto;flex-shrink:0;" onclick="copyContact(this,'9 E Broadway, New York, NY 10002')">📋</button>
-            <a href="tel:+19178553451" class="hlink" style="width:auto;flex-shrink:0;">☎</a>
+          <div class="demo-only">
+            <div style="display:flex;gap:4px;"><span class="hlink" style="flex:1;width:auto;">🏪 Your Shop 🗺️</span></div>
+            <div style="display:flex;gap:4px;"><span class="hlink" style="flex:1;width:auto;">📦 Parts Supplier A 🗺️</span><span class="hlink" style="width:auto;flex-shrink:0;">☎</span></div>
+            <div style="display:flex;gap:4px;"><span class="hlink" style="flex:1;width:auto;">📦 Parts Supplier B 🗺️</span><span class="hlink" style="width:auto;flex-shrink:0;">☎</span></div>
           </div>
         </div>
       </div>
@@ -1820,6 +1837,10 @@ function onStaffLoginSuccess(pass, name, structure, data) {
   syncFromSheets();
   refreshPricingIfStale();
 }
+function onReviewClick(btn) {
+  if (!authd) { showToast('Log in to use'); return; }
+  copyLink(btn, 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D', 'Review link');
+}
 function updateAuthBtn() {
   var btn = el('authBtn'), btnInv = el('authBtnInv');
   var role = isOwner ? 'Owner' : 'Staff';
@@ -1828,6 +1849,8 @@ function updateAuthBtn() {
   btn.className = authd ? (isOwner ? 'owner-badge' : 'staff-badge') : 'demo-badge';
   if (btnInv) btnInv.textContent = authd ? label : '🔒 Log In';
   var demoLbl = el('demoModeLabel'); if (demoLbl) demoLbl.style.display = authd ? 'none' : '';
+  document.body.classList.toggle('demo-mode', !authd);
+  document.body.classList.toggle('auth-mode', authd);
   el('tabStaffBtn').classList.toggle('hidden', !isOwner);
   el('tabReportsBtn').classList.toggle('hidden', !authd);
   var chp = el('chpassBtn'); if (chp) chp.style.display = (authd && !isOwner) ? 'inline' : 'none';
