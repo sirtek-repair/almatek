@@ -1801,6 +1801,8 @@ function refreshPricingIfStale() {
       Object.assign(SCREEN_PRICES, data.prices);
       localStorage.setItem('almatek_pricing', JSON.stringify({ prices: data.prices, ts: Date.now() }));
       initGlassPriceTags();
+      if (model1) updateTierDisplay1();
+      if (model2) updateTierDisplay2();
     }
   }).catch(function() {});
 }
@@ -2459,6 +2461,7 @@ setInterval(updateWorldClock, 30000);
 
 // Sync from Sheets on startup if already authenticated (skips login flow)
 if (authd) setTimeout(syncFromSheets, 500);
+if (authd) setTimeout(refreshPricingIfStale, 800);
 
 // Auto-sync every 90 seconds while the app is open
 setInterval(function() { if (authd && !_syncing) syncFromSheets(); }, 90000);
