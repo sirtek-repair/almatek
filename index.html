@@ -173,6 +173,10 @@
     .wc-item { display:flex; flex-direction:column; align-items:center; gap:1px; }
     .wc-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); }
     .wc-time { font-size:14px; font-weight:600; color:var(--text); }
+    .app-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:20px 16px; background:var(--surface); border:1px solid var(--border); border-radius:16px; min-width:100px; cursor:pointer; text-decoration:none; color:var(--text); transition:background 0.15s; }
+    .app-tile:hover { background:var(--surface2); }
+    .app-tile-icon { font-size:32px; line-height:1; }
+    .app-tile-label { font-size:13px; font-weight:600; }
     .token-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
     .token-card p { font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
     .token-row { display: flex; gap: 8px; }
@@ -355,6 +359,7 @@
   <button class="tab-btn" id="tabBookerBtn" onclick="switchTab('booker')">💵 Tally</button>
   <button class="tab-btn hidden" id="tabStaffBtn" onclick="switchTab('staff')">👥 Staff</button>
   <button class="tab-btn hidden" id="tabReportsBtn" onclick="switchTab('reports')">📊 Reports</button>
+  <button class="tab-btn" id="tabAppsBtn" onclick="switchTab('apps')">🚀 Apps</button>
 </div>
 
 <!-- Quote Tab -->
@@ -957,6 +962,30 @@
 </div>
 </div>
 
+<!-- Apps Tab -->
+<div id="tabApps" class="hidden">
+<div class="container">
+  <header style="text-align:center;padding:16px 0 12px;">
+    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">🚀 Apps</h1>
+  </header>
+  <div class="auth-only" style="display:flex;flex-wrap:wrap;gap:12px;padding:8px 0;">
+    <a href="https://meet.google.com" target="_blank" rel="noopener" class="app-tile">
+      <span class="app-tile-icon">📹</span>
+      <span class="app-tile-label">Google Meet</span>
+    </a>
+    <a href="https://clockify.me/tracker" target="_blank" rel="noopener" class="app-tile">
+      <span class="app-tile-icon">⏱</span>
+      <span class="app-tile-label">Clockify</span>
+    </a>
+  </div>
+  <div class="demo-only" style="display:flex;flex-wrap:wrap;gap:12px;padding:8px 0;">
+    <span class="app-tile"><span class="app-tile-icon">📹</span><span class="app-tile-label">Video Call</span></span>
+    <span class="app-tile"><span class="app-tile-icon">⏱</span><span class="app-tile-label">Time Tracker</span></span>
+    <span class="app-tile"><span class="app-tile-icon">📅</span><span class="app-tile-label">Scheduler</span></span>
+  </div>
+</div>
+</div>
+
 <!-- API Pass Modal -->
 <div id="apiPassModal" class="chpass-overlay hidden">
   <div class="chpass-box"><h3>🔑 Inventory Token</h3><p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Enter your Inventory Token (AUTH_PASS) to connect to inventory.</p><input type="password" id="apiPassModalInput" placeholder="AUTH_PASS value" autocomplete="off" onkeydown="if(event.key==='Enter') saveApiPassModal()" /><div class="chpass-err" id="apiPassModalErr"></div><div class="chpass-actions" style="margin-top:10px;"><button class="chpass-cancel" onclick="el('apiPassModal').classList.add('hidden')">Cancel</button><button class="chpass-save" onclick="saveApiPassModal()">Save</button></div></div>
@@ -1052,15 +1081,15 @@ function onModel1Change() { model1 = el('modelSelect1').value; tier1=''; hideQuo
 function updateTierDisplay1() {
   if (!model1) { el('tierOptions1').classList.add('hidden'); return; }
   const p = SCREEN_PRICES[model1] || {}; el('tierOptions1').classList.remove('hidden');
-  if (p.premium) { el('tierBox1Prem').classList.remove('na'); el('tierPrice1Prem').textContent = isAuth() ? '$' + withTax(p.premium) : '$—'; } else { el('tierBox1Prem').classList.add('na'); el('tierPrice1Prem').textContent = 'N/A'; }
-  if (p.standard) { el('tierBox1Std').classList.remove('na'); el('tierPrice1Std').textContent = isAuth() ? '$' + withTax(p.standard) : '$—'; } else { el('tierBox1Std').classList.add('na'); el('tierPrice1Std').textContent = 'N/A'; }
+  if (p.premium != null) { el('tierBox1Prem').classList.remove('na'); el('tierPrice1Prem').textContent = isAuth() ? '$' + withTax(p.premium) : '$—'; } else { el('tierBox1Prem').classList.add('na'); el('tierPrice1Prem').textContent = 'N/A'; }
+  if (p.standard != null) { el('tierBox1Std').classList.remove('na'); el('tierPrice1Std').textContent = isAuth() ? '$' + withTax(p.standard) : '$—'; } else { el('tierBox1Std').classList.add('na'); el('tierPrice1Std').textContent = 'N/A'; }
   var lbl1 = el('factoryLabel1'), ftype1 = FACTORY_SCREEN_TYPE[model1];
   if (ftype1) { lbl1.textContent = 'Factory Screen: ' + ftype1.toUpperCase(); lbl1.className = 'factory-label ' + ftype1; lbl1.style.display = 'block'; }
   else { lbl1.style.display = 'none'; }
   showStockBadge('1Prem', model1, 'premium'); showStockBadge('1Std', model1, 'standard');
-  if (p.premium) { setTier1('premium'); } else if (p.standard) { setTier1('standard'); }
+  if (p.premium != null) { setTier1('premium'); } else if (p.standard != null) { setTier1('standard'); }
 }
-function setTier1(t) { if (!model1) return; const p = SCREEN_PRICES[model1] || {}; if (!p[t]) return; tier1 = t; el('tierBox1Prem').classList.toggle('active', t === 'premium'); el('tierBox1Std').classList.toggle('active', t === 'standard'); tryRenderQuote(); }
+function setTier1(t) { if (!model1) return; const p = SCREEN_PRICES[model1] || {}; if (p[t] == null) return; tier1 = t; el('tierBox1Prem').classList.toggle('active', t === 'premium'); el('tierBox1Std').classList.toggle('active', t === 'standard'); tryRenderQuote(); }
 
 function setMode2(m) {
   mode2 = m; el('modeTab2Select').classList.toggle('active', m==='select'); el('modeTab2Manual').classList.toggle('active', m==='manual');
@@ -1071,15 +1100,15 @@ function onModel2Change() { model2 = el('modelSelect2').value; tier2=''; el('dea
 function updateTierDisplay2() {
   if (!model2) { el('tierOptions2').classList.add('hidden'); return; }
   const p = SCREEN_PRICES[model2] || {}; el('tierOptions2').classList.remove('hidden');
-  if (p.premium) { el('tierBox2Prem').classList.remove('na'); el('tierPrice2Prem').textContent = isAuth() ? '$' + withTax(p.premium) : '$—'; } else { el('tierBox2Prem').classList.add('na'); el('tierPrice2Prem').textContent = 'N/A'; }
-  if (p.standard) { el('tierBox2Std').classList.remove('na'); el('tierPrice2Std').textContent = isAuth() ? '$' + withTax(p.standard) : '$—'; } else { el('tierBox2Std').classList.add('na'); el('tierPrice2Std').textContent = 'N/A'; }
+  if (p.premium != null) { el('tierBox2Prem').classList.remove('na'); el('tierPrice2Prem').textContent = isAuth() ? '$' + withTax(p.premium) : '$—'; } else { el('tierBox2Prem').classList.add('na'); el('tierPrice2Prem').textContent = 'N/A'; }
+  if (p.standard != null) { el('tierBox2Std').classList.remove('na'); el('tierPrice2Std').textContent = isAuth() ? '$' + withTax(p.standard) : '$—'; } else { el('tierBox2Std').classList.add('na'); el('tierPrice2Std').textContent = 'N/A'; }
   var lbl2 = el('factoryLabel2'), ftype2 = FACTORY_SCREEN_TYPE[model2];
   if (ftype2) { lbl2.textContent = 'Factory Screen: ' + ftype2.toUpperCase(); lbl2.className = 'factory-label ' + ftype2; lbl2.style.display = 'block'; }
   else { lbl2.style.display = 'none'; }
   showStockBadge('2Prem', model2, 'premium'); showStockBadge('2Std', model2, 'standard');
-  if (p.premium) { setTier2('premium'); } else if (p.standard) { setTier2('standard'); }
+  if (p.premium != null) { setTier2('premium'); } else if (p.standard != null) { setTier2('standard'); }
 }
-function setTier2(t) { if (!model2) return; const p = SCREEN_PRICES[model2] || {}; if (!p[t]) return; tier2 = t; el('tierBox2Prem').classList.toggle('active', t === 'premium'); el('tierBox2Std').classList.toggle('active', t === 'standard'); renderDeal(); }
+function setTier2(t) { if (!model2) return; const p = SCREEN_PRICES[model2] || {}; if (p[t] == null) return; tier2 = t; el('tierBox2Prem').classList.toggle('active', t === 'premium'); el('tierBox2Std').classList.toggle('active', t === 'standard'); renderDeal(); }
 
 function onGlassSelect(cost, btn) { clearBtns('#glassSection'); btn.classList.add('active'); cost1=cost; tryRenderQuote(); }
 function onGlassSelect2(cost, btn) { clearBtns('#glassSection2'); btn.classList.add('active'); cost2=cost; renderDeal(); }
@@ -1242,9 +1271,9 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
 
 function switchTab(tab) {
   if (tab === 'cart') { switchTab('orders'); switchOrdersView('cart'); return; }
-  const isQuote = tab==='quote', isOrders = tab==='orders', isInventory = tab==='inventory', isLeads = tab==='leads', isBooker = tab==='booker', isStaff = tab==='staff', isReports = tab==='reports';
-  el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabCart').classList.toggle('hidden', true); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff); el('tabReports').classList.toggle('hidden', !isReports);
-  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff); el('tabReportsBtn').classList.toggle('active', isReports);
+  const isQuote = tab==='quote', isOrders = tab==='orders', isInventory = tab==='inventory', isLeads = tab==='leads', isBooker = tab==='booker', isStaff = tab==='staff', isReports = tab==='reports', isApps = tab==='apps';
+  el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabCart').classList.toggle('hidden', true); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff); el('tabReports').classList.toggle('hidden', !isReports); el('tabApps').classList.toggle('hidden', !isApps);
+  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff); el('tabReportsBtn').classList.toggle('active', isReports); el('tabAppsBtn').classList.toggle('active', isApps);
   if (isLeads) { exitLeadSelectMode && exitLeadSelectMode(); exitTicketSelectMode && exitTicketSelectMode(); }
   if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); } else if (isLeads) { switchLeadSubTab('leads'); } else if (isReports) { renderReports(); }
 }
