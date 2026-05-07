@@ -941,7 +941,7 @@
 
 <!-- API Pass Modal -->
 <div id="apiPassModal" class="chpass-overlay hidden">
-  <div class="chpass-box"><h3>🔑 Inventory Token</h3><p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Enter your Cloudflare Worker AUTH_PASS value to connect to inventory.</p><input type="password" id="apiPassModalInput" placeholder="AUTH_PASS value" autocomplete="off" onkeydown="if(event.key==='Enter') saveApiPassModal()" /><div class="chpass-err" id="apiPassModalErr"></div><div class="chpass-actions" style="margin-top:10px;"><button class="chpass-cancel" onclick="el('apiPassModal').classList.add('hidden')">Cancel</button><button class="chpass-save" onclick="saveApiPassModal()">Save</button></div></div>
+  <div class="chpass-box"><h3>🔑 Inventory Token</h3><p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Enter your Inventory Token (AUTH_PASS) to connect to inventory.</p><input type="password" id="apiPassModalInput" placeholder="AUTH_PASS value" autocomplete="off" onkeydown="if(event.key==='Enter') saveApiPassModal()" /><div class="chpass-err" id="apiPassModalErr"></div><div class="chpass-actions" style="margin-top:10px;"><button class="chpass-cancel" onclick="el('apiPassModal').classList.add('hidden')">Cancel</button><button class="chpass-save" onclick="saveApiPassModal()">Save</button></div></div>
 </div>
 
 <!-- Change Password Modal -->
@@ -1318,7 +1318,7 @@ function loadInventoryPage(offset, quiet) {
   if (offset) url += '&offset=' + encodeURIComponent(offset);
   atFetch(url).then(data => {
     if (data.error) {
-      if (!quiet) el('invLoading').innerHTML = 'Auth error: ' + (data.error.message||'Invalid token') + '. <button onclick="showApiPassModal()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;">Set Token</button>';
+      if (!quiet) el('invLoading').innerHTML = 'Auth error: ' + (data.error.message||'Invalid token') + '. <button onclick="showApiPassModal()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;">Set Inventory Token</button>';
       return;
     }
     allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; setCache('almatek_inv_cache', allInvRecords); if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } else { if (model1) updateTierDisplay1(); if (model2) updateTierDisplay2(); } }
@@ -2953,7 +2953,7 @@ function pushTokenToScript() {
   if (!apiPass) { showToast('Set the Inventory Token first (🔑 button)'); return; }
   if (!USERS_SCRIPT_URL) { showToast('Connect the Google Script first'); return; }
   sheetsCall({ action: 'saveConfig', apiPass: apiPass }).then(function(r) {
-    showToast(r && r.ok ? 'Worker token saved to Script ✓ — staff can now auto-configure on login' : 'Save failed');
+    showToast(r && r.ok ? 'Inventory token saved ✓ — staff can now auto-configure on login' : 'Save failed');
   }).catch(function() { showToast('Network error'); });
 }
 
