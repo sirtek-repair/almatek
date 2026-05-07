@@ -169,10 +169,13 @@
     .demo-mode .world-clock { display: none !important; }
     .demo-mode .auth-only { display: none !important; }
     .auth-mode .demo-only { display: none !important; }
-    .world-clock { display:flex; gap:16px; justify-content:center; margin-top:10px; }
+    .world-clock { display:flex; gap:16px; justify-content:center; margin-top:10px; align-items:center; }
     .wc-item { display:flex; flex-direction:column; align-items:center; gap:1px; }
     .wc-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); }
     .wc-time { font-size:14px; font-weight:600; color:var(--text); }
+    .wc-edit-btn { background:none; border:none; cursor:pointer; font-size:13px; color:var(--muted); padding:2px 5px; border-radius:6px; line-height:1; opacity:0.55; transition:opacity 0.15s; }
+    .wc-edit-btn:hover { opacity:1; background:var(--surface2); }
+    .wc-mock-badge { background:#f59e0b; color:#fff; border-radius:10px; padding:1px 6px; font-size:10px; font-weight:700; letter-spacing:0.05em; cursor:pointer; }
     .app-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:20px 16px; background:var(--surface); border:1px solid var(--border); border-radius:16px; min-width:100px; cursor:pointer; text-decoration:none; color:var(--text); transition:background 0.15s; }
     .app-tile:hover { background:var(--surface2); }
     .app-tile-icon { font-size:32px; line-height:1; }
@@ -420,7 +423,7 @@
       <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Log In</button>
       <button id="chpassBtn" class="chpass-link" onclick="showChangePass()">Change Password</button>
     </div>
-    <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST2">—</div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT2">—</div></div></div>
+    <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST2">—</div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT2">—</div></div><span class="wc-mock-badge hidden" id="wcMockBadge2" onclick="openClockMockModal()">MOCK</span><button class="wc-edit-btn" onclick="openClockMockModal()" title="Set planning time">✏️</button></div>
   </header>
 
   <div class="card">
@@ -694,7 +697,7 @@
   <header style="padding:16px 0 20px;text-align:center;">
     <img src="line-logo.jpg" width="48" height="48" style="display:block;margin:0 auto 6px;border-radius:10px;" alt="AlmaTek" />
     <h1 style="font-size:26px;font-family:Georgia,serif;font-weight:normal;text-transform:none;letter-spacing:0.01em;"><span class="brand">LeadTek</span></h1>
-    <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST">—</div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT">—</div></div></div>
+    <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST">—</div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT">—</div></div><span class="wc-mock-badge hidden" id="wcMockBadge1" onclick="openClockMockModal()">MOCK</span><button class="wc-edit-btn" onclick="openClockMockModal()" title="Set planning time">✏️</button></div>
     <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;">
       <button id="newLeadBtn" onclick="showNewLeadForm()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
       <div class="hlink-dropdown" id="contactsDropdown3" style="position:relative;">
@@ -984,6 +987,25 @@
     <span class="app-tile"><span class="app-tile-icon">📅</span><span class="app-tile-label">Scheduler</span></span>
   </div>
 </div>
+</div>
+
+<!-- Clock Mock Modal -->
+<div id="clockMockModal" class="chpass-overlay hidden">
+  <div class="chpass-box" style="max-width:280px;">
+    <h3 style="margin:0 0 6px;">🕐 Planning Time</h3>
+    <p style="font-size:12px;color:var(--muted);margin:0 0 14px;">Simulate a different EST time. Clock ticks forward from this point.</p>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
+      <input type="number" id="mockHour" min="1" max="12" placeholder="12" style="width:58px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:18px;font-family:inherit;text-align:center;" />
+      <span style="font-size:20px;color:var(--muted);font-weight:600;">:</span>
+      <input type="number" id="mockMin" min="0" max="59" placeholder="00" style="width:58px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:18px;font-family:inherit;text-align:center;" />
+      <select id="mockAmPm" style="padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit;"><option>AM</option><option>PM</option></select>
+    </div>
+    <div class="chpass-actions">
+      <button class="chpass-cancel" onclick="el('clockMockModal').classList.add('hidden')">Cancel</button>
+      <button class="chpass-cancel" onclick="resetClockMock()">Reset</button>
+      <button class="chpass-save" onclick="applyClockMock()">Set Time</button>
+    </div>
+  </div>
 </div>
 
 <!-- API Pass Modal -->
@@ -2487,12 +2509,45 @@ loadTicketsFromStorage();
 initGlassPriceTags();
 loadCachedPricing();
 
+var clockMockOffset = 0;
+
 function updateWorldClock() {
-  var now = new Date();
+  var now = new Date(Date.now() + clockMockOffset);
   var est = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: true });
   var pkt = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit', hour12: true });
   ['clockEST','clockEST2'].forEach(function(id) { var e = el(id); if (e) e.textContent = est; });
   ['clockPKT','clockPKT2'].forEach(function(id) { var e = el(id); if (e) e.textContent = pkt; });
+  var mocked = clockMockOffset !== 0;
+  ['wcMockBadge1','wcMockBadge2'].forEach(function(id) { var e = el(id); if (e) e.classList.toggle('hidden', !mocked); });
+}
+function openClockMockModal() {
+  var now = new Date(Date.now() + clockMockOffset);
+  var parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', hour12: true }).formatToParts(now);
+  var h = parts.find(function(p) { return p.type === 'hour'; });
+  var m = parts.find(function(p) { return p.type === 'minute'; });
+  var d = parts.find(function(p) { return p.type === 'dayPeriod'; });
+  el('mockHour').value = h ? h.value : 12;
+  el('mockMin').value = m ? m.value : '00';
+  el('mockAmPm').value = d && d.value.toUpperCase().startsWith('P') ? 'PM' : 'AM';
+  el('clockMockModal').classList.remove('hidden');
+}
+function applyClockMock() {
+  var h = parseInt(el('mockHour').value) || 12;
+  var m = parseInt(el('mockMin').value) || 0;
+  var ampm = el('mockAmPm').value;
+  var h24 = (h % 12) + (ampm === 'PM' ? 12 : 0);
+  var now = new Date();
+  var estParts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: 'numeric', hour12: false }).formatToParts(now);
+  var curH = parseInt(estParts.find(function(p) { return p.type === 'hour'; }).value);
+  var curM = parseInt(estParts.find(function(p) { return p.type === 'minute'; }).value);
+  clockMockOffset = ((h24 - curH) * 60 + (m - curM)) * 60000;
+  el('clockMockModal').classList.add('hidden');
+  updateWorldClock();
+}
+function resetClockMock() {
+  clockMockOffset = 0;
+  el('clockMockModal').classList.add('hidden');
+  updateWorldClock();
 }
 updateWorldClock();
 setInterval(updateWorldClock, 30000);
