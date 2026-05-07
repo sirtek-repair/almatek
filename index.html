@@ -912,7 +912,7 @@
 <div class="container">
   <header style="text-align:center;padding:16px 0 20px;">
     <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
-    <button onclick="showApiPassModal()" style="margin-top:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">🔑 Set Worker Token</button>
+    <button onclick="showApiPassModal()" style="margin-top:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">🔑 Set Inventory Token</button>
     <button onclick="pushTokenToScript()" style="margin-top:6px;margin-left:8px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:var(--green);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">☁ Save Token to Script</button>
   </header>
   <div id="staffSetupSection" class="card"><div class="staff-section-title">Connect Google Sheet</div><p style="font-size:12px;color:var(--muted);margin:0 0 12px;">Paste your Google Apps Script web app URL below.</p><div class="staff-add-row" style="flex-direction:column;gap:8px;"><input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;" /><button class="staff-add-btn" onclick="saveScriptSetup()">Connect</button></div><div id="setupErr" class="chpass-err"></div></div>
@@ -941,7 +941,7 @@
 
 <!-- API Pass Modal -->
 <div id="apiPassModal" class="chpass-overlay hidden">
-  <div class="chpass-box"><h3>🔑 Worker Token</h3><p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Enter your Cloudflare Worker AUTH_PASS value to connect to inventory.</p><input type="password" id="apiPassModalInput" placeholder="AUTH_PASS value" autocomplete="off" onkeydown="if(event.key==='Enter') saveApiPassModal()" /><div class="chpass-err" id="apiPassModalErr"></div><div class="chpass-actions" style="margin-top:10px;"><button class="chpass-cancel" onclick="el('apiPassModal').classList.add('hidden')">Cancel</button><button class="chpass-save" onclick="saveApiPassModal()">Save</button></div></div>
+  <div class="chpass-box"><h3>🔑 Inventory Token</h3><p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Enter your Cloudflare Worker AUTH_PASS value to connect to inventory.</p><input type="password" id="apiPassModalInput" placeholder="AUTH_PASS value" autocomplete="off" onkeydown="if(event.key==='Enter') saveApiPassModal()" /><div class="chpass-err" id="apiPassModalErr"></div><div class="chpass-actions" style="margin-top:10px;"><button class="chpass-cancel" onclick="el('apiPassModal').classList.add('hidden')">Cancel</button><button class="chpass-save" onclick="saveApiPassModal()">Save</button></div></div>
 </div>
 
 <!-- Change Password Modal -->
@@ -2950,7 +2950,7 @@ function saveApiPassModal() {
 }
 
 function pushTokenToScript() {
-  if (!apiPass) { showToast('Set the Worker Token first (🔑 button)'); return; }
+  if (!apiPass) { showToast('Set the Inventory Token first (🔑 button)'); return; }
   if (!USERS_SCRIPT_URL) { showToast('Connect the Google Script first'); return; }
   sheetsCall({ action: 'saveConfig', apiPass: apiPass }).then(function(r) {
     showToast(r && r.ok ? 'Worker token saved to Script ✓ — staff can now auto-configure on login' : 'Save failed');
