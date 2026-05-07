@@ -990,20 +990,7 @@ const FACTORY_SCREEN_TYPE = {
   'iPhone 4S':'lcd','iPhone 4':'lcd'
 };
 
-let SCREEN_PRICES = {
-  'iPhone Air':{standard:null,premium:327},'iPhone 17 Pro Max':{standard:199,premium:289},'iPhone 17 Pro':{standard:196,premium:251},'iPhone 17':{standard:148,premium:242},
-  'iPhone 16e':{standard:108,premium:145},'iPhone 16 Pro Max':{standard:null,premium:282},'iPhone 16 Pro':{standard:181,premium:242},'iPhone 16 Plus':{standard:139,premium:225},'iPhone 16':{standard:134,premium:220},
-  'iPhone 15 Pro Max':{standard:120,premium:195},'iPhone 15 Pro':{standard:111,premium:215},'iPhone 15 Plus':{standard:109,premium:208},'iPhone 15':{standard:108,premium:186},
-  'iPhone 14 Pro Max':{standard:119,premium:210},'iPhone 14 Pro':{standard:109,premium:210},'iPhone 14 Plus':{standard:108,premium:152},'iPhone 14':{standard:103,premium:140},
-  'iPhone 13 Pro Max':{standard:116,premium:146},'iPhone 13 Pro':{standard:109,premium:158},'iPhone 13':{standard:101,premium:140},'iPhone 13 Mini':{standard:112,premium:213},
-  'iPhone 12 Pro Max':{standard:102,premium:148},'iPhone 12 Pro':{standard:null,premium:233},'iPhone 12':{standard:96,premium:145},'iPhone 12 Mini':{standard:111,premium:183},
-  'iPhone 11 Pro Max':{standard:98,premium:131},'iPhone 11 Pro':{standard:95,premium:144},'iPhone 11':{standard:96,premium:101},
-  'iPhone XS Max':{standard:98,premium:121},'iPhone XS':{standard:101,premium:123},'iPhone XR':{standard:97,premium:102},'iPhone X':{standard:100,premium:122},
-  'iPhone 8 Plus':{standard:98,premium:104},'iPhone 8 / SE (2nd & 3rd Gen)':{standard:93,premium:97},'iPhone SE (2nd Gen)':{standard:93,premium:97},'iPhone SE (3rd Gen)':{standard:93,premium:97},
-  'iPhone 7 Plus':{standard:98,premium:105},'iPhone 7':{standard:94,premium:97},'iPhone 6S':{standard:95,premium:96},'iPhone 6 Plus':{standard:95,premium:96},'iPhone 6':{standard:92,premium:93},
-  'iPhone 5S / SE (1st Gen)':{standard:93,premium:94},'iPhone SE (1st Gen)':{standard:93,premium:94},'iPhone 5C':{standard:89,premium:93},'iPhone 5':{standard:91,premium:94},
-  'iPhone 4S':{standard:90,premium:null},'iPhone 4':{standard:90,premium:null}
-};
+let SCREEN_PRICES = {};
 
 let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2='', mode1='select', mode2='select', secondOpen=false, mobileOpen=false, mobileFee=0;
 var SUPPLIERS = ['Kimi Soho','Bros Phone Parts (Bklyn)','Parts4Cells (Houston)','Mobile Sentrix (Virginia)','eBay','Amazon','LaptopScreen.com'];
@@ -1810,13 +1797,10 @@ function loadCachedPricing() {
 }
 function refreshPricingIfStale() {
   if (!USERS_SCRIPT_URL || !authd) return;
-  try {
-    var cached = JSON.parse(localStorage.getItem('almatek_pricing') || 'null');
-    if (cached && (Date.now() - (cached.ts || 0)) < 7 * 24 * 60 * 60 * 1000) return;
-  } catch(e) {}
   sheetsCall({ action: 'getPricing' }).then(function(data) {
     if (data && data.ok && data.prices) {
-      Object.keys(data.prices).forEach(function(m) { SCREEN_PRICES[m] = Object.assign({}, SCREEN_PRICES[m]||{}, data.prices[m]); });
+      SCREEN_PRICES = {};
+      Object.keys(data.prices).forEach(function(m) { SCREEN_PRICES[m] = data.prices[m]; });
       localStorage.setItem('almatek_pricing', JSON.stringify({ prices: data.prices, ts: Date.now() }));
       initGlassPriceTags();
       if (model1) updateTierDisplay1();
