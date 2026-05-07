@@ -49,6 +49,31 @@ function handleAction(p) {
         scriptUrl: ScriptApp.getService().getUrl()
       };
     }
+    case 'getPricing': {
+      try {
+        var pss = SpreadsheetApp.openById('1-ihijopdfiS5QL1Ikr_eGBaZiQZGqhkdn5cTXiBYq6Y');
+        var pSheet = pss.getSheets().filter(function(s) { return s.getSheetId() === 30606733; })[0];
+        if (!pSheet) return { ok: false, error: 'Pricing sheet tab not found' };
+        var rows = pSheet.getDataRange().getValues();
+        var headers = rows[0].map(function(h) { return String(h).trim(); });
+        var modelIdx = headers.indexOf('iPhone Model');
+        var tierIdx  = headers.indexOf('Tier');
+        var priceIdx = headers.indexOf('Repair Price');
+        if (modelIdx < 0 || tierIdx < 0 || priceIdx < 0) return { ok: false, error: 'Missing columns' };
+        var prices = {};
+        for (var i = 1; i < rows.length; i++) {
+          var model = String(rows[i][modelIdx] || '').trim();
+          var tier  = String(rows[i][tierIdx]  || '').trim().toLowerCase();
+          var price = rows[i][priceIdx];
+          if (!model || !tier || price === '' || price == null) continue;
+          if (!prices[model]) prices[model] = {};
+          prices[model][tier] = Number(price);
+        }
+        return { ok: true, prices: prices };
+      } catch(e) {
+        return { ok: false, error: e.toString() };
+      }
+    }
     case 'saveConfig': {
       var props = PropertiesService.getScriptProperties();
       if (p.apiPass !== undefined) props.setProperty('cf_api_pass', p.apiPass);

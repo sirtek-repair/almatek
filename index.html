@@ -971,7 +971,7 @@ const FACTORY_SCREEN_TYPE = {
   'iPhone 4S':'lcd','iPhone 4':'lcd'
 };
 
-const SCREEN_PRICES = {
+let SCREEN_PRICES = {
   'iPhone Air':{standard:null,premium:327},'iPhone 17 Pro Max':{standard:199,premium:289},'iPhone 17 Pro':{standard:196,premium:251},'iPhone 17':{standard:148,premium:242},
   'iPhone 16e':{standard:108,premium:145},'iPhone 16 Pro Max':{standard:null,premium:282},'iPhone 16 Pro':{standard:181,premium:242},'iPhone 16 Plus':{standard:139,premium:225},'iPhone 16':{standard:134,premium:220},
   'iPhone 15 Pro Max':{standard:120,premium:195},'iPhone 15 Pro':{standard:111,premium:215},'iPhone 15 Plus':{standard:109,premium:208},'iPhone 15':{standard:108,premium:186},
@@ -1766,10 +1766,10 @@ function tryAuth() {
           sheetsCall({ action: 'getConfig' }).then(function(cfg) {
             if (cfg && cfg.ok) applyLoginConfig(cfg);
             if (!apiPass) showApiPassModal();
-            syncFromSheets();
-          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); });
+            syncFromSheets(); refreshPricingIfStale();
+          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); refreshPricingIfStale(); });
         } else {
-          syncFromSheets();
+          syncFromSheets(); refreshPricingIfStale();
           if (!apiPass) setTimeout(showApiPassModal, 400);
         }
         return;
@@ -1783,6 +1783,26 @@ function applyLoginConfig(data) {
   if (data.apiPass) { apiPass = data.apiPass; localStorage.setItem('almatek_api_pass', data.apiPass); }
   if (data.scriptUrl) { USERS_SCRIPT_URL = data.scriptUrl; localStorage.setItem('almatek_script_url', data.scriptUrl); }
 }
+function loadCachedPricing() {
+  try {
+    var cached = JSON.parse(localStorage.getItem('almatek_pricing') || 'null');
+    if (cached && cached.prices) Object.assign(SCREEN_PRICES, cached.prices);
+  } catch(e) {}
+}
+function refreshPricingIfStale() {
+  if (!USERS_SCRIPT_URL || !authd) return;
+  try {
+    var cached = JSON.parse(localStorage.getItem('almatek_pricing') || 'null');
+    if (cached && (Date.now() - (cached.ts || 0)) < 7 * 24 * 60 * 60 * 1000) return;
+  } catch(e) {}
+  sheetsCall({ action: 'getPricing' }).then(function(data) {
+    if (data && data.ok && data.prices) {
+      Object.assign(SCREEN_PRICES, data.prices);
+      localStorage.setItem('almatek_pricing', JSON.stringify({ prices: data.prices, ts: Date.now() }));
+      initGlassPriceTags();
+    }
+  }).catch(function() {});
+}
 function onStaffLoginSuccess(pass, name, structure, data) {
   applyLoginConfig(data || {});
   authPass = pass; currentUser = name || '';
@@ -1794,6 +1814,7 @@ function onStaffLoginSuccess(pass, name, structure, data) {
   el('authOverlay').classList.add('hidden');
   updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
   syncFromSheets();
+  refreshPricingIfStale();
 }
 function updateAuthBtn() {
   var btn = el('authBtn'), btnInv = el('authBtnInv');
@@ -2423,6 +2444,7 @@ function saveTicketsToStorage() { var s={}; ticketsStorage=ticketsStorage.filter
 loadTicketsFromStorage();
 
 initGlassPriceTags();
+loadCachedPricing();
 
 function updateWorldClock() {
   var now = new Date();
