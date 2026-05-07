@@ -1,8 +1,6 @@
-var CACHE = 'almatek-v3';
-self.addEventListener('install', function(e) {
-  self.skipWaiting();
-  e.waitUntil(caches.delete('almatek-v2').catch(function(){}));
-});
+// v4
+var CACHE = 'almatek-v4';
+self.addEventListener('install', function(e) { self.skipWaiting(); });
 self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
@@ -12,10 +10,5 @@ self.addEventListener('activate', function(e) {
 });
 self.addEventListener('fetch', function(e) {
   if (e.request.method !== 'GET') return;
-  var url = new URL(e.request.url);
-  if (url.pathname === '/' || url.pathname.endsWith('index.html')) {
-    e.respondWith(fetch(e.request, { cache: 'no-store' }).catch(function() { return caches.match(e.request); }));
-    return;
-  }
-  e.respondWith(fetch(e.request).catch(function() { return caches.match(e.request); }));
+  e.respondWith(fetch(e.request, { cache: 'no-store' }).catch(function() { return caches.match(e.request); }));
 });

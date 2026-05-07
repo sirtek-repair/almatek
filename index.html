@@ -3140,7 +3140,22 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=3').catch(function(){}); }
+var APP_VERSION = '20260507-2';
+(function() {
+  var stored = localStorage.getItem('almatek_version');
+  if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
+  localStorage.setItem('almatek_version', APP_VERSION);
+})();
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js?v=4').then(function(reg) {
+    reg.addEventListener('updatefound', function() {
+      var w = reg.installing;
+      w.addEventListener('statechange', function() {
+        if (w.state === 'activated' && navigator.serviceWorker.controller) { location.reload(true); }
+      });
+    });
+  }).catch(function(){});
+}
 
 // ============================================
 // LEAD SELECT MODE
