@@ -991,9 +991,12 @@
 
 <!-- Clock Mock Modal -->
 <div id="clockMockModal" class="chpass-overlay hidden">
-  <div class="chpass-box" style="max-width:280px;">
-    <h3 style="margin:0 0 6px;">🕐 Planning Time</h3>
-    <p style="font-size:12px;color:var(--muted);margin:0 0 14px;">Simulate a different EST time. Clock ticks forward from this point.</p>
+  <div class="chpass-box" style="max-width:290px;">
+    <h3 style="margin:0 0 10px;">🕐 Planning Time</h3>
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button id="mockZoneEST" onclick="setMockZone('America/New_York')" style="flex:1;padding:7px;background:var(--accent);color:#fff;border:1px solid var(--accent);border-radius:8px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">EST</button>
+      <button id="mockZonePKT" onclick="setMockZone('Asia/Karachi')" style="flex:1;padding:7px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">PKT</button>
+    </div>
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
       <input type="number" id="mockHour" min="1" max="12" placeholder="12" style="width:58px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:18px;font-family:inherit;text-align:center;" />
       <span style="font-size:20px;color:var(--muted);font-weight:600;">:</span>
@@ -2520,15 +2523,27 @@ function updateWorldClock() {
   var mocked = clockMockOffset !== 0;
   ['wcMockBadge1','wcMockBadge2'].forEach(function(id) { var e = el(id); if (e) e.classList.toggle('hidden', !mocked); });
 }
-function openClockMockModal() {
+var mockZone = 'America/New_York';
+function setMockZone(zone) {
+  mockZone = zone;
+  var isEST = zone === 'America/New_York';
+  el('mockZoneEST').style.background = isEST ? 'var(--accent)' : 'var(--surface2)';
+  el('mockZoneEST').style.color = isEST ? '#fff' : 'var(--muted)';
+  el('mockZoneEST').style.borderColor = isEST ? 'var(--accent)' : 'var(--border)';
+  el('mockZonePKT').style.background = !isEST ? 'var(--accent)' : 'var(--surface2)';
+  el('mockZonePKT').style.color = !isEST ? '#fff' : 'var(--muted)';
+  el('mockZonePKT').style.borderColor = !isEST ? 'var(--accent)' : 'var(--border)';
   var now = new Date(Date.now() + clockMockOffset);
-  var parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit', hour12: true }).formatToParts(now);
+  var parts = new Intl.DateTimeFormat('en-US', { timeZone: zone, hour: 'numeric', minute: '2-digit', hour12: true }).formatToParts(now);
   var h = parts.find(function(p) { return p.type === 'hour'; });
   var m = parts.find(function(p) { return p.type === 'minute'; });
   var d = parts.find(function(p) { return p.type === 'dayPeriod'; });
   el('mockHour').value = h ? h.value : 12;
   el('mockMin').value = m ? m.value : '00';
   el('mockAmPm').value = d && d.value.toUpperCase().startsWith('P') ? 'PM' : 'AM';
+}
+function openClockMockModal() {
+  setMockZone(mockZone);
   el('clockMockModal').classList.remove('hidden');
 }
 function applyClockMock() {
@@ -2537,9 +2552,9 @@ function applyClockMock() {
   var ampm = el('mockAmPm').value;
   var h24 = (h % 12) + (ampm === 'PM' ? 12 : 0);
   var now = new Date();
-  var estParts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: 'numeric', hour12: false }).formatToParts(now);
-  var curH = parseInt(estParts.find(function(p) { return p.type === 'hour'; }).value);
-  var curM = parseInt(estParts.find(function(p) { return p.type === 'minute'; }).value);
+  var zoneParts = new Intl.DateTimeFormat('en-US', { timeZone: mockZone, hour: 'numeric', minute: 'numeric', hour12: false }).formatToParts(now);
+  var curH = parseInt(zoneParts.find(function(p) { return p.type === 'hour'; }).value);
+  var curM = parseInt(zoneParts.find(function(p) { return p.type === 'minute'; }).value);
   clockMockOffset = ((h24 - curH) * 60 + (m - curM)) * 60000;
   el('clockMockModal').classList.add('hidden');
   updateWorldClock();
