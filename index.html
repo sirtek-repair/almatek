@@ -3125,7 +3125,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(function(){}); }
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=3').catch(function(){}); }
 
 // ============================================
 // LEAD SELECT MODE
