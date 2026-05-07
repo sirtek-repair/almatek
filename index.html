@@ -166,6 +166,10 @@
     .inv-toast.show { opacity: 1; }
     @keyframes spin-icon { to { transform: rotate(360deg); } }
     .sync-spinning { display: inline-block; animation: spin-icon 0.8s linear infinite; }
+    .world-clock { display:flex; gap:16px; justify-content:center; margin-top:10px; }
+    .wc-item { display:flex; flex-direction:column; align-items:center; gap:1px; }
+    .wc-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); }
+    .wc-time { font-size:14px; font-weight:600; color:var(--text); }
     .token-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
     .token-card p { font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
     .token-row { display: flex; gap: 8px; }
@@ -673,6 +677,7 @@
   <header style="padding:16px 0 20px;text-align:center;">
     <img src="line-logo.jpg" width="48" height="48" style="display:block;margin:0 auto 6px;border-radius:10px;" alt="AlmaTek" />
     <h1 style="font-size:26px;font-family:Georgia,serif;font-weight:normal;text-transform:none;letter-spacing:0.01em;"><span class="brand">LeadTek</span></h1>
+    <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST">—</div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT">—</div></div></div>
     <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;">
       <button id="newLeadBtn" onclick="showNewLeadForm()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
       <div class="hlink-dropdown" id="contactsDropdown3" style="position:relative;">
@@ -706,6 +711,7 @@
     <button class="orders-tab-btn active" id="leadSubBtnLeads" onclick="switchLeadSubTab('leads')">Leads</button>
     <button class="orders-tab-btn" id="leadSubBtnTickets" onclick="switchLeadSubTab('tickets')">🎫 Tickets <span id="ticketsBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" id="leadSubBtnFollowUp" onclick="switchLeadSubTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+    <button class="orders-tab-btn" id="leadSubBtnSpecial" onclick="switchLeadSubTab('specialorder')">📦 Special Order <span id="specialOrderBadge" class="hidden" style="background:#f59e0b;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button id="syncBtn" onclick="syncFromSheets()" title="Sync with cloud" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;padding:4px 8px;color:var(--muted);line-height:1;">↻</button>
   </div>
 
@@ -770,6 +776,9 @@
       <button onclick="syncFromSheets()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--muted);cursor:pointer;">↻ Refresh</button>
     </div>
     <div id="followUpList"></div>
+  </div>
+  <div id="leadViewSpecialOrder" class="hidden">
+    <div id="specialOrderList" style="margin-top:4px;"></div>
   </div>
 
   <div id="leadDetailModal" class="chpass-overlay hidden" onclick="closeLeadDetail()">
@@ -1247,15 +1256,18 @@ function switchTicketSubView(view) {
 }
 function switchLeadSubTab(tab) {
   leadSubTab = tab;
-  var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup';
+  var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup', isSpecial = tab === 'specialorder';
   el('leadViewLeads').classList.toggle('hidden', !isLeads);
   el('leadViewTickets').classList.toggle('hidden', !isTickets);
   el('leadViewFollowUp').classList.toggle('hidden', !isFollowUp);
+  el('leadViewSpecialOrder').classList.toggle('hidden', !isSpecial);
   el('leadSubBtnLeads').classList.toggle('active', isLeads);
   el('leadSubBtnTickets').classList.toggle('active', isTickets);
   el('leadSubBtnFollowUp').classList.toggle('active', isFollowUp);
+  el('leadSubBtnSpecial').classList.toggle('active', isSpecial);
   var newLeadBtn = el('newLeadBtn'); if (newLeadBtn) newLeadBtn.style.display = isLeads ? '' : 'none';
   if (isFollowUp) renderFollowUpTab();
+  else if (isSpecial) renderSpecialOrdersList();
   else if (isTickets) { if (ticketSubView === 'closed') renderPickedUpList(); else renderTicketsList(); }
   else if (typeof renderLeadsList === 'function') renderLeadsList();
 }
@@ -1969,6 +1981,7 @@ function syncFromSheets() {
       if (leadSubTab === 'tickets' && typeof renderTicketsList === 'function') renderTicketsList();
       if (leadSubTab === 'tickets' && ticketSubView === 'closed' && typeof renderPickedUpList === 'function') renderPickedUpList();
       if (leadSubTab === 'followup') renderFollowUpTab();
+      if (leadSubTab === 'specialorder') renderSpecialOrdersList();
     } else if (data && data.error) {
       // Old script deployment — push local tickets anyway, server deduplicates
       ticketsStorage.forEach(function(t) { sheetsCall({ action: 'createTicket', ticket: t }); up.tickets++; });
@@ -2048,9 +2061,13 @@ function buildQuoteText() {
   var hasSecond = secondOpen && p2 > 0;
   var label1 = ATL_TYPE_LABELS[type1] || type1;
   var label2 = ATL_TYPE_LABELS[type2] || type2;
-  var tier1Label = tier1 ? ' (' + tier1.charAt(0).toUpperCase() + tier1.slice(1) + ')' : '';
-  var tier2Label = tier2 ? ' (' + tier2.charAt(0).toUpperCase() + tier2.slice(1) + ')' : '';
+  var model1Label = model1 ? ' (' + model1 + ')' : '';
+  var model2Label = model2 ? ' (' + model2 + ')' : '';
+  var tier1Label = tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '';
+  var tier2Label = tier2 ? ' · ' + tier2.charAt(0).toUpperCase() + tier2.slice(1) : '';
+  var note = (el('quoteNotes') ? el('quoteNotes').value : '').trim();
   var lines = [];
+  if (note) { lines.push(note); lines.push(''); }
 
   if (!isAuth()) {
     lines.push('The quote for your repair is: part + tax' + (hasSecond ? ' (combo deal available!)' : ''));
@@ -2063,8 +2080,8 @@ function buildQuoteText() {
 
     lines.push('Great news — since we\'re already in your device, we can bundle both repairs and save you money!');
     lines.push('');
-    lines.push('Repair 1 — ' + label1 + tier1Label + ': $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ' · includes mobile service' : ''));
-    lines.push('Repair 2 — ' + label2 + tier2Label + ': normally $' + full2 + ', but with the combo deal only $' + discounted2 + ' (50% off, tax included)');
+    lines.push('Repair 1 — ' + label1 + model1Label + tier1Label + ': $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ' · includes mobile service' : ''));
+    lines.push('Repair 2 — ' + label2 + model2Label + tier2Label + ': normally $' + full2 + ', but with the combo deal only $' + discounted2 + ' (50% off, tax included)');
     lines.push('');
     lines.push('Regular price for both: $' + fullTotal + ' (tax included)');
     lines.push('Your combo deal: $' + dealTotal + ' total (tax included)');
@@ -2076,7 +2093,7 @@ function buildQuoteText() {
     var prices = SCREEN_PRICES[model1] || {};
     var hasStd = prices.standard != null, hasPrem = prices.premium != null;
     if (hasStd && hasPrem) {
-      lines.push('We have two options available:');
+      lines.push('For your ' + model1 + ', we have two options available:');
       lines.push('');
       lines.push('STANDARD — $' + withTax(prices.standard + mobileFee) + ' (tax included)');
       lines.push('LCD screen that looks & functions just like the original. The frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re upgrading soon or keeping your phone under a year.');
@@ -2089,17 +2106,14 @@ function buildQuoteText() {
       lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
     } else {
       var opt = hasPrem ? 'premium' : 'standard', price = prices[opt];
-      lines.push(opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(price + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
+      lines.push(model1 + ' — ' + opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(price + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
       lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
     }
   } else {
     // ── Single non-screen repair ───────────────────────────────
-    lines.push(label1 + tier1Label + ' repair — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
+    lines.push(label1 + model1Label + tier1Label + ' repair — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
     lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
   }
-
-  var note = (el('quoteNotes') ? el('quoteNotes').value : '').trim();
-  if (note) { lines.push(''); lines.push(note); }
   return lines.join('\n');
 }
 function copyQuote(btn) {
@@ -2410,6 +2424,16 @@ loadTicketsFromStorage();
 
 initGlassPriceTags();
 
+function updateWorldClock() {
+  var now = new Date();
+  var est = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: true });
+  var pkt = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit', hour12: true });
+  var e = el('clockEST'), p = el('clockPKT');
+  if (e) e.textContent = est; if (p) p.textContent = pkt;
+}
+updateWorldClock();
+setInterval(updateWorldClock, 30000);
+
 // Sync from Sheets on startup if already authenticated (skips login flow)
 if (authd) setTimeout(syncFromSheets, 500);
 
@@ -2428,6 +2452,26 @@ function updateTicketsBadge() {
   var active = ticketsStorage.filter(function(t) { return t.status !== 'completed'; });
   badge.textContent = active.length;
   badge.classList.toggle('hidden', active.length === 0);
+  updateSpecialOrderBadge();
+}
+function updateSpecialOrderBadge() {
+  var badge = el('specialOrderBadge'); if (!badge) return;
+  var count = ticketsStorage.filter(function(t) { return t.flow === 'special_order' && t.status !== 'completed'; }).length;
+  badge.textContent = count;
+  badge.classList.toggle('hidden', count === 0);
+}
+function renderSpecialOrdersList() {
+  var container = el('specialOrderList'); if (!container) return;
+  var orders = ticketsStorage.filter(function(t) { return t.flow === 'special_order' && t.status !== 'completed'; });
+  if (!authd) { container.innerHTML = '<div class="demo-inv-note">Log in to see special orders</div>'; return; }
+  if (!orders.length) { container.innerHTML = '<div class="orders-empty-state">No special orders pending</div>'; return; }
+  orders.sort(function(a, b) { return new Date(b.createdAt || 0) - new Date(a.createdAt || 0); });
+  container.innerHTML = orders.map(function(t) {
+    var color = SO_COLORS[t.status] || '#f59e0b';
+    var badge = '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (SO_LABELS[t.status] || t.status) + '</span>';
+    var dateStr = new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return '<div class="inv-item" onclick="openTicketDetail(\'' + t.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name cx-name">' + t.name + '</div><div class="inv-item-model">' + (t.phone || '') + ' · ' + t.device + '</div></div>' + badge + '</div>' + (t.issue ? '<div class="inv-item-meta">' + t.issue.substring(0, 60) + '</div>' : '') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + (t.supplier ? ' · ' + t.supplier : '') + '</div></div>';
+  }).join('');
 }
 
 function renderTicketsList() {
