@@ -3,9 +3,11 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname.startsWith('/v0/')) {
-      const auth = request.headers.get('X-Auth') || '';
-      if (!env.AUTH_PASS || auth !== env.AUTH_PASS) {
-        return new Response('Unauthorized', { status: 401 });
+      if (!env.AIRTABLE_API_KEY) {
+        return new Response(JSON.stringify({ error: 'AIRTABLE_API_KEY not configured' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
       const airtableUrl = 'https://api.airtable.com' + url.pathname + url.search;
       const headers = new Headers();
