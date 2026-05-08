@@ -431,12 +431,10 @@
       <option value="">— select a repair —</option>
       <option value="iphone_screen">iPhone screen</option>
       <option value="back_glass">back glass (set price)</option>
-      <option value="back_glass_swap">back glass / frame swap</option>
+      <option value="back_glass_swap">frame swap</option>
       <option value="battery">battery / small parts</option>
-      <option value="ipad">iPad screen</option>
+      <option value="device">iPad / Android / Laptop</option>
       <option value="kimi">kimi repair</option>
-      <option value="android">android repair</option>
-      <option value="laptop">MacBook / laptop screen</option>
     </select>
   </div>
 
@@ -482,9 +480,18 @@
     <div id="glassSection" class="hidden">
       <label class="field-label">iPhone Model Group — Set Price</label>
       <div class="model-grid">
-        <button class="model-btn" onclick="onGlassSelect(50, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice50">$159</strong></button>
-        <button class="model-btn" onclick="onGlassSelect(60, this)">14 · 15<strong class="quote-price-tag" id="glassPrice60">$172</strong></button>
-        <button class="model-btn" onclick="onGlassSelect(70, this)">16<strong class="quote-price-tag" id="glassPrice70">$186</strong></button>
+        <button class="model-btn" onclick="onGlassSelect(84, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice84">$95</strong></button>
+        <button class="model-btn" onclick="onGlassSelect(94, this)">14 · 15<strong class="quote-price-tag" id="glassPrice94">$107</strong></button>
+        <button class="model-btn" onclick="onGlassSelect(110, this)">16<strong class="quote-price-tag" id="glassPrice110">$125</strong></button>
+      </div>
+    </div>
+
+    <div id="deviceSection" class="hidden">
+      <label class="field-label">Device Type</label>
+      <div class="model-grid">
+        <button class="model-btn" onclick="onDeviceSelect1('ipad', this)">iPad Screen</button>
+        <button class="model-btn" onclick="onDeviceSelect1('android', this)">Android</button>
+        <button class="model-btn" onclick="onDeviceSelect1('laptop', this)">MacBook / Laptop</button>
       </div>
     </div>
 
@@ -547,12 +554,10 @@
       <option value="">— select repair —</option>
       <option value="iphone_screen">iPhone screen</option>
       <option value="back_glass">back glass (set price)</option>
-      <option value="back_glass_swap">back glass / frame swap</option>
+      <option value="back_glass_swap">frame swap</option>
       <option value="battery">battery / small parts</option>
-      <option value="ipad">iPad screen</option>
+      <option value="device">iPad / Android / Laptop</option>
       <option value="kimi">kimi repair</option>
-      <option value="android">android repair</option>
-      <option value="laptop">MacBook / laptop screen</option>
     </select>
 
     <div id="cost2Wrap" class="hidden">
@@ -581,9 +586,18 @@
       <div id="glassSection2" class="hidden">
         <label class="field-label">iPhone Model Group — Set Price</label>
         <div class="model-grid">
-          <button class="model-btn" onclick="onGlassSelect2(50, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice2_50">$159</strong></button>
-          <button class="model-btn" onclick="onGlassSelect2(60, this)">14 · 15<strong class="quote-price-tag" id="glassPrice2_60">$172</strong></button>
-          <button class="model-btn" onclick="onGlassSelect2(70, this)">16<strong class="quote-price-tag" id="glassPrice2_70">$186</strong></button>
+          <button class="model-btn" onclick="onGlassSelect2(84, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice2_84">$95</strong></button>
+          <button class="model-btn" onclick="onGlassSelect2(94, this)">14 · 15<strong class="quote-price-tag" id="glassPrice2_94">$107</strong></button>
+          <button class="model-btn" onclick="onGlassSelect2(110, this)">16<strong class="quote-price-tag" id="glassPrice2_110">$125</strong></button>
+        </div>
+      </div>
+
+      <div id="deviceSection2" class="hidden">
+        <label class="field-label">Device Type</label>
+        <div class="model-grid">
+          <button class="model-btn" onclick="onDeviceSelect2('ipad', this)">iPad Screen</button>
+          <button class="model-btn" onclick="onDeviceSelect2('android', this)">Android</button>
+          <button class="model-btn" onclick="onDeviceSelect2('laptop', this)">MacBook / Laptop</button>
         </div>
       </div>
 
@@ -1062,7 +1076,7 @@
 
 <script>
 const LABOR = { iphone_screen:70, back_glass:80, back_glass_swap:100, battery:60, ipad:75, kimi:35, android:85, laptop:85 };
-const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', kimi:'Kimi Repair', android:'Android Repair', laptop:'MacBook / Laptop' };
+const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', kimi:'Kimi Repair', android:'Android Repair', laptop:'MacBook / Laptop' };
 const SHARE_ICON = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
 
 const FACTORY_SCREEN_TYPE = {
@@ -1105,30 +1119,32 @@ const el = id => document.getElementById(id);
 function fullPrice(cost, type) { return Math.ceil(cost * 1.2 + LABOR[type]); }
 function withTax(price) { return Math.ceil(price * 1.12875); }
 function initGlassPriceTags() {
-  [50, 60, 70].forEach(function(c) {
-    var p = '$' + withTax(fullPrice(c, 'back_glass'));
+  var fixed = { 84: 95, 94: 107, 110: 125 };
+  Object.keys(fixed).forEach(function(c) {
+    var p = '$' + fixed[c];
     ['glassPrice'+c, 'glassPrice2_'+c].forEach(function(id) { var el2 = el(id); if (el2) el2.textContent = p; });
   });
 }
 function getPrice1() {
   if (type1 === 'iphone_screen') { if (mode1 === 'select') { if (!model1 || !tier1) return 0; return SCREEN_PRICES[model1]?.[tier1] || 0; } else { return cost1 > 0 ? fullPrice(cost1, 'iphone_screen') : 0; } }
-  if (type1 === 'back_glass') { return cost1 > 0 ? fullPrice(cost1, 'back_glass') : 0; }
+  if (type1 === 'back_glass') { return cost1 > 0 ? cost1 : 0; }
   return cost1 > 0 ? fullPrice(cost1, type1) : 0;
 }
 function getPrice2() {
   if (type2 === 'iphone_screen') { if (mode2 === 'select') { if (!model2 || !tier2) return 0; return SCREEN_PRICES[model2]?.[tier2] || 0; } else { return cost2 > 0 ? fullPrice(cost2, 'iphone_screen') : 0; } }
-  if (type2 === 'back_glass') { return cost2 > 0 ? fullPrice(cost2, 'back_glass') : 0; }
+  if (type2 === 'back_glass') { return cost2 > 0 ? cost2 : 0; }
   return cost2 > 0 ? fullPrice(cost2, type2) : 0;
 }
 
 function onRepairChange() {
   type1 = el('repairType').value; cost1=0; model1=''; tier1=''; mode1='select'; quoteSupplier=''; quoteOrderRef=''; resetMobile(); resetSecond();
   ['costCard','quoteCard','mobileToggleRow','secondToggle'].forEach(id => el(id).classList.add('hidden'));
-  ['iphoneSection','glassSection','freeSection'].forEach(id => el(id).classList.add('hidden'));
+  ['iphoneSection','glassSection','deviceSection','freeSection'].forEach(id => el(id).classList.add('hidden'));
   if (!type1) return;
   el('costCard').classList.remove('hidden'); el('quoteCard').classList.add('hidden');
   if (type1 === 'iphone_screen') { el('iphoneSection').classList.remove('hidden'); setMode1('select'); el('partCostIphone').value = ''; el('modelSelect1').value = ''; el('tierOptions1').classList.add('hidden'); }
   else if (type1 === 'back_glass') { el('glassSection').classList.remove('hidden'); clearBtns('#glassSection'); }
+  else if (type1 === 'device') { el('deviceSection').classList.remove('hidden'); clearBtns('#deviceSection'); }
   else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value='';
     var lbl = el('partCostLabel'); if (lbl) lbl.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[type1]||0) + ' + tax)' : 'Part Cost'; }
 }
@@ -1177,6 +1193,23 @@ function setTier2(t) { if (!model2) return; const p = SCREEN_PRICES[model2] || {
 function onGlassSelect(cost, btn) { clearBtns('#glassSection'); btn.classList.add('active'); cost1=cost; tryRenderQuote(); }
 function onGlassSelect2(cost, btn) { clearBtns('#glassSection2'); btn.classList.add('active'); cost2=cost; renderDeal(); }
 
+function onDeviceSelect1(subtype, btn) {
+  clearBtns('#deviceSection'); btn.classList.add('active');
+  type1 = subtype; cost1 = 0;
+  el('freeSection').classList.remove('hidden');
+  el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value='';
+  var lbl = el('partCostLabel'); if (lbl) lbl.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[subtype]||0) + ' + tax)' : 'Part Cost';
+  tryRenderQuote();
+}
+function onDeviceSelect2(subtype, btn) {
+  clearBtns('#deviceSection2'); btn.classList.add('active');
+  type2 = subtype; cost2 = 0;
+  el('freeSection2').classList.remove('hidden');
+  el('partCost2').value = '';
+  var lbl2 = el('partCostLabel2'); if (lbl2) lbl2.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[subtype]||0) + ' + tax)' : 'Part Cost';
+  renderDeal();
+}
+
 function onCost1Change() { const inputId = type1==='iphone_screen' ? 'partCostIphone' : 'partCost'; cost1 = parseFloat(el(inputId).value) || 0; tryRenderQuote(); }
 function onCost2Change() { const inputId = type2==='iphone_screen' ? 'partCostIphone2' : 'partCost2'; cost2 = parseFloat(el(inputId).value) || 0; renderDeal(); }
 
@@ -1190,7 +1223,7 @@ function tryRenderQuote() {
 }
 function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); }
 
-var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Swap', battery:'Battery', ipad:'iPad', kimi:'Kimi Repair', android:'Android', laptop:'Laptop' };
+var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', ipad:'iPad', kimi:'Kimi Repair', android:'Android', laptop:'Laptop' };
 
 var attFlow = 'in_stock';
 function setTicketFlow(flow) {
@@ -1315,11 +1348,12 @@ function resetMobile() { mobileOpen=false; mobileFee=0; el('mobileSw').classList
 function onToggle2nd() { secondOpen = !secondOpen; el('secondSw').classList.toggle('on', secondOpen); el('secondToggle').classList.toggle('active', secondOpen); el('secondCard').classList.toggle('hidden', !secondOpen); if (!secondOpen) el('dealResult').classList.add('hidden'); }
 function on2ndRepairChange() {
   type2 = el('repair2Type').value; cost2=0; model2=''; tier2=''; mode2='select'; el('dealResult').classList.add('hidden');
-  ['iphoneSection2','glassSection2','freeSection2'].forEach(id => el(id).classList.add('hidden'));
+  ['iphoneSection2','glassSection2','deviceSection2','freeSection2'].forEach(id => el(id).classList.add('hidden'));
   if (!type2) { el('cost2Wrap').classList.add('hidden'); return; }
   el('cost2Wrap').classList.remove('hidden');
   if (type2==='iphone_screen') { el('iphoneSection2').classList.remove('hidden'); setMode2('select'); }
   else if (type2==='back_glass') { el('glassSection2').classList.remove('hidden'); clearBtns('#glassSection2'); }
+  else if (type2==='device') { el('deviceSection2').classList.remove('hidden'); clearBtns('#deviceSection2'); }
   else { el('freeSection2').classList.remove('hidden');
     var lbl2 = el('partCostLabel2'); if (lbl2) lbl2.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[type2]||0) + ' + tax)' : 'Part Cost'; }
 }
@@ -3285,7 +3319,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-3';
+var APP_VERSION = '20260508-4';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
