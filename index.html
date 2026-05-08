@@ -359,7 +359,6 @@
   <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 <span class="brand">LeadTek</span></button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
   <button class="tab-btn" id="tabProfileBtn" onclick="switchTab('profile')">💵 Profile</button>
-  <button class="tab-btn" id="tabSettingsBtn" onclick="switchTab('settings')">⚙ Settings</button>
   <button class="tab-btn hidden" id="tabAdminBtn" onclick="switchTab('admin')">🔧 Admin</button>
   <button class="tab-btn" id="tabToolsBtn" onclick="switchTab('tools')">🚀 Tools</button>
 </div>
@@ -440,33 +439,21 @@
 
   <div id="costCard" class="card hidden">
     <div id="iphoneSection">
-      <div class="mode-tabs">
-        <button class="mode-tab active" id="modeTab1Select" onclick="setMode1('select')">📋 Select Model</button>
-        <button class="mode-tab" id="modeTab1Manual" onclick="setMode1('manual')">✏️ Enter Manually</button>
-      </div>
-      <div id="iphoneSelectInputs">
-        <label class="field-label" for="modelSelect1">iPhone Model</label>
-        <select id="modelSelect1" onchange="onModel1Change()">
-          <option value="">— select model —</option>
-          <optgroup label="iPhone 17 series"><option value="iPhone Air">iPhone Air</option><option value="iPhone 17 Pro Max">iPhone 17 Pro Max</option><option value="iPhone 17 Pro">iPhone 17 Pro</option><option value="iPhone 17">iPhone 17</option></optgroup>
-          <optgroup label="iPhone 16 series"><option value="iPhone 16e">iPhone 16e</option><option value="iPhone 16 Pro Max">iPhone 16 Pro Max</option><option value="iPhone 16 Pro">iPhone 16 Pro</option><option value="iPhone 16 Plus">iPhone 16 Plus</option><option value="iPhone 16">iPhone 16</option></optgroup>
-          <optgroup label="iPhone 15 series"><option value="iPhone 15 Pro Max">iPhone 15 Pro Max</option><option value="iPhone 15 Pro">iPhone 15 Pro</option><option value="iPhone 15 Plus">iPhone 15 Plus</option><option value="iPhone 15">iPhone 15</option></optgroup>
-          <optgroup label="iPhone 14 series"><option value="iPhone 14 Pro Max">iPhone 14 Pro Max</option><option value="iPhone 14 Pro">iPhone 14 Pro</option><option value="iPhone 14 Plus">iPhone 14 Plus</option><option value="iPhone 14">iPhone 14</option></optgroup>
-          <optgroup label="iPhone 13 series"><option value="iPhone 13 Pro Max">iPhone 13 Pro Max</option><option value="iPhone 13 Pro">iPhone 13 Pro</option><option value="iPhone 13">iPhone 13</option><option value="iPhone 13 Mini">iPhone 13 Mini</option></optgroup>
-          <optgroup label="iPhone 12 series"><option value="iPhone 12 Pro Max">iPhone 12 Pro Max</option><option value="iPhone 12 Pro">iPhone 12 Pro</option><option value="iPhone 12">iPhone 12</option><option value="iPhone 12 Mini">iPhone 12 Mini</option></optgroup>
-          <optgroup label="iPhone 11 series"><option value="iPhone 11 Pro Max">iPhone 11 Pro Max</option><option value="iPhone 11 Pro">iPhone 11 Pro</option><option value="iPhone 11">iPhone 11</option></optgroup>
-          <optgroup label="iPhone X series"><option value="iPhone XS Max">iPhone XS Max</option><option value="iPhone XS">iPhone XS</option><option value="iPhone XR">iPhone XR</option><option value="iPhone X">iPhone X</option></optgroup>
-          <optgroup label="iPhone 8 &amp; SE"><option value="iPhone 8 Plus">iPhone 8 Plus</option><option value="iPhone 8 / SE (2nd &amp; 3rd Gen)">iPhone 8 / SE (2nd &amp; 3rd Gen)</option><option value="iPhone SE (2nd Gen)">iPhone SE (2nd Gen)</option><option value="iPhone SE (3rd Gen)">iPhone SE (3rd Gen)</option><option value="iPhone 7 Plus">iPhone 7 Plus</option><option value="iPhone 7">iPhone 7</option><option value="iPhone 6S">iPhone 6S</option><option value="iPhone 6 Plus">iPhone 6 Plus</option><option value="iPhone 6">iPhone 6</option><option value="iPhone 5S / SE (1st Gen)">iPhone 5S / SE (1st Gen)</option><option value="iPhone SE (1st Gen)">iPhone SE (1st Gen)</option><option value="iPhone 5C">iPhone 5C</option><option value="iPhone 5">iPhone 5</option><option value="iPhone 4S">iPhone 4S</option><option value="iPhone 4">iPhone 4</option></optgroup>
-        </select>
-        <div class="tier-options hidden" id="tierOptions1">
-          <div class="factory-label" id="factoryLabel1"></div>
-          <div class="tier-option" id="tierBox1Prem" onclick="setTier1('premium')"><div class="tier-option-header"><span class="tier-option-label">Premium</span><span class="tier-option-price" id="tierPrice1Prem">$—</span></div><div class="stock-row hidden" id="stockRow1Prem"><span class="stock-badge" id="stockBadge1Prem"></span><span class="stock-detail" id="stockDetail1Prem"></span></div></div>
-          <div class="tier-option" id="tierBox1Std" onclick="setTier1('standard')"><div class="tier-option-header"><span class="tier-option-label">Standard</span><span class="tier-option-price" id="tierPrice1Std">$—</span></div><div class="stock-row hidden" id="stockRow1Std"><span class="stock-badge" id="stockBadge1Std"></span><span class="stock-detail" id="stockDetail1Std"></span></div></div>
-          <div id="pricingRetryRow" class="hidden" style="margin-top:6px;"><button onclick="refreshPricingIfStale()" style="width:100%;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;">⟳ Reload pricing from sheet</button></div>
-        </div>
-      </div>
-      <div id="iphoneManualInputs" class="hidden">
-        <label class="field-label" for="partCostIphone">Part Cost</label>
+      <label class="field-label" for="modelSelect1">iPhone Model</label>
+      <select id="modelSelect1" onchange="onModel1Change()">
+        <option value="">— select model —</option>
+        <optgroup label="iPhone 17 series"><option value="iPhone Air">iPhone Air</option><option value="iPhone 17 Pro Max">iPhone 17 Pro Max</option><option value="iPhone 17 Pro">iPhone 17 Pro</option><option value="iPhone 17">iPhone 17</option></optgroup>
+        <optgroup label="iPhone 16 series"><option value="iPhone 16e">iPhone 16e</option><option value="iPhone 16 Pro Max">iPhone 16 Pro Max</option><option value="iPhone 16 Pro">iPhone 16 Pro</option><option value="iPhone 16 Plus">iPhone 16 Plus</option><option value="iPhone 16">iPhone 16</option></optgroup>
+        <optgroup label="iPhone 15 series"><option value="iPhone 15 Pro Max">iPhone 15 Pro Max</option><option value="iPhone 15 Pro">iPhone 15 Pro</option><option value="iPhone 15 Plus">iPhone 15 Plus</option><option value="iPhone 15">iPhone 15</option></optgroup>
+        <optgroup label="iPhone 14 series"><option value="iPhone 14 Pro Max">iPhone 14 Pro Max</option><option value="iPhone 14 Pro">iPhone 14 Pro</option><option value="iPhone 14 Plus">iPhone 14 Plus</option><option value="iPhone 14">iPhone 14</option></optgroup>
+        <optgroup label="iPhone 13 series"><option value="iPhone 13 Pro Max">iPhone 13 Pro Max</option><option value="iPhone 13 Pro">iPhone 13 Pro</option><option value="iPhone 13">iPhone 13</option><option value="iPhone 13 Mini">iPhone 13 Mini</option></optgroup>
+        <optgroup label="iPhone 12 series"><option value="iPhone 12 Pro Max">iPhone 12 Pro Max</option><option value="iPhone 12 Pro">iPhone 12 Pro</option><option value="iPhone 12">iPhone 12</option><option value="iPhone 12 Mini">iPhone 12 Mini</option></optgroup>
+        <optgroup label="iPhone 11 series"><option value="iPhone 11 Pro Max">iPhone 11 Pro Max</option><option value="iPhone 11 Pro">iPhone 11 Pro</option><option value="iPhone 11">iPhone 11</option></optgroup>
+        <optgroup label="iPhone X series"><option value="iPhone XS Max">iPhone XS Max</option><option value="iPhone XS">iPhone XS</option><option value="iPhone XR">iPhone XR</option><option value="iPhone X">iPhone X</option></optgroup>
+        <optgroup label="iPhone 8 &amp; SE"><option value="iPhone 8 Plus">iPhone 8 Plus</option><option value="iPhone 8 / SE (2nd &amp; 3rd Gen)">iPhone 8 / SE (2nd &amp; 3rd Gen)</option><option value="iPhone SE (2nd Gen)">iPhone SE (2nd Gen)</option><option value="iPhone SE (3rd Gen)">iPhone SE (3rd Gen)</option><option value="iPhone 7 Plus">iPhone 7 Plus</option><option value="iPhone 7">iPhone 7</option><option value="iPhone 6S">iPhone 6S</option><option value="iPhone 6 Plus">iPhone 6 Plus</option><option value="iPhone 6">iPhone 6</option><option value="iPhone 5S / SE (1st Gen)">iPhone 5S / SE (1st Gen)</option><option value="iPhone SE (1st Gen)">iPhone SE (1st Gen)</option><option value="iPhone 5C">iPhone 5C</option><option value="iPhone 5">iPhone 5</option><option value="iPhone 4S">iPhone 4S</option><option value="iPhone 4">iPhone 4</option></optgroup>
+      </select>
+      <div style="margin-top:12px;">
+        <label class="field-label" for="partCostIphone" id="partCostIphoneLabel">Part Cost</label>
         <input type="number" id="partCostIphone" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
         <p class="hint">Round up to whole dollar</p>
         <div id="supplierRow1" style="margin-top:8px;margin-bottom:4px;">
@@ -563,21 +550,10 @@
     <div id="cost2Wrap" class="hidden">
       <hr class="divider" />
       <div id="iphoneSection2" class="hidden">
-        <div class="mode-tabs">
-          <button class="mode-tab active" id="modeTab2Select" onclick="setMode2('select')">📋 Select Model</button>
-          <button class="mode-tab" id="modeTab2Manual" onclick="setMode2('manual')">✏️ Enter Manually</button>
-        </div>
-        <div id="iphoneSelectInputs2">
-          <label class="field-label" for="modelSelect2">iPhone Model</label>
-          <select id="modelSelect2" onchange="onModel2Change()"><option value="">— Select model —</option></select>
-          <div class="tier-options hidden" id="tierOptions2">
-            <div class="factory-label" id="factoryLabel2"></div>
-            <div class="tier-option" id="tierBox2Prem" onclick="setTier2('premium')"><div class="tier-option-header"><span class="tier-option-label">Premium</span><span class="tier-option-price" id="tierPrice2Prem">$—</span></div><div class="stock-row hidden" id="stockRow2Prem"><span class="stock-badge" id="stockBadge2Prem"></span><span class="stock-detail" id="stockDetail2Prem"></span></div></div>
-            <div class="tier-option" id="tierBox2Std" onclick="setTier2('standard')"><div class="tier-option-header"><span class="tier-option-label">Standard</span><span class="tier-option-price" id="tierPrice2Std">$—</span></div><div class="stock-row hidden" id="stockRow2Std"><span class="stock-badge" id="stockBadge2Std"></span><span class="stock-detail" id="stockDetail2Std"></span></div></div>
-          </div>
-        </div>
-        <div id="iphoneManualInputs2" class="hidden">
-          <label class="field-label" for="partCostIphone2">Part Cost — Mobile Sentrix</label>
+        <label class="field-label" for="modelSelect2">iPhone Model</label>
+        <select id="modelSelect2" onchange="onModel2Change()"><option value="">— select model —</option><option value="iPhone Air">iPhone Air</option><option value="iPhone 17 Pro Max">iPhone 17 Pro Max</option><option value="iPhone 17 Pro">iPhone 17 Pro</option><option value="iPhone 17">iPhone 17</option><option value="iPhone 16e">iPhone 16e</option><option value="iPhone 16 Pro Max">iPhone 16 Pro Max</option><option value="iPhone 16 Pro">iPhone 16 Pro</option><option value="iPhone 16 Plus">iPhone 16 Plus</option><option value="iPhone 16">iPhone 16</option><option value="iPhone 15 Pro Max">iPhone 15 Pro Max</option><option value="iPhone 15 Pro">iPhone 15 Pro</option><option value="iPhone 15 Plus">iPhone 15 Plus</option><option value="iPhone 15">iPhone 15</option><option value="iPhone 14 Pro Max">iPhone 14 Pro Max</option><option value="iPhone 14 Pro">iPhone 14 Pro</option><option value="iPhone 14 Plus">iPhone 14 Plus</option><option value="iPhone 14">iPhone 14</option><option value="iPhone 13 Pro Max">iPhone 13 Pro Max</option><option value="iPhone 13 Pro">iPhone 13 Pro</option><option value="iPhone 13">iPhone 13</option><option value="iPhone 13 Mini">iPhone 13 Mini</option><option value="iPhone 12 Pro Max">iPhone 12 Pro Max</option><option value="iPhone 12 Pro">iPhone 12 Pro</option><option value="iPhone 12">iPhone 12</option><option value="iPhone 12 Mini">iPhone 12 Mini</option><option value="iPhone 11 Pro Max">iPhone 11 Pro Max</option><option value="iPhone 11 Pro">iPhone 11 Pro</option><option value="iPhone 11">iPhone 11</option><option value="iPhone XS Max">iPhone XS Max</option><option value="iPhone XS">iPhone XS</option><option value="iPhone XR">iPhone XR</option><option value="iPhone X">iPhone X</option><option value="iPhone 8 Plus">iPhone 8 Plus</option><option value="iPhone 8 / SE (2nd &amp; 3rd Gen)">iPhone 8 / SE</option><option value="iPhone 7 Plus">iPhone 7 Plus</option><option value="iPhone 7">iPhone 7</option><option value="iPhone 6S">iPhone 6S</option><option value="iPhone 6">iPhone 6</option></select>
+        <div style="margin-top:12px;">
+          <label class="field-label" for="partCostIphone2">Part Cost</label>
           <input type="number" id="partCostIphone2" placeholder="$0" min="0" step="1" oninput="onCost2Change()" />
           <p class="hint">Round up to whole dollar</p>
         </div>
@@ -941,46 +917,9 @@
     <div id="flatRevshareRow" class="gap hidden" style="margin-top:14px;"><label class="field-label" for="flatRevshare">Rev Share % (optional)</label><input type="number" id="flatRevshare" value="0" min="0" max="100" step="0.5" oninput="calcBookerPay()" /><p class="hint">Leave 0 if not applicable yet</p></div>
   </div>
   <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total" style="margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:10px;"><div class="bt-label">Per Repair Payout</div><div class="bt-amt" id="perRepairAmt">$—</div></div><div id="revShareResultRow" class="booker-total hidden"><div class="bt-label">Rev Share Payout</div><div class="bt-amt" id="revShareAmt">$—</div></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">⬆ Share Results</button></div></div>
-</div>
-</div>
 
-<!-- Admin Tab (owner only) -->
-<div id="tabAdmin" class="hidden">
-<div class="container">
-  <header style="text-align:center;padding:16px 0 12px;">
-    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">🔧 Admin</h1>
-  </header>
-  <div class="orders-tab-nav" style="margin-bottom:16px;">
-    <button class="orders-tab-btn active" id="adminSubBtnStaff" onclick="switchAdminSubTab('staff')">👥 Staff</button>
-    <button class="orders-tab-btn" id="adminSubBtnReports" onclick="switchAdminSubTab('reports')">📊 Reports</button>
-  </div>
-
-  <div id="adminSubViewStaff">
-    <div id="adminNoScriptMsg" class="hidden" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">No script connected — configure it in <button onclick="switchTab('settings')" style="background:none;border:none;color:var(--accent);font-family:inherit;font-size:13px;cursor:pointer;text-decoration:underline;">Settings</button></div>
-    <div id="staffMainSection" class="hidden"><div style="text-align:right;margin-bottom:8px;"><button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Reset Google Apps Script URL</button></div><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
-    <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
-  </div>
-
-  <div id="adminSubViewReports" class="hidden">
-    <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-      <button class="orders-tab-btn active" id="rptBtnDay" onclick="setReportPeriod('day',this)">Today</button>
-      <button class="orders-tab-btn" id="rptBtnWeek" onclick="setReportPeriod('week',this)">Week</button>
-      <button class="orders-tab-btn" id="rptBtnMonth" onclick="setReportPeriod('month',this)">Month</button>
-      <button class="orders-tab-btn" id="rptBtnYTD" onclick="setReportPeriod('ytd',this)">YTD</button>
-      <button id="rptShareBtn" onclick="shareReport()" style="margin-left:auto;padding:6px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share</button>
-    </div>
-    <div id="reportsSummary"></div>
-    <div id="reportsTicketList" style="margin-top:12px;"></div>
-  </div>
-</div>
-</div>
-
-<!-- Settings Tab -->
-<div id="tabSettings" class="hidden">
-<div class="container">
-  <header style="text-align:center;padding:16px 0 12px;">
-    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">⚙ Settings</h1>
-  </header>
+  <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 4px;" />
+  <h2 style="font-size:16px;font-weight:600;color:var(--muted);text-align:center;margin:12px 0 16px;letter-spacing:0.03em;">⚙ Settings</h2>
 
   <div class="card">
     <div class="staff-section-title">Google Apps Script</div>
@@ -1004,7 +943,7 @@
     <div id="settingsTokenErr" class="chpass-err" style="margin-top:6px;"></div>
   </div>
 
-  <div class="card" id="settingsChangePassSection" style="margin-top:16px;">
+  <div class="card" id="settingsChangePassSection" style="margin-top:16px;margin-bottom:24px;">
     <div class="staff-section-title">Change Password</div>
     <input type="password" id="settingsPassCurrent" placeholder="Current password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:10px;" />
     <input type="password" id="settingsPassNew" placeholder="New password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:8px;" />
@@ -1015,6 +954,38 @@
 
 </div>
 </div>
+
+<!-- Admin Tab (owner only) -->
+<div id="tabAdmin" class="hidden">
+<div class="container">
+  <header style="text-align:center;padding:16px 0 12px;">
+    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">🔧 Admin</h1>
+  </header>
+  <div class="orders-tab-nav" style="margin-bottom:16px;">
+    <button class="orders-tab-btn active" id="adminSubBtnStaff" onclick="switchAdminSubTab('staff')">👥 Staff</button>
+    <button class="orders-tab-btn" id="adminSubBtnReports" onclick="switchAdminSubTab('reports')">📊 Reports</button>
+  </div>
+
+  <div id="adminSubViewStaff">
+    <div id="adminNoScriptMsg" class="hidden" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">No script connected — configure it in <button onclick="switchTab('profile')" style="background:none;border:none;color:var(--accent);font-family:inherit;font-size:13px;cursor:pointer;text-decoration:underline;">Profile</button></div>
+    <div id="staffMainSection" class="hidden"><div style="text-align:right;margin-bottom:8px;"><button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Reset Google Apps Script URL</button></div><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
+    <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
+  </div>
+
+  <div id="adminSubViewReports" class="hidden">
+    <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+      <button class="orders-tab-btn active" id="rptBtnDay" onclick="setReportPeriod('day',this)">Today</button>
+      <button class="orders-tab-btn" id="rptBtnWeek" onclick="setReportPeriod('week',this)">Week</button>
+      <button class="orders-tab-btn" id="rptBtnMonth" onclick="setReportPeriod('month',this)">Month</button>
+      <button class="orders-tab-btn" id="rptBtnYTD" onclick="setReportPeriod('ytd',this)">YTD</button>
+      <button id="rptShareBtn" onclick="shareReport()" style="margin-left:auto;padding:6px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share</button>
+    </div>
+    <div id="reportsSummary"></div>
+    <div id="reportsTicketList" style="margin-top:12px;"></div>
+  </div>
+</div>
+</div>
+
 
 <!-- Tools Tab -->
 <div id="tabTools" class="hidden">
@@ -1126,69 +1097,36 @@ function initGlassPriceTags() {
   });
 }
 function getPrice1() {
-  if (type1 === 'iphone_screen') { if (mode1 === 'select') { if (!model1 || !tier1) return 0; return SCREEN_PRICES[model1]?.[tier1] || 0; } else { return cost1 > 0 ? fullPrice(cost1, 'iphone_screen') : 0; } }
   if (type1 === 'back_glass') { return cost1 > 0 ? cost1 : 0; }
   return cost1 > 0 ? fullPrice(cost1, type1) : 0;
 }
 function getPrice2() {
-  if (type2 === 'iphone_screen') { if (mode2 === 'select') { if (!model2 || !tier2) return 0; return SCREEN_PRICES[model2]?.[tier2] || 0; } else { return cost2 > 0 ? fullPrice(cost2, 'iphone_screen') : 0; } }
   if (type2 === 'back_glass') { return cost2 > 0 ? cost2 : 0; }
   return cost2 > 0 ? fullPrice(cost2, type2) : 0;
 }
 
 function onRepairChange() {
-  type1 = el('repairType').value; cost1=0; model1=''; tier1=''; mode1='select'; quoteSupplier=''; quoteOrderRef=''; resetMobile(); resetSecond();
+  type1 = el('repairType').value; cost1=0; model1=''; tier1=''; quoteSupplier=''; quoteOrderRef=''; resetMobile(); resetSecond();
   ['costCard','quoteCard','mobileToggleRow','secondToggle'].forEach(id => el(id).classList.add('hidden'));
   ['iphoneSection','glassSection','deviceSection','freeSection'].forEach(id => el(id).classList.add('hidden'));
   if (!type1) return;
   el('costCard').classList.remove('hidden'); el('quoteCard').classList.add('hidden');
-  if (type1 === 'iphone_screen') { el('iphoneSection').classList.remove('hidden'); setMode1('select'); el('partCostIphone').value = ''; el('modelSelect1').value = ''; el('tierOptions1').classList.add('hidden'); }
+  if (type1 === 'iphone_screen') {
+    el('iphoneSection').classList.remove('hidden');
+    el('partCostIphone').value = ''; el('modelSelect1').value = '';
+    var lbl = el('partCostIphoneLabel'); if (lbl) lbl.textContent = isOwner ? 'Part Cost — (× 1.2 + $70 + tax)' : 'Part Cost';
+    renderSupplierBtns(); if(el('orderRef1')) el('orderRef1').value='';
+  }
   else if (type1 === 'back_glass') { el('glassSection').classList.remove('hidden'); clearBtns('#glassSection'); }
   else if (type1 === 'device') { el('deviceSection').classList.remove('hidden'); clearBtns('#deviceSection'); }
   else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value='';
     var lbl = el('partCostLabel'); if (lbl) lbl.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[type1]||0) + ' + tax)' : 'Part Cost'; }
 }
 
-function setMode1(m) {
-  mode1 = m; el('modeTab1Select').classList.toggle('active', m==='select'); el('modeTab1Manual').classList.toggle('active', m==='manual');
-  el('iphoneSelectInputs').classList.toggle('hidden', m!=='select'); el('iphoneManualInputs').classList.toggle('hidden', m!=='manual');
-  cost1=0; model1=''; tier1=''; el('partCostIphone').value = ''; el('tierOptions1').classList.add('hidden'); hideQuote();
-  if (m === 'manual') { renderSupplierBtns(); if(el('orderRef1')) el('orderRef1').value=''; }
-}
-function onModel1Change() { model1 = el('modelSelect1').value; tier1=''; hideQuote(); updateTierDisplay1(); }
-function updateTierDisplay1() {
-  if (!model1) { el('tierOptions1').classList.add('hidden'); return; }
-  const p = SCREEN_PRICES[model1] || {}; el('tierOptions1').classList.remove('hidden');
-  if (p.premium != null) { el('tierBox1Prem').classList.remove('na'); el('tierPrice1Prem').textContent = isAuth() ? '$' + withTax(p.premium) : '$—'; } else { el('tierBox1Prem').classList.add('na'); el('tierPrice1Prem').textContent = 'N/A'; }
-  if (p.standard != null) { el('tierBox1Std').classList.remove('na'); el('tierPrice1Std').textContent = isAuth() ? '$' + withTax(p.standard) : '$—'; } else { el('tierBox1Std').classList.add('na'); el('tierPrice1Std').textContent = 'N/A'; }
-  var noPrice = p.premium == null && p.standard == null;
-  el('pricingRetryRow').classList.toggle('hidden', !noPrice);
-  var lbl1 = el('factoryLabel1'), ftype1 = FACTORY_SCREEN_TYPE[model1];
-  if (ftype1) { lbl1.textContent = 'Factory Screen: ' + ftype1.toUpperCase(); lbl1.className = 'factory-label ' + ftype1; lbl1.style.display = 'block'; }
-  else { lbl1.style.display = 'none'; }
-  showStockBadge('1Prem', model1, 'premium'); showStockBadge('1Std', model1, 'standard');
-  if (p.premium != null) { setTier1('premium'); } else if (p.standard != null) { setTier1('standard'); }
-}
-function setTier1(t) { if (!model1) return; const p = SCREEN_PRICES[model1] || {}; if (p[t] == null) return; tier1 = t; el('tierBox1Prem').classList.toggle('active', t === 'premium'); el('tierBox1Std').classList.toggle('active', t === 'standard'); tryRenderQuote(); }
-
-function setMode2(m) {
-  mode2 = m; el('modeTab2Select').classList.toggle('active', m==='select'); el('modeTab2Manual').classList.toggle('active', m==='manual');
-  el('iphoneSelectInputs2').classList.toggle('hidden', m!=='select'); el('iphoneManualInputs2').classList.toggle('hidden', m!=='manual');
-  cost2=0; model2=''; tier2=''; el('partCostIphone2').value = ''; el('tierOptions2').classList.add('hidden'); el('dealResult').classList.add('hidden');
-}
-function onModel2Change() { model2 = el('modelSelect2').value; tier2=''; el('dealResult').classList.add('hidden'); updateTierDisplay2(); }
-function updateTierDisplay2() {
-  if (!model2) { el('tierOptions2').classList.add('hidden'); return; }
-  const p = SCREEN_PRICES[model2] || {}; el('tierOptions2').classList.remove('hidden');
-  if (p.premium != null) { el('tierBox2Prem').classList.remove('na'); el('tierPrice2Prem').textContent = isAuth() ? '$' + withTax(p.premium) : '$—'; } else { el('tierBox2Prem').classList.add('na'); el('tierPrice2Prem').textContent = 'N/A'; }
-  if (p.standard != null) { el('tierBox2Std').classList.remove('na'); el('tierPrice2Std').textContent = isAuth() ? '$' + withTax(p.standard) : '$—'; } else { el('tierBox2Std').classList.add('na'); el('tierPrice2Std').textContent = 'N/A'; }
-  var lbl2 = el('factoryLabel2'), ftype2 = FACTORY_SCREEN_TYPE[model2];
-  if (ftype2) { lbl2.textContent = 'Factory Screen: ' + ftype2.toUpperCase(); lbl2.className = 'factory-label ' + ftype2; lbl2.style.display = 'block'; }
-  else { lbl2.style.display = 'none'; }
-  showStockBadge('2Prem', model2, 'premium'); showStockBadge('2Std', model2, 'standard');
-  if (p.premium != null) { setTier2('premium'); } else if (p.standard != null) { setTier2('standard'); }
-}
-function setTier2(t) { if (!model2) return; const p = SCREEN_PRICES[model2] || {}; if (p[t] == null) return; tier2 = t; el('tierBox2Prem').classList.toggle('active', t === 'premium'); el('tierBox2Std').classList.toggle('active', t === 'standard'); renderDeal(); }
+function onModel1Change() { model1 = el('modelSelect1').value; hideQuote(); }
+function onModel2Change() { model2 = el('modelSelect2').value; el('dealResult').classList.add('hidden'); }
+function updateTierDisplay1() {}
+function updateTierDisplay2() {}
 
 function onGlassSelect(cost, btn) { clearBtns('#glassSection'); btn.classList.add('active'); cost1=cost; tryRenderQuote(); }
 function onGlassSelect2(cost, btn) { clearBtns('#glassSection2'); btn.classList.add('active'); cost2=cost; renderDeal(); }
@@ -1351,7 +1289,7 @@ function on2ndRepairChange() {
   ['iphoneSection2','glassSection2','deviceSection2','freeSection2'].forEach(id => el(id).classList.add('hidden'));
   if (!type2) { el('cost2Wrap').classList.add('hidden'); return; }
   el('cost2Wrap').classList.remove('hidden');
-  if (type2==='iphone_screen') { el('iphoneSection2').classList.remove('hidden'); setMode2('select'); }
+  if (type2==='iphone_screen') { el('iphoneSection2').classList.remove('hidden'); el('partCostIphone2').value = ''; el('modelSelect2').value = ''; }
   else if (type2==='back_glass') { el('glassSection2').classList.remove('hidden'); clearBtns('#glassSection2'); }
   else if (type2==='device') { el('deviceSection2').classList.remove('hidden'); clearBtns('#deviceSection2'); }
   else { el('freeSection2').classList.remove('hidden');
@@ -1370,12 +1308,12 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
 function switchTab(tab) {
   if (tab === 'cart') { switchTab('inventory'); switchInvSubTab('orders'); switchOrdersView('cart'); return; }
   if (tab === 'orders') { switchTab('inventory'); switchInvSubTab('orders'); return; }
-  const isQuote = tab==='quote', isInventory = tab==='inventory', isLeads = tab==='leads', isProfile = tab==='profile', isSettings = tab==='settings', isAdmin = tab==='admin', isTools = tab==='tools';
+  if (tab === 'settings') { switchTab('profile'); return; }
+  const isQuote = tab==='quote', isInventory = tab==='inventory', isLeads = tab==='leads', isProfile = tab==='profile', isAdmin = tab==='admin', isTools = tab==='tools';
   el('tabQuote').classList.toggle('hidden', !isQuote);
   el('tabInventory').classList.toggle('hidden', !isInventory);
   el('tabLeads').classList.toggle('hidden', !isLeads);
   el('tabProfile').classList.toggle('hidden', !isProfile);
-  el('tabSettings').classList.toggle('hidden', !isSettings);
   el('tabAdmin').classList.toggle('hidden', !isAdmin);
   el('tabTools').classList.toggle('hidden', !isTools);
   el('tabCart').classList.toggle('hidden', true);
@@ -1383,15 +1321,13 @@ function switchTab(tab) {
   el('tabInvBtn').classList.toggle('active', isInventory);
   el('tabLeadsBtn').classList.toggle('active', isLeads);
   el('tabProfileBtn').classList.toggle('active', isProfile);
-  el('tabSettingsBtn').classList.toggle('active', isSettings);
   el('tabAdminBtn').classList.toggle('active', isAdmin);
   el('tabToolsBtn').classList.toggle('active', isTools);
   if (isLeads) { exitLeadSelectMode && exitLeadSelectMode(); exitTicketSelectMode && exitTicketSelectMode(); }
   if (isInventory) initInventory();
   else if (isAdmin) { switchAdminSubTab(adminSubTab || 'staff'); }
-  else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); }
+  else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); openSettingsTab(); }
   else if (isLeads) { switchLeadSubTab('leads'); }
-  else if (isSettings) { openSettingsTab(); }
 }
 var invSubTab = 'inventory';
 function switchInvSubTab(tab) {
@@ -1941,10 +1877,10 @@ function tryAuth() {
           sheetsCall({ action: 'getConfig' }).then(function(cfg) {
             if (cfg && cfg.ok) applyLoginConfig(cfg);
             if (!apiPass) showApiPassModal();
-            syncFromSheets(); refreshPricingIfStale();
-          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); refreshPricingIfStale(); });
+            syncFromSheets();
+          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); });
         } else {
-          syncFromSheets(); refreshPricingIfStale();
+          syncFromSheets();
           if (!apiPass) setTimeout(showApiPassModal, 400);
         }
         return;
@@ -2005,7 +1941,7 @@ function onStaffLoginSuccess(pass, name, structure, data) {
   el('authOverlay').classList.add('hidden');
   updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
   syncFromSheets();
-  refreshPricingIfStale();
+  
 }
 function onReviewClick(btn) {
   if (!authd) { showToast('Log in to use'); return; }
@@ -2641,7 +2577,7 @@ function saveTicketsToStorage() { var s={}; ticketsStorage=ticketsStorage.filter
 loadTicketsFromStorage();
 
 initGlassPriceTags();
-loadCachedPricing();
+
 
 var clockMockOffset = 0;
 
@@ -2700,7 +2636,7 @@ setInterval(updateWorldClock, 30000);
 
 // Sync from Sheets on startup if already authenticated (skips login flow)
 if (authd) setTimeout(syncFromSheets, 500);
-if (authd) setTimeout(refreshPricingIfStale, 800);
+
 
 // Auto-sync every 90 seconds while the app is open
 setInterval(function() { if (authd && !_syncing) syncFromSheets(); }, 90000);
@@ -3242,7 +3178,7 @@ function resetUserPassword() {
     else { el('resetPassErr').textContent = 'User not found.'; }
   }).catch(function() { el('resetPassErr').textContent = 'Network error.'; });
 }
-function showChangePass() { switchTab('settings'); }
+function showChangePass() { switchTab('profile'); }
 function saveNewPassword() { saveSettingsPassword(); }
 function openSettingsTab() {
   if (USERS_SCRIPT_URL) el('settingsScriptUrl').value = USERS_SCRIPT_URL;
@@ -3319,7 +3255,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-4';
+var APP_VERSION = '20260508-5';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
