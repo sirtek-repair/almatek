@@ -1108,7 +1108,7 @@ function setQuoteSupplier(name) {
 }
 const el = id => document.getElementById(id);
 
-function fullPrice(cost, type) { return Math.ceil(cost * 1.2 + LABOR[type]); }
+function fullPrice(cost, type) { return cost * 1.2 + LABOR[type]; }
 function withTax(price) { return Math.ceil(price * 1.12875); }
 function initGlassPriceTags() {
   var fixed = { 84: 95, 94: 107, 110: 125 };
@@ -3320,7 +3320,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-12';
+var APP_VERSION = '20260508-13';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
