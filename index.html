@@ -922,8 +922,8 @@
   <h2 style="font-size:16px;font-weight:600;color:var(--muted);text-align:center;margin:12px 0 16px;letter-spacing:0.03em;">⚙ Settings</h2>
 
   <div class="card">
-    <div class="staff-section-title">Google Apps Script</div>
-    <p style="font-size:12px;color:var(--muted);margin:0 0 12px;">Script URL for data sync. Share this link with staff to connect their app.</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;"><div class="staff-section-title">AlmaTek Script</div><button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">reset staff script</button></div>
+    <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Script URL for data sync. Share this link with staff to connect their app.</p>
     <input type="url" id="settingsScriptUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
     <div style="display:flex;gap:6px;margin-top:8px;">
       <button onclick="saveSettingsScriptUrl()" style="flex:1;padding:9px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
@@ -968,7 +968,7 @@
 
   <div id="adminSubViewStaff">
     <div id="adminNoScriptMsg" class="hidden" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">No script connected — configure it in <button onclick="switchTab('profile')" style="background:none;border:none;color:var(--accent);font-family:inherit;font-size:13px;cursor:pointer;text-decoration:underline;">Profile</button></div>
-    <div id="staffMainSection" class="hidden"><div style="text-align:right;margin-bottom:8px;"><button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Reset Google Apps Script URL</button></div><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
+    <div id="staffMainSection" class="hidden"><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
     <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
   </div>
 
@@ -3255,7 +3255,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-5';
+var APP_VERSION = '20260508-6';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
