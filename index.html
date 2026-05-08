@@ -1843,19 +1843,31 @@ function applyLoginConfig(data) {
   if (data.apiPass) { apiPass = data.apiPass; localStorage.setItem('almatek_api_pass', data.apiPass); }
   if (data.scriptUrl) { USERS_SCRIPT_URL = data.scriptUrl; localStorage.setItem('almatek_script_url', data.scriptUrl); }
 }
+function normalizePricingTiers(raw) {
+  var out = {};
+  Object.keys(raw).forEach(function(model) {
+    var tiers = raw[model] || {};
+    out[model] = {};
+    Object.keys(tiers).forEach(function(t) { out[model][t.toLowerCase()] = tiers[t]; });
+  });
+  return out;
+}
 function loadCachedPricing() {
   try {
     var cached = JSON.parse(localStorage.getItem('almatek_pricing') || 'null');
-    if (cached && cached.prices) Object.keys(cached.prices).forEach(function(m) { SCREEN_PRICES[m] = Object.assign({}, SCREEN_PRICES[m]||{}, cached.prices[m]); });
+    if (cached && cached.prices) {
+      var norm = normalizePricingTiers(cached.prices);
+      Object.keys(norm).forEach(function(m) { SCREEN_PRICES[m] = Object.assign({}, SCREEN_PRICES[m]||{}, norm[m]); });
+    }
   } catch(e) {}
 }
 function refreshPricingIfStale() {
   if (!USERS_SCRIPT_URL || !authd) return;
   sheetsCall({ action: 'getPricing' }).then(function(data) {
     if (data && data.ok && data.prices) {
-      SCREEN_PRICES = {};
-      Object.keys(data.prices).forEach(function(m) { SCREEN_PRICES[m] = data.prices[m]; });
-      localStorage.setItem('almatek_pricing', JSON.stringify({ prices: data.prices, ts: Date.now() }));
+      var norm = normalizePricingTiers(data.prices);
+      SCREEN_PRICES = norm;
+      localStorage.setItem('almatek_pricing', JSON.stringify({ prices: norm, ts: Date.now() }));
       initGlassPriceTags();
       if (model1) updateTierDisplay1();
       if (model2) updateTierDisplay2();
@@ -3140,7 +3152,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260507-2';
+var APP_VERSION = '20260507-3';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
