@@ -51,23 +51,21 @@ function handleAction(p) {
     }
     case 'getPricing': {
       try {
-        var pss = SpreadsheetApp.openById('1-ihijopdfiS5QL1Ikr_eGBaZiQZGqhkdn5cTXiBYq6Y');
-        var pSheet = pss.getSheets().filter(function(s) { return s.getSheetId() === 982039705; })[0];
-        if (!pSheet) return { ok: false, error: 'Pricing sheet tab not found' };
+        var pss = SpreadsheetApp.openById('1FDBAgPuqjhWIx-DN_3IjJzhsv5Sz1J7Nnz7sRQCCPMg');
+        var pSheet = pss.getSheets()[0];
+        if (!pSheet) return { ok: false, error: 'Pricing sheet not found' };
         var rows = pSheet.getDataRange().getValues();
-        var headers = rows[0].map(function(h) { return String(h).trim(); });
-        var modelIdx = headers.indexOf('iPhone Model');
-        var tierIdx  = headers.indexOf('Tier');
-        var priceIdx = headers.indexOf('Repair Price');
-        if (modelIdx < 0 || tierIdx < 0 || priceIdx < 0) return { ok: false, error: 'Missing columns' };
+        if (rows.length < 2) return { ok: false, error: 'No data in pricing sheet' };
+        var headers = rows[0].map(function(h) { return String(h).trim().toLowerCase(); });
+        var iphoneIdx = headers.indexOf('iphone screen');
+        var calcIdx   = headers.indexOf('addition calc');
+        if (iphoneIdx < 0 || calcIdx < 0) return { ok: false, error: 'Missing columns: ' + rows[0].join(', ') };
         var prices = {};
         for (var i = 1; i < rows.length; i++) {
-          var model = String(rows[i][modelIdx] || '').trim();
-          var tier  = String(rows[i][tierIdx]  || '').trim().toLowerCase();
-          var price = rows[i][priceIdx];
-          if (!model || !tier || price === '' || price == null) continue;
-          if (!prices[model]) prices[model] = {};
-          prices[model][tier] = Number(price);
+          var model = String(rows[i][iphoneIdx] || '').trim();
+          var calc  = rows[i][calcIdx];
+          if (!model || calc === '' || calc == null || isNaN(Number(calc))) continue;
+          prices[model] = { standard: Math.ceil(Number(calc)) };
         }
         return { ok: true, prices: prices };
       } catch(e) {

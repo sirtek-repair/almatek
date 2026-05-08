@@ -435,6 +435,7 @@
       <option value="back_glass_swap">back glass / frame swap</option>
       <option value="battery">battery / small parts</option>
       <option value="ipad">iPad screen</option>
+      <option value="kimi">kimi repair</option>
       <option value="android">android repair</option>
       <option value="laptop">MacBook / laptop screen</option>
     </select>
@@ -550,6 +551,7 @@
       <option value="back_glass_swap">back glass / frame swap</option>
       <option value="battery">battery / small parts</option>
       <option value="ipad">iPad screen</option>
+      <option value="kimi">kimi repair</option>
       <option value="android">android repair</option>
       <option value="laptop">MacBook / laptop screen</option>
     </select>
@@ -1025,8 +1027,8 @@
 <div class="inv-toast" id="invToast"></div>
 
 <script>
-const LABOR = { iphone_screen:80, back_glass:80, back_glass_swap:100, battery:65, ipad:85, android:85, laptop:85 };
-const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', android:'Android Repair', laptop:'MacBook / Laptop' };
+const LABOR = { iphone_screen:70, back_glass:80, back_glass_swap:100, battery:60, ipad:75, kimi:35, android:85, laptop:85 };
+const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', kimi:'Kimi Repair', android:'Android Repair', laptop:'MacBook / Laptop' };
 const SHARE_ICON = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
 
 const FACTORY_SCREEN_TYPE = {
@@ -1154,7 +1156,7 @@ function tryRenderQuote() {
 }
 function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); }
 
-var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Swap', battery:'Battery', ipad:'iPad', android:'Android', laptop:'Laptop' };
+var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Back Glass Swap', battery:'Battery', ipad:'iPad', kimi:'Kimi Repair', android:'Android', laptop:'Laptop' };
 
 var attFlow = 'in_stock';
 function setTicketFlow(flow) {
@@ -3163,7 +3165,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-1';
+var APP_VERSION = '20260508-2';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
