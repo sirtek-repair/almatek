@@ -61,15 +61,21 @@ function handleAction(p) {
         if (rows.length < 2) return { ok: false, error: 'No data in pricing sheet' };
         var headers = rows[0].map(function(h) { return String(h).trim().toLowerCase(); });
         var iphoneIdx = headers.indexOf('iphone screen');
-        var costIdx = -1;
-        for (var c = 0; c < headers.length; c++) { if (headers[c] === 'cost' || headers[c].indexOf('cost') === 0) { costIdx = c; break; } }
-        if (iphoneIdx < 0 || costIdx < 0) return { ok: false, error: 'Missing columns: ' + rows[0].join(', ') };
+        var stdIdx = -1, preIdx = -1;
+        for (var c = 0; c < headers.length; c++) {
+          var h = headers[c];
+          if (stdIdx < 0 && (h === 'standard' || h.indexOf('standard') === 0)) stdIdx = c;
+          if (preIdx < 0 && (h === 'premium' || h.indexOf('premium') === 0)) preIdx = c;
+        }
+        if (iphoneIdx < 0) return { ok: false, error: 'Missing "iPhone Screen" column. Found: ' + rows[0].join(', ') };
         var prices = {};
         for (var i = 1; i < rows.length; i++) {
           var model = String(rows[i][iphoneIdx] || '').trim();
-          var cost  = rows[i][costIdx];
-          if (!model || cost === '' || cost == null || isNaN(Number(cost))) continue;
-          prices[model] = { standard: Math.ceil(Number(cost)) };
+          if (!model) continue;
+          var entry = {};
+          if (stdIdx >= 0 && rows[i][stdIdx] !== '' && rows[i][stdIdx] != null && !isNaN(Number(rows[i][stdIdx]))) entry.standard = Math.ceil(Number(rows[i][stdIdx]));
+          if (preIdx >= 0 && rows[i][preIdx] !== '' && rows[i][preIdx] != null && !isNaN(Number(rows[i][preIdx]))) entry.premium = Math.ceil(Number(rows[i][preIdx]));
+          if (entry.standard || entry.premium) prices[model] = entry;
         }
         return { ok: true, prices: prices };
       } catch(e) {

@@ -453,9 +453,15 @@
         <optgroup label="iPhone 8 &amp; SE"><option value="iPhone 8 Plus">iPhone 8 Plus</option><option value="iPhone 8 / SE (2nd &amp; 3rd Gen)">iPhone 8 / SE (2nd &amp; 3rd Gen)</option><option value="iPhone SE (2nd Gen)">iPhone SE (2nd Gen)</option><option value="iPhone SE (3rd Gen)">iPhone SE (3rd Gen)</option><option value="iPhone 7 Plus">iPhone 7 Plus</option><option value="iPhone 7">iPhone 7</option><option value="iPhone 6S">iPhone 6S</option><option value="iPhone 6 Plus">iPhone 6 Plus</option><option value="iPhone 6">iPhone 6</option><option value="iPhone 5S / SE (1st Gen)">iPhone 5S / SE (1st Gen)</option><option value="iPhone SE (1st Gen)">iPhone SE (1st Gen)</option><option value="iPhone 5C">iPhone 5C</option><option value="iPhone 5">iPhone 5</option><option value="iPhone 4S">iPhone 4S</option><option value="iPhone 4">iPhone 4</option></optgroup>
       </select>
       <div style="margin-top:12px;">
-        <label class="field-label" for="partCostIphone" id="partCostIphoneLabel">Part Cost</label>
-        <input type="number" id="partCostIphone" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
-        <p class="hint">Round up to whole dollar</p>
+        <div class="mode-tabs" id="tierTabs1">
+          <button class="mode-tab active" id="tierBtn1Std" onclick="selectTier1('standard')">Standard</button>
+          <button class="mode-tab" id="tierBtn1Pre" onclick="selectTier1('premium')">Premium</button>
+          <button class="mode-tab" id="tierBtn1Man" onclick="selectTier1('manual')">Manual</button>
+        </div>
+        <div id="manualCostRow1" class="hidden">
+          <input type="number" id="partCostIphone" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
+          <p class="hint">Round up to whole dollar</p>
+        </div>
         <div id="supplierRow1" style="margin-top:8px;margin-bottom:4px;">
           <div style="font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:0.05em;">SUPPLIER</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;" id="supplierBtns1"></div>
@@ -553,9 +559,15 @@
         <label class="field-label" for="modelSelect2">iPhone Model</label>
         <select id="modelSelect2" onchange="onModel2Change()"><option value="">— select model —</option><option value="iPhone Air">iPhone Air</option><option value="iPhone 17 Pro Max">iPhone 17 Pro Max</option><option value="iPhone 17 Pro">iPhone 17 Pro</option><option value="iPhone 17">iPhone 17</option><option value="iPhone 16e">iPhone 16e</option><option value="iPhone 16 Pro Max">iPhone 16 Pro Max</option><option value="iPhone 16 Pro">iPhone 16 Pro</option><option value="iPhone 16 Plus">iPhone 16 Plus</option><option value="iPhone 16">iPhone 16</option><option value="iPhone 15 Pro Max">iPhone 15 Pro Max</option><option value="iPhone 15 Pro">iPhone 15 Pro</option><option value="iPhone 15 Plus">iPhone 15 Plus</option><option value="iPhone 15">iPhone 15</option><option value="iPhone 14 Pro Max">iPhone 14 Pro Max</option><option value="iPhone 14 Pro">iPhone 14 Pro</option><option value="iPhone 14 Plus">iPhone 14 Plus</option><option value="iPhone 14">iPhone 14</option><option value="iPhone 13 Pro Max">iPhone 13 Pro Max</option><option value="iPhone 13 Pro">iPhone 13 Pro</option><option value="iPhone 13">iPhone 13</option><option value="iPhone 13 Mini">iPhone 13 Mini</option><option value="iPhone 12 Pro Max">iPhone 12 Pro Max</option><option value="iPhone 12 Pro">iPhone 12 Pro</option><option value="iPhone 12">iPhone 12</option><option value="iPhone 12 Mini">iPhone 12 Mini</option><option value="iPhone 11 Pro Max">iPhone 11 Pro Max</option><option value="iPhone 11 Pro">iPhone 11 Pro</option><option value="iPhone 11">iPhone 11</option><option value="iPhone XS Max">iPhone XS Max</option><option value="iPhone XS">iPhone XS</option><option value="iPhone XR">iPhone XR</option><option value="iPhone X">iPhone X</option><option value="iPhone 8 Plus">iPhone 8 Plus</option><option value="iPhone 8 / SE (2nd &amp; 3rd Gen)">iPhone 8 / SE</option><option value="iPhone 7 Plus">iPhone 7 Plus</option><option value="iPhone 7">iPhone 7</option><option value="iPhone 6S">iPhone 6S</option><option value="iPhone 6">iPhone 6</option></select>
         <div style="margin-top:12px;">
-          <label class="field-label" for="partCostIphone2">Part Cost</label>
-          <input type="number" id="partCostIphone2" placeholder="$0" min="0" step="1" oninput="onCost2Change()" />
-          <p class="hint">Round up to whole dollar</p>
+          <div class="mode-tabs" id="tierTabs2">
+            <button class="mode-tab active" id="tierBtn2Std" onclick="selectTier2('standard')">Standard</button>
+            <button class="mode-tab" id="tierBtn2Pre" onclick="selectTier2('premium')">Premium</button>
+            <button class="mode-tab" id="tierBtn2Man" onclick="selectTier2('manual')">Manual</button>
+          </div>
+          <div id="manualCostRow2" class="hidden">
+            <input type="number" id="partCostIphone2" placeholder="$0" min="0" step="1" oninput="onCost2Change()" />
+            <p class="hint">Round up to whole dollar</p>
+          </div>
         </div>
       </div>
 
@@ -1122,32 +1134,47 @@ function onRepairChange() {
   el('costCard').classList.remove('hidden'); el('quoteCard').classList.add('hidden');
   if (type1 === 'iphone_screen') {
     el('iphoneSection').classList.remove('hidden');
-    el('partCostIphone').value = ''; el('modelSelect1').value = '';
-    var lbl = el('partCostIphoneLabel'); if (lbl) lbl.textContent = isOwner ? 'Part Cost — (× 1.2 + $70 + tax)' : 'Part Cost';
+    el('modelSelect1').value = ''; model1 = '';
     renderSupplierBtns(); if(el('orderRef1')) el('orderRef1').value='';
+    selectTier1('standard');
   }
   else if (type1 === 'back_glass') { el('glassSection').classList.remove('hidden'); clearBtns('#glassSection'); }
   else if (type1 === 'device') { el('deviceSection').classList.remove('hidden'); clearBtns('#deviceSection'); }
-  else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value='';
-    var lbl = el('partCostLabel'); if (lbl) lbl.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[type1]||0) + ' + tax)' : 'Part Cost'; }
+  else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value=''; }
 }
 
-function onModel1Change() {
-  model1 = el('modelSelect1').value;
-  var partCost = model1 ? ((SCREEN_PRICES[model1] || {}).standard || 0) : 0;
-  cost1 = partCost;
-  if (el('partCostIphone')) el('partCostIphone').value = partCost > 0 ? partCost : '';
-  tryRenderQuote();
-}
-function onModel2Change() {
-  model2 = el('modelSelect2').value;
-  var partCost = model2 ? ((SCREEN_PRICES[model2] || {}).standard || 0) : 0;
-  cost2 = partCost;
-  if (el('partCostIphone2')) el('partCostIphone2').value = partCost > 0 ? partCost : '';
-  renderDeal();
-}
+function onModel1Change() { model1 = el('modelSelect1').value; selectTier1(tier1 || 'standard'); }
+function onModel2Change() { model2 = el('modelSelect2').value; selectTier2(tier2 || 'standard'); }
 function updateTierDisplay1() {}
 function updateTierDisplay2() {}
+function selectTier1(t) {
+  tier1 = t;
+  var isManual = t === 'manual';
+  if (el('tierBtn1Std')) el('tierBtn1Std').classList.toggle('active', t === 'standard');
+  if (el('tierBtn1Pre')) el('tierBtn1Pre').classList.toggle('active', t === 'premium');
+  if (el('tierBtn1Man')) el('tierBtn1Man').classList.toggle('active', isManual);
+  if (el('manualCostRow1')) el('manualCostRow1').classList.toggle('hidden', !isManual);
+  if (!isManual) {
+    cost1 = model1 ? ((SCREEN_PRICES[model1] || {})[t] || 0) : 0;
+  } else {
+    cost1 = parseFloat((el('partCostIphone') ? el('partCostIphone').value : '') || '0') || 0;
+  }
+  tryRenderQuote();
+}
+function selectTier2(t) {
+  tier2 = t;
+  var isManual = t === 'manual';
+  if (el('tierBtn2Std')) el('tierBtn2Std').classList.toggle('active', t === 'standard');
+  if (el('tierBtn2Pre')) el('tierBtn2Pre').classList.toggle('active', t === 'premium');
+  if (el('tierBtn2Man')) el('tierBtn2Man').classList.toggle('active', isManual);
+  if (el('manualCostRow2')) el('manualCostRow2').classList.toggle('hidden', !isManual);
+  if (!isManual) {
+    cost2 = model2 ? ((SCREEN_PRICES[model2] || {})[t] || 0) : 0;
+  } else {
+    cost2 = parseFloat((el('partCostIphone2') ? el('partCostIphone2').value : '') || '0') || 0;
+  }
+  renderDeal();
+}
 
 function onGlassSelect(cost, btn) { clearBtns('#glassSection'); btn.classList.add('active'); cost1=cost; tryRenderQuote(); }
 function onGlassSelect2(cost, btn) { clearBtns('#glassSection2'); btn.classList.add('active'); cost2=cost; renderDeal(); }
@@ -1310,11 +1337,10 @@ function on2ndRepairChange() {
   ['iphoneSection2','glassSection2','deviceSection2','freeSection2'].forEach(id => el(id).classList.add('hidden'));
   if (!type2) { el('cost2Wrap').classList.add('hidden'); return; }
   el('cost2Wrap').classList.remove('hidden');
-  if (type2==='iphone_screen') { el('iphoneSection2').classList.remove('hidden'); el('partCostIphone2').value = ''; el('modelSelect2').value = ''; }
+  if (type2==='iphone_screen') { el('iphoneSection2').classList.remove('hidden'); el('modelSelect2').value = ''; model2 = ''; selectTier2('standard'); }
   else if (type2==='back_glass') { el('glassSection2').classList.remove('hidden'); clearBtns('#glassSection2'); }
   else if (type2==='device') { el('deviceSection2').classList.remove('hidden'); clearBtns('#deviceSection2'); }
-  else { el('freeSection2').classList.remove('hidden');
-    var lbl2 = el('partCostLabel2'); if (lbl2) lbl2.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[type2]||0) + ' + tax)' : 'Part Cost'; }
+  else { el('freeSection2').classList.remove('hidden'); }
 }
 function renderDeal() {
   const p1=getPrice1(), p2=getPrice2(); if (p1<=0 || p2<=0) return;
@@ -1959,16 +1985,8 @@ function refreshPricingIfStale() {
       SCREEN_PRICES = norm;
       localStorage.setItem('almatek_pricing', JSON.stringify({ prices: norm, ts: Date.now() }));
       initGlassPriceTags();
-      if (model1 && type1 === 'iphone_screen') {
-        cost1 = (SCREEN_PRICES[model1] || {}).standard || 0;
-        if (el('partCostIphone')) el('partCostIphone').value = cost1 || '';
-        tryRenderQuote();
-      }
-      if (model2 && type2 === 'iphone_screen') {
-        cost2 = (SCREEN_PRICES[model2] || {}).standard || 0;
-        if (el('partCostIphone2')) el('partCostIphone2').value = cost2 || '';
-        renderDeal();
-      }
+      if (model1 && type1 === 'iphone_screen') selectTier1(tier1 || 'standard');
+      if (model2 && type2 === 'iphone_screen') selectTier2(tier2 || 'standard');
     } else {
       var msg = data && data.error ? data.error : (data && !data.ok ? 'Sheet returned no prices' : 'Pricing fetch failed');
       showToast('⚠️ ' + msg + ' — tap to retry', 6000, refreshPricingIfStale);
@@ -3302,7 +3320,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-9';
+var APP_VERSION = '20260508-10';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
