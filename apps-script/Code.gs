@@ -52,7 +52,7 @@ function handleAction(p) {
     case 'getPricing': {
       try {
         var pss = SpreadsheetApp.openById('1-ihijopdfiS5QL1Ikr_eGBaZiQZGqhkdn5cTXiBYq6Y');
-        var pSheet = pss.getSheets().filter(function(s) { return s.getSheetId() === 30606733; })[0];
+        var pSheet = pss.getSheets().filter(function(s) { return s.getSheetId() === 982039705; })[0];
         if (!pSheet) return { ok: false, error: 'Pricing sheet tab not found' };
         var rows = pSheet.getDataRange().getValues();
         var headers = rows[0].map(function(h) { return String(h).trim(); });
