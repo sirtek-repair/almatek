@@ -265,7 +265,7 @@
     .tier-option-price { font-size: 20px; font-weight: 700; color: var(--text); }
     body.demo-mode .tier-option-price { visibility: hidden; }
     body.demo-mode .quote-price-tag { display: none; }
-    body.demo-mode #tabBookerBtn { display: none !important; }
+    body.demo-mode #tabProfileBtn { display: none !important; }
     body.demo-mode .inv-actions { display: none !important; }
     .tier-option .stock-row { margin-top: 8px; padding: 7px 10px; }
     
@@ -357,12 +357,11 @@
 <div class="tab-bar">
   <button class="tab-btn active" id="tabQuoteBtn" onclick="switchTab('quote')">💰 Quote</button>
   <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 <span class="brand">LeadTek</span></button>
-  <button class="tab-btn" id="tabOrdBtn" onclick="switchTab('orders')">📋 Orders</button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
-  <button class="tab-btn" id="tabBookerBtn" onclick="switchTab('booker')">💵 Tally</button>
-  <button class="tab-btn hidden" id="tabStaffBtn" onclick="switchTab('staff')">👥 Staff</button>
-  <button class="tab-btn hidden" id="tabReportsBtn" onclick="switchTab('reports')">📊 Reports</button>
-  <button class="tab-btn" id="tabAppsBtn" onclick="switchTab('apps')">🚀 Apps</button>
+  <button class="tab-btn" id="tabProfileBtn" onclick="switchTab('profile')">💵 Profile</button>
+  <button class="tab-btn" id="tabSettingsBtn" onclick="switchTab('settings')">⚙ Settings</button>
+  <button class="tab-btn hidden" id="tabAdminBtn" onclick="switchTab('admin')">🔧 Admin</button>
+  <button class="tab-btn" id="tabToolsBtn" onclick="switchTab('tools')">🚀 Tools</button>
 </div>
 
 <!-- Quote Tab -->
@@ -615,6 +614,12 @@
   <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
 </header>
 </div>
+<div class="orders-tab-nav" style="margin-bottom:16px;">
+  <button class="orders-tab-btn active" id="invSubBtnInventory" onclick="switchInvSubTab('inventory')">📦 Inventory</button>
+  <button class="orders-tab-btn" id="invSubBtnOrders" onclick="switchInvSubTab('orders')">📋 Orders <span id="cartSubBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+</div>
+
+<div id="invSubViewInventory">
 <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
     <input class="inv-search" id="invSearch" placeholder="Search inventory..." oninput="filterInventory()" style="margin-bottom:0;flex:1;" />
     <button id="authBtnInv" onclick="onAuthBtnClick()" style="padding:8px 12px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;white-space:nowrap;font-family:inherit;">🔒 Log In</button>
@@ -628,11 +633,9 @@
     <button class="filter-btn" onclick="setFilter('t.G.', this)">t.G.</button>
     <button class="filter-btn" onclick="setFilter('Device', this)">Device</button>
   </div>
-
   <div id="demoInvNote" class="demo-inv-note hidden">⚠ Demo data — log in as staff to see live inventory</div>
   <div id="invLoading" class="loading-msg hidden">Loading inventory...</div>
   <div id="invList"></div>
-
   <div class="orders-section" id="ordersSection">
     <hr class="divider" />
     <div class="orders-header"><span class="orders-header-title">📦 Orders</span><button class="orders-new-btn" id="newOrderBtn" onclick="toggleNewOrderForm()">+ New Order</button></div>
@@ -647,18 +650,12 @@
   </div>
 </div>
 
-<!-- Orders Tab -->
-<div id="tabOrders" class="hidden">
-<div class="container">
-  <header style="text-align:center;padding:16px 0 20px;">
-    <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
-  </header>
+<div id="invSubViewOrders" class="hidden">
   <div class="orders-tab-nav">
     <button class="orders-tab-btn active" onclick="switchOrdersView('needorder')">Need to Order</button>
-    <button class="orders-tab-btn" onclick="switchOrdersView('cart')">🛒 Cart <span id="cartSubBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+    <button class="orders-tab-btn" onclick="switchOrdersView('cart')">🛒 Cart</button>
     <button class="orders-tab-btn" onclick="switchOrdersView('ordered')">Ordered</button>
   </div>
-
   <div id="ordersNeedView" class="orders-view active">
     <div style="display:flex;gap:8px;margin-bottom:12px;">
       <input id="ordersSearchInput" type="text" placeholder="Search items..." oninput="filterOrdersItems()" style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;" />
@@ -671,7 +668,6 @@
     </div>
     <div id="ordersNeedList" class="orders-items-list"></div>
   </div>
-
   <div id="ordersCartView" class="orders-view">
     <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
       <button onclick="clearCart()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Clear All</button>
@@ -684,14 +680,12 @@
       <button id="placeOrderBtn" onclick="placeCartOrder()" style="width:100%;padding:14px;background:var(--accent);border:none;color:#fff;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Place Order</button>
     </div>
   </div>
-
   <div id="ordersOrderedView" class="orders-view">
     <div id="ordersOrderedList" class="orders-items-list"><div class="orders-empty-state">Loading…</div></div>
   </div>
-
   <div id="ordersNoData" class="orders-empty-state hidden">No items to show</div>
-
 </div>
+
 </div>
 
 <!-- Leads Tab -->
@@ -919,11 +913,11 @@
 <!-- Cart Tab -->
 <div id="tabCart" class="hidden"></div>
 
-<!-- Booker Pay Calculator Tab -->
-<div id="tabBooker" class="hidden">
+<!-- Profile Tab -->
+<div id="tabProfile" class="hidden">
 <div class="container">
-  <header style="text-align:center;padding:16px 0 20px;">
-    <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
+  <header style="text-align:center;padding:16px 0 12px;">
+    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">💵 Tally</h1>
   </header>
   <div class="card">
     <div class="gap"><label class="field-label" for="bookerName">Name</label><input type="text" id="bookerName" placeholder="Name" oninput="calcBookerPay()" /></div>
@@ -936,43 +930,83 @@
 </div>
 </div>
 
-<!-- Staff Management Tab -->
-<div id="tabStaff" class="hidden">
-<div class="container">
-  <header style="text-align:center;padding:16px 0 20px;">
-    <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
-    <button onclick="showApiPassModal()" style="margin-top:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">🔑 Set Inventory Token</button>
-    <button onclick="pushTokenToScript()" style="margin-top:6px;margin-left:8px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:var(--green);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">☁ Save Token to Script</button>
-  </header>
-  <div id="staffSetupSection" class="card"><div class="staff-section-title">Connect Google Sheet</div><p style="font-size:12px;color:var(--muted);margin:0 0 12px;">Paste your Google Apps Script web app URL below.</p><div class="staff-add-row" style="flex-direction:column;gap:8px;"><input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;" /><button class="staff-add-btn" onclick="saveScriptSetup()">Connect</button></div><div id="setupErr" class="chpass-err"></div></div>
-  <div id="staffMainSection" class="hidden"><div style="text-align:right;margin-bottom:8px;"><button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Reset Google Apps Script URL</button></div><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
-  <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
-</div>
-</div>
-
-<!-- Reports Tab -->
-<div id="tabReports" class="hidden">
+<!-- Admin Tab (owner only) -->
+<div id="tabAdmin" class="hidden">
 <div class="container">
   <header style="text-align:center;padding:16px 0 12px;">
-    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">📊 Reports</h1>
+    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">🔧 Admin</h1>
   </header>
-  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-    <button class="orders-tab-btn active" id="rptBtnDay" onclick="setReportPeriod('day',this)">Today</button>
-    <button class="orders-tab-btn" id="rptBtnWeek" onclick="setReportPeriod('week',this)">Week</button>
-    <button class="orders-tab-btn" id="rptBtnMonth" onclick="setReportPeriod('month',this)">Month</button>
-    <button class="orders-tab-btn" id="rptBtnYTD" onclick="setReportPeriod('ytd',this)">YTD</button>
-    <button id="rptShareBtn" onclick="shareReport()" style="margin-left:auto;padding:6px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share</button>
+  <div class="orders-tab-nav" style="margin-bottom:16px;">
+    <button class="orders-tab-btn active" id="adminSubBtnStaff" onclick="switchAdminSubTab('staff')">👥 Staff</button>
+    <button class="orders-tab-btn" id="adminSubBtnReports" onclick="switchAdminSubTab('reports')">📊 Reports</button>
   </div>
-  <div id="reportsSummary"></div>
-  <div id="reportsTicketList" style="margin-top:12px;"></div>
+
+  <div id="adminSubViewStaff">
+    <div id="adminNoScriptMsg" class="hidden" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">No script connected — configure it in <button onclick="switchTab('settings')" style="background:none;border:none;color:var(--accent);font-family:inherit;font-size:13px;cursor:pointer;text-decoration:underline;">Settings</button></div>
+    <div id="staffMainSection" class="hidden"><div style="text-align:right;margin-bottom:8px;"><button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">Reset Google Apps Script URL</button></div><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
+    <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
+  </div>
+
+  <div id="adminSubViewReports" class="hidden">
+    <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+      <button class="orders-tab-btn active" id="rptBtnDay" onclick="setReportPeriod('day',this)">Today</button>
+      <button class="orders-tab-btn" id="rptBtnWeek" onclick="setReportPeriod('week',this)">Week</button>
+      <button class="orders-tab-btn" id="rptBtnMonth" onclick="setReportPeriod('month',this)">Month</button>
+      <button class="orders-tab-btn" id="rptBtnYTD" onclick="setReportPeriod('ytd',this)">YTD</button>
+      <button id="rptShareBtn" onclick="shareReport()" style="margin-left:auto;padding:6px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share</button>
+    </div>
+    <div id="reportsSummary"></div>
+    <div id="reportsTicketList" style="margin-top:12px;"></div>
+  </div>
 </div>
 </div>
 
-<!-- Apps Tab -->
-<div id="tabApps" class="hidden">
+<!-- Settings Tab -->
+<div id="tabSettings" class="hidden">
 <div class="container">
   <header style="text-align:center;padding:16px 0 12px;">
-    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">🚀 Apps</h1>
+    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">⚙ Settings</h1>
+  </header>
+
+  <div class="card">
+    <div class="staff-section-title">Google Apps Script</div>
+    <p style="font-size:12px;color:var(--muted);margin:0 0 12px;">Script URL for data sync. Share this link with staff to connect their app.</p>
+    <input type="url" id="settingsScriptUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
+    <div style="display:flex;gap:6px;margin-top:8px;">
+      <button onclick="saveSettingsScriptUrl()" style="flex:1;padding:9px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
+      <button onclick="copyScriptUrl()" style="flex:1;padding:9px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Copy Link</button>
+    </div>
+    <div id="settingsScriptErr" class="chpass-err" style="margin-top:6px;"></div>
+  </div>
+
+  <div class="card" id="settingsTokenSection" style="margin-top:16px;">
+    <div class="staff-section-title">🔑 Inventory Token</div>
+    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Connects to Airtable inventory. Owner only.</p>
+    <div style="display:flex;gap:6px;">
+      <input type="password" id="settingsApiToken" placeholder="Token value" autocomplete="off" style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
+      <button onclick="saveSettingsToken()" style="padding:9px 14px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
+    </div>
+    <button onclick="pushTokenToScript()" style="margin-top:8px;width:100%;padding:9px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:var(--green);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">☁ Save Token to Script</button>
+    <div id="settingsTokenErr" class="chpass-err" style="margin-top:6px;"></div>
+  </div>
+
+  <div class="card" id="settingsChangePassSection" style="margin-top:16px;">
+    <div class="staff-section-title">Change Password</div>
+    <input type="password" id="settingsPassCurrent" placeholder="Current password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:10px;" />
+    <input type="password" id="settingsPassNew" placeholder="New password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:8px;" />
+    <input type="password" id="settingsPassConfirm" placeholder="Confirm new password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:8px;" onkeydown="if(event.key==='Enter') saveSettingsPassword()" />
+    <button onclick="saveSettingsPassword()" style="margin-top:10px;width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Update Password</button>
+    <div id="settingsPassErr" class="chpass-err" style="margin-top:6px;"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- Tools Tab -->
+<div id="tabTools" class="hidden">
+<div class="container">
+  <header style="text-align:center;padding:16px 0 12px;">
+    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">🚀 Tools</h1>
   </header>
   <div class="auth-only" style="display:flex;flex-wrap:wrap;gap:12px;padding:8px 0;">
     <a href="https://meet.google.com" target="_blank" rel="noopener" class="app-tile">
@@ -1300,12 +1334,51 @@ function resetSecond() { secondOpen=false; type2=''; cost2=0; el('secondSw').cla
 function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b=>b.classList.remove('active')); }
 
 function switchTab(tab) {
-  if (tab === 'cart') { switchTab('orders'); switchOrdersView('cart'); return; }
-  const isQuote = tab==='quote', isOrders = tab==='orders', isInventory = tab==='inventory', isLeads = tab==='leads', isBooker = tab==='booker', isStaff = tab==='staff', isReports = tab==='reports', isApps = tab==='apps';
-  el('tabQuote').classList.toggle('hidden', !isQuote); el('tabOrders').classList.toggle('hidden', !isOrders); el('tabInventory').classList.toggle('hidden', !isInventory); el('tabLeads').classList.toggle('hidden', !isLeads); el('tabCart').classList.toggle('hidden', true); el('tabBooker').classList.toggle('hidden', !isBooker); el('tabStaff').classList.toggle('hidden', !isStaff); el('tabReports').classList.toggle('hidden', !isReports); el('tabApps').classList.toggle('hidden', !isApps);
-  el('tabQuoteBtn').classList.toggle('active', isQuote); el('tabOrdBtn').classList.toggle('active', isOrders); el('tabInvBtn').classList.toggle('active', isInventory); el('tabLeadsBtn').classList.toggle('active', isLeads); el('tabBookerBtn').classList.toggle('active', isBooker); el('tabStaffBtn').classList.toggle('active', isStaff); el('tabReportsBtn').classList.toggle('active', isReports); el('tabAppsBtn').classList.toggle('active', isApps);
+  if (tab === 'cart') { switchTab('inventory'); switchInvSubTab('orders'); switchOrdersView('cart'); return; }
+  if (tab === 'orders') { switchTab('inventory'); switchInvSubTab('orders'); return; }
+  const isQuote = tab==='quote', isInventory = tab==='inventory', isLeads = tab==='leads', isProfile = tab==='profile', isSettings = tab==='settings', isAdmin = tab==='admin', isTools = tab==='tools';
+  el('tabQuote').classList.toggle('hidden', !isQuote);
+  el('tabInventory').classList.toggle('hidden', !isInventory);
+  el('tabLeads').classList.toggle('hidden', !isLeads);
+  el('tabProfile').classList.toggle('hidden', !isProfile);
+  el('tabSettings').classList.toggle('hidden', !isSettings);
+  el('tabAdmin').classList.toggle('hidden', !isAdmin);
+  el('tabTools').classList.toggle('hidden', !isTools);
+  el('tabCart').classList.toggle('hidden', true);
+  el('tabQuoteBtn').classList.toggle('active', isQuote);
+  el('tabInvBtn').classList.toggle('active', isInventory);
+  el('tabLeadsBtn').classList.toggle('active', isLeads);
+  el('tabProfileBtn').classList.toggle('active', isProfile);
+  el('tabSettingsBtn').classList.toggle('active', isSettings);
+  el('tabAdminBtn').classList.toggle('active', isAdmin);
+  el('tabToolsBtn').classList.toggle('active', isTools);
   if (isLeads) { exitLeadSelectMode && exitLeadSelectMode(); exitTicketSelectMode && exitTicketSelectMode(); }
-  if (isOrders) initOrders(); else if (isInventory) initInventory(); else if (isStaff) renderStaffTab(); else if (isBooker) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); } else if (isLeads) { switchLeadSubTab('leads'); } else if (isReports) { renderReports(); }
+  if (isInventory) initInventory();
+  else if (isAdmin) { switchAdminSubTab(adminSubTab || 'staff'); }
+  else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); }
+  else if (isLeads) { switchLeadSubTab('leads'); }
+  else if (isSettings) { openSettingsTab(); }
+}
+var invSubTab = 'inventory';
+function switchInvSubTab(tab) {
+  invSubTab = tab;
+  var isInv = tab === 'inventory', isOrd = tab === 'orders';
+  el('invSubViewInventory').classList.toggle('hidden', !isInv);
+  el('invSubViewOrders').classList.toggle('hidden', !isOrd);
+  el('invSubBtnInventory').classList.toggle('active', isInv);
+  el('invSubBtnOrders').classList.toggle('active', isOrd);
+  if (isOrd) initOrders();
+}
+var adminSubTab = 'staff';
+function switchAdminSubTab(tab) {
+  adminSubTab = tab;
+  var isStaff = tab === 'staff', isRep = tab === 'reports';
+  el('adminSubViewStaff').classList.toggle('hidden', !isStaff);
+  el('adminSubViewReports').classList.toggle('hidden', !isRep);
+  el('adminSubBtnStaff').classList.toggle('active', isStaff);
+  el('adminSubBtnReports').classList.toggle('active', isRep);
+  if (isStaff) renderStaffTab();
+  else if (isRep) renderReports();
 }
 
 var leadSubTab = 'leads';
@@ -1464,7 +1537,7 @@ function switchOrdersView(view) {
     el2.classList.toggle('active', v === view);
     el2.style.display = v === view ? 'block' : 'none';
   });
-  var btns = document.querySelectorAll('#tabOrders .orders-tab-btn');
+  var btns = document.querySelectorAll('#invSubViewOrders .orders-tab-btn');
   if (btns[0]) btns[0].classList.toggle('active', view === 'needorder');
   if (btns[1]) btns[1].classList.toggle('active', view === 'cart');
   if (btns[2]) btns[2].classList.toggle('active', view === 'ordered');
@@ -1914,8 +1987,7 @@ function updateAuthBtn() {
   var demoLbl = el('demoModeLabel'); if (demoLbl) demoLbl.style.display = authd ? 'none' : '';
   document.body.classList.toggle('demo-mode', !authd);
   document.body.classList.toggle('auth-mode', authd);
-  el('tabStaffBtn').classList.toggle('hidden', !isOwner);
-  el('tabReportsBtn').classList.toggle('hidden', !authd);
+  el('tabAdminBtn').classList.toggle('hidden', !isOwner);
   var chp = el('chpassBtn'); if (chp) chp.style.display = (authd && !isOwner) ? 'inline' : 'none';
   el('suppliersDropdown').style.display = authd ? 'block' : 'none';
   el('supplierDemo').style.display = authd ? 'none' : 'inline';
@@ -3049,11 +3121,11 @@ function shareBookerResults() {
 // Staff Management
 function renderStaffTab() {
   if (!USERS_SCRIPT_URL) {
-    el('staffSetupSection').classList.remove('hidden');
+    if (el('adminNoScriptMsg')) el('adminNoScriptMsg').classList.remove('hidden');
     el('staffMainSection').classList.add('hidden');
     return;
   }
-  el('staffSetupSection').classList.add('hidden');
+  if (el('adminNoScriptMsg')) el('adminNoScriptMsg').classList.add('hidden');
   el('staffMainSection').classList.remove('hidden');
   el('staffUserList').innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading…</p>';
   sheetsCall({ action: 'list' }).then(function(data) {
@@ -3091,11 +3163,13 @@ function pushTokenToScript() {
 }
 
 function saveScriptSetup() {
-  var url = (el('scriptUrlInput').value || '').trim();
-  if (!url || !url.startsWith('https://')) { el('setupErr').textContent = 'Enter a valid script URL.'; return; }
+  var urlEl = el('scriptUrlInput'), errEl = el('setupErr');
+  if (!urlEl || !errEl) return;
+  var url = (urlEl.value || '').trim();
+  if (!url || !url.startsWith('https://')) { errEl.textContent = 'Enter a valid script URL.'; return; }
   USERS_SCRIPT_URL = url;
   localStorage.setItem('almatek_script_url', url);
-  el('setupErr').textContent = '';
+  errEl.textContent = '';
   renderStaffTab();
 }
 
@@ -3134,8 +3208,54 @@ function resetUserPassword() {
     else { el('resetPassErr').textContent = 'User not found.'; }
   }).catch(function() { el('resetPassErr').textContent = 'Network error.'; });
 }
-function showChangePass() {}
-function saveNewPassword() {}
+function showChangePass() { switchTab('settings'); }
+function saveNewPassword() { saveSettingsPassword(); }
+function openSettingsTab() {
+  if (USERS_SCRIPT_URL) el('settingsScriptUrl').value = USERS_SCRIPT_URL;
+  el('settingsPassCurrent').value = ''; el('settingsPassNew').value = ''; el('settingsPassConfirm').value = '';
+  el('settingsPassErr').textContent = ''; el('settingsScriptErr').textContent = ''; el('settingsTokenErr').textContent = '';
+  var tok = el('settingsTokenSection'); if (tok) tok.style.display = isOwner ? 'block' : 'none';
+  var chp = el('settingsChangePassSection'); if (chp) chp.style.display = (authd && !isOwner) ? 'block' : 'none';
+}
+function saveSettingsScriptUrl() {
+  var url = (el('settingsScriptUrl').value || '').trim();
+  var err = el('settingsScriptErr');
+  if (!url || !url.startsWith('https://')) { err.textContent = 'Enter a valid URL.'; err.style.color = '#ef4444'; return; }
+  USERS_SCRIPT_URL = url; localStorage.setItem('almatek_script_url', url);
+  err.textContent = 'Saved ✓'; err.style.color = 'var(--green)';
+  setTimeout(function() { err.textContent = ''; }, 2000);
+  renderStaffTab();
+}
+function saveSettingsToken() {
+  var val = (el('settingsApiToken').value || '').trim();
+  var err = el('settingsTokenErr');
+  if (!val) { err.textContent = 'Enter the token.'; err.style.color = '#ef4444'; return; }
+  apiPass = val; localStorage.setItem('almatek_api_pass', val);
+  el('settingsApiToken').value = '';
+  err.textContent = 'Saved ✓'; err.style.color = 'var(--green)';
+  setTimeout(function() { err.textContent = ''; }, 2000);
+  invLoaded = false; allInvRecords = [];
+  if (!el('tabInventory').classList.contains('hidden') && invSubTab === 'inventory') loadInventory();
+}
+function saveSettingsPassword() {
+  var current = (el('settingsPassCurrent').value || '').trim();
+  var newPass = (el('settingsPassNew').value || '').trim();
+  var confirm = (el('settingsPassConfirm').value || '').trim();
+  var err = el('settingsPassErr');
+  err.textContent = ''; err.style.color = '#ef4444';
+  if (!current || !newPass || !confirm) { err.textContent = 'All fields required.'; return; }
+  if (newPass !== confirm) { err.textContent = 'Passwords do not match.'; return; }
+  if (current !== authPass) { err.textContent = 'Current password is incorrect.'; return; }
+  if (!USERS_SCRIPT_URL) { err.textContent = 'Script URL not configured.'; return; }
+  sheetsCall({ action: 'resetPass', name: currentUser, newPass: newPass }).then(function(data) {
+    if (data && data.ok) {
+      authPass = newPass; localStorage.setItem('almatek_pass', newPass);
+      el('settingsPassCurrent').value = ''; el('settingsPassNew').value = ''; el('settingsPassConfirm').value = '';
+      err.textContent = 'Password updated ✓'; err.style.color = 'var(--green)';
+      setTimeout(function() { err.textContent = ''; }, 3000);
+    } else { err.textContent = 'Failed to update — check name matches your account.'; }
+  }).catch(function() { err.textContent = 'Network error.'; });
+}
 
 el('tabLeadsBtn').classList.remove('hidden');
 
@@ -3165,7 +3285,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-2';
+var APP_VERSION = '20260508-3';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
@@ -3294,7 +3414,7 @@ function closeTicket(ticketId) {
 var reportPeriod = 'day';
 function setReportPeriod(period, btn) {
   reportPeriod = period;
-  document.querySelectorAll('#tabReports .orders-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('#adminSubViewReports .orders-tab-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   renderReports();
 }
