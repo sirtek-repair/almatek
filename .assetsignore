@@ -4,3 +4,4 @@ node_modules/
 apps-script/
 src/
 wrangler.jsonc
+worker.js
