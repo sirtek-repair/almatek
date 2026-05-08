@@ -464,6 +464,7 @@
           <div class="factory-label" id="factoryLabel1"></div>
           <div class="tier-option" id="tierBox1Prem" onclick="setTier1('premium')"><div class="tier-option-header"><span class="tier-option-label">Premium</span><span class="tier-option-price" id="tierPrice1Prem">$—</span></div><div class="stock-row hidden" id="stockRow1Prem"><span class="stock-badge" id="stockBadge1Prem"></span><span class="stock-detail" id="stockDetail1Prem"></span></div></div>
           <div class="tier-option" id="tierBox1Std" onclick="setTier1('standard')"><div class="tier-option-header"><span class="tier-option-label">Standard</span><span class="tier-option-price" id="tierPrice1Std">$—</span></div><div class="stock-row hidden" id="stockRow1Std"><span class="stock-badge" id="stockBadge1Std"></span><span class="stock-detail" id="stockDetail1Std"></span></div></div>
+          <div id="pricingRetryRow" class="hidden" style="margin-top:6px;"><button onclick="refreshPricingIfStale()" style="width:100%;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;">⟳ Reload pricing from sheet</button></div>
         </div>
       </div>
       <div id="iphoneManualInputs" class="hidden">
@@ -1108,6 +1109,8 @@ function updateTierDisplay1() {
   const p = SCREEN_PRICES[model1] || {}; el('tierOptions1').classList.remove('hidden');
   if (p.premium != null) { el('tierBox1Prem').classList.remove('na'); el('tierPrice1Prem').textContent = isAuth() ? '$' + withTax(p.premium) : '$—'; } else { el('tierBox1Prem').classList.add('na'); el('tierPrice1Prem').textContent = 'N/A'; }
   if (p.standard != null) { el('tierBox1Std').classList.remove('na'); el('tierPrice1Std').textContent = isAuth() ? '$' + withTax(p.standard) : '$—'; } else { el('tierBox1Std').classList.add('na'); el('tierPrice1Std').textContent = 'N/A'; }
+  var noPrice = p.premium == null && p.standard == null;
+  el('pricingRetryRow').classList.toggle('hidden', !noPrice);
   var lbl1 = el('factoryLabel1'), ftype1 = FACTORY_SCREEN_TYPE[model1];
   if (ftype1) { lbl1.textContent = 'Factory Screen: ' + ftype1.toUpperCase(); lbl1.className = 'factory-label ' + ftype1; lbl1.style.display = 'block'; }
   else { lbl1.style.display = 'none'; }
@@ -1434,7 +1437,7 @@ function renderOrders(records) { if (!records.length) { el('ordersList').innerHT
 function toggleNewOrderForm() { if (!isAuth()) { showToast('Log in as staff'); return; } el('newOrderForm').classList.toggle('hidden'); }
 function submitNewOrder() { showToast('Order placed ✓'); toggleNewOrderForm(); }
 
-function showToast(msg) { var t = el('invToast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+function showToast(msg, duration, onclick) { var t = el('invToast'); t.textContent = msg; t.classList.add('show'); t.style.cursor = onclick ? 'pointer' : ''; t.onclick = onclick || null; setTimeout(function() { t.classList.remove('show'); t.onclick = null; }, duration || 2500); }
 
 var ordersTabView = 'needorder', needSubTab = 'combined', allOrderRecords = [], ordersLoading2 = false;
 var orderCart = (function() { try { return JSON.parse(localStorage.getItem('almatek_order_cart') || '[]'); } catch(e) { return []; } })();
@@ -1864,15 +1867,20 @@ function loadCachedPricing() {
 function refreshPricingIfStale() {
   if (!USERS_SCRIPT_URL || !authd) return;
   sheetsCall({ action: 'getPricing' }).then(function(data) {
-    if (data && data.ok && data.prices) {
+    if (data && data.ok && data.prices && Object.keys(data.prices).length > 0) {
       var norm = normalizePricingTiers(data.prices);
       SCREEN_PRICES = norm;
       localStorage.setItem('almatek_pricing', JSON.stringify({ prices: norm, ts: Date.now() }));
       initGlassPriceTags();
       if (model1) updateTierDisplay1();
       if (model2) updateTierDisplay2();
+    } else {
+      var msg = data && data.error ? data.error : (data && !data.ok ? 'Sheet returned no prices' : 'Pricing fetch failed');
+      showToast('⚠️ ' + msg + ' — tap to retry', 6000, refreshPricingIfStale);
     }
-  }).catch(function() {});
+  }).catch(function(err) {
+    showToast('⚠️ Pricing unavailable — tap to retry', 6000, refreshPricingIfStale);
+  });
 }
 function onStaffLoginSuccess(pass, name, structure, data) {
   applyLoginConfig(data || {});
