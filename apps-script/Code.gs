@@ -51,21 +51,25 @@ function handleAction(p) {
     }
     case 'getPricing': {
       try {
-        var pss = SpreadsheetApp.openById('1FDBAgPuqjhWIx-DN_3IjJzhsv5Sz1J7Nnz7sRQCCPMg');
-        var pSheet = pss.getSheets()[0];
+        var pss = SpreadsheetApp.openById('1-ihijopdfiS5QL1Ikr_eGBaZiQZGqhkdn5cTXiBYq6Y');
+        var sheets = pss.getSheets();
+        var pSheet = null;
+        for (var s = 0; s < sheets.length; s++) { if (sheets[s].getSheetId() === 982039705) { pSheet = sheets[s]; break; } }
+        if (!pSheet) pSheet = sheets[0];
         if (!pSheet) return { ok: false, error: 'Pricing sheet not found' };
         var rows = pSheet.getDataRange().getValues();
         if (rows.length < 2) return { ok: false, error: 'No data in pricing sheet' };
         var headers = rows[0].map(function(h) { return String(h).trim().toLowerCase(); });
         var iphoneIdx = headers.indexOf('iphone screen');
-        var calcIdx   = headers.indexOf('addition calc');
-        if (iphoneIdx < 0 || calcIdx < 0) return { ok: false, error: 'Missing columns: ' + rows[0].join(', ') };
+        var costIdx = -1;
+        for (var c = 0; c < headers.length; c++) { if (headers[c] === 'cost' || headers[c].indexOf('cost') === 0) { costIdx = c; break; } }
+        if (iphoneIdx < 0 || costIdx < 0) return { ok: false, error: 'Missing columns: ' + rows[0].join(', ') };
         var prices = {};
         for (var i = 1; i < rows.length; i++) {
           var model = String(rows[i][iphoneIdx] || '').trim();
-          var calc  = rows[i][calcIdx];
-          if (!model || calc === '' || calc == null || isNaN(Number(calc))) continue;
-          prices[model] = { standard: Math.ceil(Number(calc)) };
+          var cost  = rows[i][costIdx];
+          if (!model || cost === '' || cost == null || isNaN(Number(cost))) continue;
+          prices[model] = { standard: Math.ceil(Number(cost)) };
         }
         return { ok: true, prices: prices };
       } catch(e) {
