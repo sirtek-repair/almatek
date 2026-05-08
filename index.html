@@ -626,18 +626,6 @@
   <div id="demoInvNote" class="demo-inv-note hidden">⚠ Demo data — log in as staff to see live inventory</div>
   <div id="invLoading" class="loading-msg hidden">Loading inventory...</div>
   <div id="invList"></div>
-  <div class="orders-section" id="ordersSection">
-    <hr class="divider" />
-    <div class="orders-header"><span class="orders-header-title">📦 Orders</span><button class="orders-new-btn" id="newOrderBtn" onclick="toggleNewOrderForm()">+ New Order</button></div>
-    <div id="newOrderForm" class="order-form hidden">
-      <select id="orderItemSel"><option value="">select inventory item…</option></select>
-      <input type="number" id="orderQty" placeholder="Quantity" min="1" step="1" />
-      <input type="text" id="orderSupplier" placeholder="Supplier (optional)" />
-      <div class="order-form-btns"><button onclick="submitNewOrder()">Place Order</button><button class="cancel-btn" onclick="toggleNewOrderForm()">Cancel</button></div>
-    </div>
-    <div id="ordersLoading" class="loading-msg hidden">Loading orders…</div>
-    <div id="ordersList"></div>
-  </div>
 </div>
 
 <div id="invSubViewOrders" class="hidden">
@@ -655,6 +643,15 @@
       <button class="need-sub-btn active" onclick="switchNeedSubTab('combined', this)">All</button>
       <button class="need-sub-btn" onclick="switchNeedSubTab('low', this)">⚠ Low Stock</button>
       <button class="need-sub-btn" onclick="switchNeedSubTab('oos', this)">✕ Out of Stock</button>
+    </div>
+    <div class="filter-row" style="margin-top:8px;">
+      <button class="filter-btn active" onclick="setOrdersFilter('all', this)">All</button>
+      <button class="filter-btn" onclick="setOrdersFilter('Standard Screen', this)">Standard</button>
+      <button class="filter-btn" onclick="setOrdersFilter('Premium Screen', this)">Premium</button>
+      <button class="filter-btn" onclick="setOrdersFilter('Refurb Screen', this)">Refurb</button>
+      <button class="filter-btn" onclick="setOrdersFilter('Battery', this)">Battery</button>
+      <button class="filter-btn" onclick="setOrdersFilter('t.G.', this)">t.G.</button>
+      <button class="filter-btn" onclick="setOrdersFilter('Device', this)">Device</button>
     </div>
     <div id="ordersNeedList" class="orders-items-list"></div>
   </div>
@@ -1135,8 +1132,20 @@ function onRepairChange() {
     var lbl = el('partCostLabel'); if (lbl) lbl.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[type1]||0) + ' + tax)' : 'Part Cost'; }
 }
 
-function onModel1Change() { model1 = el('modelSelect1').value; hideQuote(); }
-function onModel2Change() { model2 = el('modelSelect2').value; el('dealResult').classList.add('hidden'); }
+function onModel1Change() {
+  model1 = el('modelSelect1').value;
+  var partCost = model1 ? ((SCREEN_PRICES[model1] || {}).standard || 0) : 0;
+  cost1 = partCost;
+  if (el('partCostIphone')) el('partCostIphone').value = partCost > 0 ? partCost : '';
+  tryRenderQuote();
+}
+function onModel2Change() {
+  model2 = el('modelSelect2').value;
+  var partCost = model2 ? ((SCREEN_PRICES[model2] || {}).standard || 0) : 0;
+  cost2 = partCost;
+  if (el('partCostIphone2')) el('partCostIphone2').value = partCost > 0 ? partCost : '';
+  renderDeal();
+}
 function updateTierDisplay1() {}
 function updateTierDisplay2() {}
 
@@ -1435,7 +1444,7 @@ function clearCache(key) { try { localStorage.removeItem(key); } catch(e) {} }
 
 function atFetch(path, opts) { opts = opts || {}; return fetch(WORKER_URL + '/v0/' + path, Object.assign({}, opts, { headers: Object.assign({ 'X-Auth': apiPass, 'Content-Type': 'application/json' }, opts.headers || {}) })).then(r => r.json()); }
 
-function initInventory() { if (!invLoaded) loadInventory(); loadOrders(); }
+function initInventory() { if (!invLoaded) loadInventory(); }
 function loadInventory() {
   if (!authd) { allInvRecords = DEMO_INV; invLoaded = true; el('invLoading').classList.add('hidden'); renderInventory(); return; }
   var cached = getCache('almatek_inv_cache');
@@ -1501,15 +1510,15 @@ var DEMO_INV = [
   { id:'di5', fields:{ 'fldWzYeFcqm0qnxD8':'iPhone 15 Battery', 'fldV0jSP3xJuinS8t':'iPhone 15', 'fldvwFFYSxAJlcFpp':8, 'fldB16jlPFHm11tfW':3, 'fldZEvcZT2JnX5kwh':'In Stock', 'fldxQhVZSYmXNK6CW':'battery' } },
   { id:'di6', fields:{ 'fldWzYeFcqm0qnxD8':'iPhone 14 Battery', 'fldV0jSP3xJuinS8t':'iPhone 14', 'fldvwFFYSxAJlcFpp':2, 'fldB16jlPFHm11tfW':2, 'fldZEvcZT2JnX5kwh':'In Stock', 'fldxQhVZSYmXNK6CW':'battery' } }
 ];
-function loadOrders() { if (!isAuth()) { renderOrders(DEMO_ORDERS); return; } el('ordersLoading').classList.remove('hidden'); atFetch(AT_BASE + '/' + AT_ORDERS + '?returnFieldsByFieldId=true&pageSize=50').then(data => { el('ordersLoading').classList.add('hidden'); if (data.error) return; renderOrders(data.records || []); }); }
-function renderOrders(records) { if (!records.length) { el('ordersList').innerHTML = '<div class="loading-msg">No orders yet.</div>'; return; } el('ordersList').innerHTML = records.map(r => '<div class="order-item"><div class="order-item-top"><div><div class="order-item-name">' + (r.fields['fldF0TJARgHugOh83']||'—') + '</div><div class="order-item-meta">Qty: ' + (r.fields['fldbKVKkNgZtShHwh']||'?') + '</div></div><span class="order-status ' + (r.fields['fldwGKyfgOuue1eyE']?'received':'pending') + '">' + (r.fields['fldwGKyfgOuue1eyE']?'✓ Received':'⏳ Pending') + '</span></div></div>').join(''); }
+function loadOrders() {}
+function renderOrders(records) {}
 
 function toggleNewOrderForm() { if (!isAuth()) { showToast('Log in as staff'); return; } el('newOrderForm').classList.toggle('hidden'); }
 function submitNewOrder() { showToast('Order placed ✓'); toggleNewOrderForm(); }
 
 function showToast(msg, duration, onclick) { var t = el('invToast'); t.textContent = msg; t.classList.add('show'); t.style.cursor = onclick ? 'pointer' : ''; t.onclick = onclick || null; setTimeout(function() { t.classList.remove('show'); t.onclick = null; }, duration || 2500); }
 
-var ordersTabView = 'needorder', needSubTab = 'combined', allOrderRecords = [], ordersLoading2 = false;
+var ordersTabView = 'needorder', needSubTab = 'combined', allOrderRecords = [], ordersLoading2 = false, ordersItemFilter = 'all';
 var orderCart = (function() { try { return JSON.parse(localStorage.getItem('almatek_order_cart') || '[]'); } catch(e) { return []; } })();
 function saveCartToStorage() { try { localStorage.setItem('almatek_order_cart', JSON.stringify(orderCart)); } catch(e) {} }
 
@@ -1578,6 +1587,7 @@ function renderNeedOrderList() {
     if (needSubTab === 'oos' && !isOOS) return false;
     if (needSubTab === 'low' && !isLow) return false;
     if (needSubTab === 'combined' && !isOOS && !isLow) return false;
+    if (ordersItemFilter !== 'all' && selName(r.fields['fldxQhVZSYmXNK6CW']) !== ordersItemFilter) return false;
     if (search && !(r.fields['fldWzYeFcqm0qnxD8'] || '').toLowerCase().includes(search)) return false;
     return true;
   });
@@ -1724,6 +1734,7 @@ function receiveOrder(orderId) {
 
 function filterOrdersItems() { renderNeedOrderList(); }
 function clearOrdersSearch() { if (el('ordersSearchInput')) el('ordersSearchInput').value = ''; renderNeedOrderList(); }
+function setOrdersFilter(f, btn) { ordersItemFilter = f; document.querySelectorAll('#ordersNeedView .filter-btn').forEach(function(b) { b.classList.remove('active'); }); btn.classList.add('active'); renderNeedOrderList(); }
 function switchNeedSubTab(tab, btn) {
   needSubTab = tab;
   document.querySelectorAll('.need-sub-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -1899,10 +1910,10 @@ function tryAuth() {
           sheetsCall({ action: 'getConfig' }).then(function(cfg) {
             if (cfg && cfg.ok) applyLoginConfig(cfg);
             if (!apiPass) showApiPassModal();
-            syncFromSheets();
-          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); });
+            syncFromSheets(); refreshPricingIfStale();
+          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); refreshPricingIfStale(); });
         } else {
-          syncFromSheets();
+          syncFromSheets(); refreshPricingIfStale();
           if (!apiPass) setTimeout(showApiPassModal, 400);
         }
         return;
@@ -1942,8 +1953,16 @@ function refreshPricingIfStale() {
       SCREEN_PRICES = norm;
       localStorage.setItem('almatek_pricing', JSON.stringify({ prices: norm, ts: Date.now() }));
       initGlassPriceTags();
-      if (model1) updateTierDisplay1();
-      if (model2) updateTierDisplay2();
+      if (model1 && type1 === 'iphone_screen') {
+        cost1 = (SCREEN_PRICES[model1] || {}).standard || 0;
+        if (el('partCostIphone')) el('partCostIphone').value = cost1 || '';
+        tryRenderQuote();
+      }
+      if (model2 && type2 === 'iphone_screen') {
+        cost2 = (SCREEN_PRICES[model2] || {}).standard || 0;
+        if (el('partCostIphone2')) el('partCostIphone2').value = cost2 || '';
+        renderDeal();
+      }
     } else {
       var msg = data && data.error ? data.error : (data && !data.ok ? 'Sheet returned no prices' : 'Pricing fetch failed');
       showToast('⚠️ ' + msg + ' — tap to retry', 6000, refreshPricingIfStale);
@@ -1962,8 +1981,7 @@ function onStaffLoginSuccess(pass, name, structure, data) {
   authd = true; isOwner = false;
   el('authOverlay').classList.add('hidden');
   updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
-  syncFromSheets();
-  
+  syncFromSheets(); refreshPricingIfStale();
 }
 function onReviewClick(btn) {
   if (!authd) { showToast('Log in to use'); return; }
@@ -2599,6 +2617,7 @@ function saveTicketsToStorage() { var s={}; ticketsStorage=ticketsStorage.filter
 loadTicketsFromStorage();
 
 initGlassPriceTags();
+loadCachedPricing();
 
 
 var clockMockOffset = 0;
@@ -3277,7 +3296,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-7';
+var APP_VERSION = '20260508-8';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
