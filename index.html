@@ -1184,7 +1184,7 @@ function onDeviceSelect1(subtype, btn) {
   type1 = subtype; cost1 = 0;
   el('freeSection').classList.remove('hidden');
   el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value='';
-  var lbl = el('partCostLabel'); if (lbl) lbl.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[subtype]||0) + ' + tax)' : 'Part Cost';
+  var lbl = el('partCostLabel'); if (lbl) lbl.textContent = 'Part Cost';
   tryRenderQuote();
 }
 function onDeviceSelect2(subtype, btn) {
@@ -1192,7 +1192,7 @@ function onDeviceSelect2(subtype, btn) {
   type2 = subtype; cost2 = 0;
   el('freeSection2').classList.remove('hidden');
   el('partCost2').value = '';
-  var lbl2 = el('partCostLabel2'); if (lbl2) lbl2.textContent = isOwner ? 'Part Cost — (× 1.2 + $' + (LABOR[subtype]||0) + ' + tax)' : 'Part Cost';
+  var lbl2 = el('partCostLabel2'); if (lbl2) lbl2.textContent = 'Part Cost';
   renderDeal();
 }
 
@@ -3320,7 +3320,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-13';
+var APP_VERSION = '20260508-14';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
