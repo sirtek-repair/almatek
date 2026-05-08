@@ -1119,18 +1119,11 @@ function initGlassPriceTags() {
 }
 function getPrice1() {
   if (type1 === 'back_glass') { return cost1 > 0 ? cost1 : 0; }
-  if (type1 === 'iphone_screen' && tier1 && tier1 !== 'manual') { return cost1 > 0 ? cost1 : 0; }
   return cost1 > 0 ? fullPrice(cost1, type1) : 0;
 }
 function getPrice2() {
   if (type2 === 'back_glass') { return cost2 > 0 ? cost2 : 0; }
-  if (type2 === 'iphone_screen' && tier2 && tier2 !== 'manual') { return cost2 > 0 ? cost2 : 0; }
   return cost2 > 0 ? fullPrice(cost2, type2) : 0;
-}
-function applyTax(p, type, tier) {
-  if (type === 'back_glass') return withTax(p);
-  if (type === 'iphone_screen' && tier && tier !== 'manual') return p;
-  return withTax(p);
 }
 
 function onRepairChange() {
@@ -1208,7 +1201,7 @@ function onCost2Change() { const inputId = type2==='iphone_screen' ? 'partCostIp
 
 function tryRenderQuote() {
   const p = getPrice1(); if (p <= 0) { hideQuote(); return; }
-  const total = (type1==='iphone_screen'&&tier1&&tier1!=='manual') ? (p + mobileFee) : withTax(p + mobileFee);
+  const total = withTax(p + mobileFee);
   if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; el('taxIncludedLine').classList.remove('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.textContent = 'includes mobile service'; sub.classList.remove('hidden'); } else { sub.textContent = ''; sub.classList.add('hidden'); } }
   else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; el('taxIncludedLine').classList.add('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
   el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
@@ -1351,8 +1344,7 @@ function on2ndRepairChange() {
 }
 function renderDeal() {
   const p1=getPrice1(), p2=getPrice2(); if (p1<=0 || p2<=0) return;
-  const fp1 = applyTax(p1, type1, tier1), fp2 = applyTax(p2, type2, tier2);
-  const fullTotal = fp1+fp2, discounted2 = Math.ceil(fp2/2), dealTotal = fp1+discounted2, savings = fullTotal-dealTotal;
+  const fullTotal = withTax(p1+p2), discounted2 = Math.ceil(withTax(p2)/2), dealTotal = withTax(p1)+discounted2, savings = fullTotal-dealTotal;
   el('normalTotal').textContent=isAuth() ? '$'+fullTotal : 'part + tax + ❤️'; el('dealTotal').textContent=isAuth() ? '$'+dealTotal : 'part + tax + ❤️';
   el('savingsPill').textContent=isAuth() ? 'Saving $'+savings : 'They save 🤝'; el('dealResult').classList.remove('hidden');
 }
@@ -2300,13 +2292,13 @@ function buildQuoteText() {
     lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
   } else if (hasSecond) {
     // ── Two-repair combo deal ──────────────────────────────────
-    var full1 = applyTax(p1, type1, tier1) + mobileFee, full2 = applyTax(p2, type2, tier2), fullTotal = full1 + full2;
-    var discounted2 = Math.ceil(full2 / 2), dealTotal = full1 + discounted2;
+    var full1 = withTax(p1 + mobileFee), full2 = withTax(p2), fullTotal = withTax(p1 + p2 + mobileFee);
+    var discounted2 = Math.ceil(withTax(p2) / 2), dealTotal = withTax(p1 + mobileFee) + discounted2;
     var savings = fullTotal - dealTotal;
 
     lines.push('Great news — since we\'re already in your device, we can bundle both repairs and save you money!');
     lines.push('');
-    lines.push('Repair 1 — ' + label1 + model1Label + tier1Label + ': $' + full1 + ' (tax included)' + (mobileFee > 0 ? ' · includes mobile service' : ''));
+    lines.push('Repair 1 — ' + label1 + model1Label + tier1Label + ': $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ' · includes mobile service' : ''));
     lines.push('Repair 2 — ' + label2 + model2Label + tier2Label + ': normally $' + full2 + ', but with the combo deal only $' + discounted2 + ' (50% off, tax included)');
     lines.push('');
     lines.push('Regular price for both: $' + fullTotal + ' (tax included)');
@@ -2321,10 +2313,10 @@ function buildQuoteText() {
     if (hasStd && hasPrem) {
       lines.push('For your ' + model1 + ', we have two options available:');
       lines.push('');
-      lines.push('STANDARD — $' + (prices.standard + mobileFee) + ' (tax included)');
+      lines.push('STANDARD — $' + withTax(fullPrice(prices.standard,'iphone_screen') + mobileFee) + ' (tax included)');
       lines.push('LCD screen that looks & functions just like the original. The frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re upgrading soon or keeping your phone under a year.');
       lines.push('');
-      lines.push('PREMIUM — $' + (prices.premium + mobileFee) + ' (tax included)');
+      lines.push('PREMIUM — $' + withTax(fullPrice(prices.premium,'iphone_screen') + mobileFee) + ' (tax included)');
       lines.push('Soft OLED screen (OEM-quality) — same exact specs as the original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
       lines.push('');
       lines.push('Both come with a warranty' + (mobileFee > 0 ? ' and include mobile service' : '') + '. Which works better for you?');
@@ -2332,12 +2324,12 @@ function buildQuoteText() {
       lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
     } else {
       var opt = hasPrem ? 'premium' : 'standard', price = prices[opt];
-      lines.push(model1 + ' — ' + opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + (price + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
+      lines.push(model1 + ' — ' + opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(fullPrice(price,'iphone_screen') + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
       lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
     }
   } else {
     // ── Single non-screen repair ───────────────────────────────
-    lines.push(label1 + model1Label + tier1Label + ' repair — $' + (applyTax(p1,type1,tier1) + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
+    lines.push(label1 + model1Label + tier1Label + ' repair — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
     lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
   }
   return lines.join('\n');
@@ -3328,7 +3320,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-11';
+var APP_VERSION = '20260508-12';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
