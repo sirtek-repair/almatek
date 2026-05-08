@@ -907,49 +907,61 @@
 <div id="tabProfile" class="hidden">
 <div class="container">
   <header style="text-align:center;padding:16px 0 12px;">
-    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">💵 Tally</h1>
+    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">💵 Profile</h1>
   </header>
-  <div class="card">
-    <div class="gap"><label class="field-label" for="bookerName">Name</label><input type="text" id="bookerName" placeholder="Name" oninput="calcBookerPay()" /></div>
-    <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerMonth">Month</label><select id="bookerMonth" onchange="calcBookerPay()"><option value="">— select month —</option><option>january</option><option>february</option><option>march</option><option>april</option><option>may</option><option>june</option><option>july</option><option>august</option><option>september</option><option>october</option><option>november</option><option>december</option></select></div>
-    <div id="payStructureRow" class="gap" style="margin-top:14px;display:none;"><label class="field-label">Pay Structure</label><div style="display:flex;gap:8px;margin-top:4px;"><button id="structBtnStandard" class="need-sub-btn active" onclick="setPayStructure('standard')">Standard</button><button id="structBtnFlat" class="need-sub-btn" onclick="setPayStructure('flat')">Flat Rate</button></div></div>
-    <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerRepairs">Repairs Booked</label><input type="number" id="bookerRepairs" placeholder="0" min="0" step="1" oninput="calcBookerPay()" /></div>
-    <div id="flatRevshareRow" class="gap hidden" style="margin-top:14px;"><label class="field-label" for="flatRevshare">Rev Share % (optional)</label><input type="number" id="flatRevshare" value="0" min="0" max="100" step="0.5" oninput="calcBookerPay()" /><p class="hint">Leave 0 if not applicable yet</p></div>
+  <div class="orders-tab-nav" style="margin-bottom:16px;">
+    <button class="orders-tab-btn active" id="profileSubBtnTally" onclick="switchProfileSubTab('tally')">💵 Tally</button>
+    <button class="orders-tab-btn" id="profileSubBtnSettings" onclick="switchProfileSubTab('settings')">⚙ Settings</button>
   </div>
-  <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total" style="margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:10px;"><div class="bt-label">Per Repair Payout</div><div class="bt-amt" id="perRepairAmt">$—</div></div><div id="revShareResultRow" class="booker-total hidden"><div class="bt-label">Rev Share Payout</div><div class="bt-amt" id="revShareAmt">$—</div></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">⬆ Share Results</button></div></div>
 
-  <hr style="border:none;border-top:1px solid var(--border);margin:20px 0 4px;" />
-  <h2 style="font-size:16px;font-weight:600;color:var(--muted);text-align:center;margin:12px 0 16px;letter-spacing:0.03em;">⚙ Settings</h2>
-
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;"><div class="staff-section-title">AlmaTek Script</div><button onclick="resetScriptConnection()" style="background:none;border:none;color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-decoration:underline;">reset staff script</button></div>
-    <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Script URL for data sync. Share this link with staff to connect their app.</p>
-    <input type="url" id="settingsScriptUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
-    <div style="display:flex;gap:6px;margin-top:8px;">
-      <button onclick="saveSettingsScriptUrl()" style="flex:1;padding:9px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
-      <button onclick="copyScriptUrl()" style="flex:1;padding:9px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Copy Link</button>
+  <div id="profileSubViewTally">
+    <div class="card">
+      <div class="gap"><label class="field-label" for="bookerName">Name</label><input type="text" id="bookerName" placeholder="Name" oninput="calcBookerPay()" /></div>
+      <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerMonth">Month</label><select id="bookerMonth" onchange="calcBookerPay()"><option value="">— select month —</option><option>january</option><option>february</option><option>march</option><option>april</option><option>may</option><option>june</option><option>july</option><option>august</option><option>september</option><option>october</option><option>november</option><option>december</option></select></div>
+      <div id="payStructureRow" class="gap" style="margin-top:14px;display:none;"><label class="field-label">Pay Structure</label><div style="display:flex;gap:8px;margin-top:4px;"><button id="structBtnStandard" class="need-sub-btn active" onclick="setPayStructure('standard')">Standard</button><button id="structBtnFlat" class="need-sub-btn" onclick="setPayStructure('flat')">Flat Rate</button></div></div>
+      <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerRepairs">Repairs Booked</label><input type="number" id="bookerRepairs" placeholder="0" min="0" step="1" oninput="calcBookerPay()" /></div>
+      <div id="flatRevshareRow" class="gap hidden" style="margin-top:14px;"><label class="field-label" for="flatRevshare">Rev Share % (optional)</label><input type="number" id="flatRevshare" value="0" min="0" max="100" step="0.5" oninput="calcBookerPay()" /><p class="hint">Leave 0 if not applicable yet</p></div>
     </div>
-    <div id="settingsScriptErr" class="chpass-err" style="margin-top:6px;"></div>
+    <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total" style="margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:10px;"><div class="bt-label">Per Repair Payout</div><div class="bt-amt" id="perRepairAmt">$—</div></div><div id="revShareResultRow" class="booker-total hidden"><div class="bt-label">Rev Share Payout</div><div class="bt-amt" id="revShareAmt">$—</div></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">⬆ Share Results</button></div></div>
   </div>
 
-  <div class="card" id="settingsTokenSection" style="margin-top:16px;">
-    <div class="staff-section-title">🔑 Inventory Token</div>
-    <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Connects to Airtable inventory. Owner only.</p>
-    <div style="display:flex;gap:6px;">
-      <input type="password" id="settingsApiToken" placeholder="Token value" autocomplete="off" style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
-      <button onclick="saveSettingsToken()" style="padding:9px 14px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
+  <div id="profileSubViewSettings" class="hidden">
+    <div class="card">
+      <div class="staff-section-title">AlmaTek Script</div>
+      <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Script URL for data sync. Share this link with staff to connect their app.</p>
+      <input type="url" id="settingsScriptUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button onclick="saveSettingsScriptUrl()" style="flex:1;padding:9px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
+        <button onclick="copyScriptUrl()" style="flex:1;padding:9px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Copy Link</button>
+      </div>
+      <div id="settingsScriptErr" class="chpass-err" style="margin-top:6px;"></div>
     </div>
-    <button onclick="pushTokenToScript()" style="margin-top:8px;width:100%;padding:9px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:var(--green);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">☁ Save Token to Script</button>
-    <div id="settingsTokenErr" class="chpass-err" style="margin-top:6px;"></div>
-  </div>
 
-  <div class="card" id="settingsChangePassSection" style="margin-top:16px;margin-bottom:24px;">
-    <div class="staff-section-title">Change Password</div>
-    <input type="password" id="settingsPassCurrent" placeholder="Current password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:10px;" />
-    <input type="password" id="settingsPassNew" placeholder="New password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:8px;" />
-    <input type="password" id="settingsPassConfirm" placeholder="Confirm new password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:8px;" onkeydown="if(event.key==='Enter') saveSettingsPassword()" />
-    <button onclick="saveSettingsPassword()" style="margin-top:10px;width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Update Password</button>
-    <div id="settingsPassErr" class="chpass-err" style="margin-top:6px;"></div>
+    <div class="card" id="settingsTokenSection" style="margin-top:16px;">
+      <div class="staff-section-title">🔑 Inventory Token</div>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Connects to Airtable inventory. Owner only.</p>
+      <div style="display:flex;gap:6px;">
+        <input type="password" id="settingsApiToken" placeholder="Token value" autocomplete="off" style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
+        <button onclick="saveSettingsToken()" style="padding:9px 14px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
+      </div>
+      <button onclick="pushTokenToScript()" style="margin-top:8px;width:100%;padding:9px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:var(--green);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">☁ Save Token to Script</button>
+      <div id="settingsTokenErr" class="chpass-err" style="margin-top:6px;"></div>
+    </div>
+
+    <div class="card" id="settingsResetSection" style="margin-top:16px;">
+      <div class="staff-section-title">Reset Staff Script</div>
+      <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Clears the saved script URL and disconnects data sync.</p>
+      <button onclick="resetScriptConnection()" style="width:100%;padding:9px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Reset Connection</button>
+    </div>
+
+    <div class="card" id="settingsChangePassSection" style="margin-top:16px;margin-bottom:24px;">
+      <div class="staff-section-title">Change Password</div>
+      <input type="password" id="settingsPassCurrent" placeholder="Current password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:10px;" />
+      <input type="password" id="settingsPassNew" placeholder="New password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:8px;" />
+      <input type="password" id="settingsPassConfirm" placeholder="Confirm new password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:8px;" onkeydown="if(event.key==='Enter') saveSettingsPassword()" />
+      <button onclick="saveSettingsPassword()" style="margin-top:10px;width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Update Password</button>
+      <div id="settingsPassErr" class="chpass-err" style="margin-top:6px;"></div>
+    </div>
   </div>
 
 </div>
@@ -1308,7 +1320,7 @@ function clearBtns(sel) { document.querySelectorAll(sel+' .model-btn').forEach(b
 function switchTab(tab) {
   if (tab === 'cart') { switchTab('inventory'); switchInvSubTab('orders'); switchOrdersView('cart'); return; }
   if (tab === 'orders') { switchTab('inventory'); switchInvSubTab('orders'); return; }
-  if (tab === 'settings') { switchTab('profile'); return; }
+  if (tab === 'settings') { profileSubTab = 'settings'; switchTab('profile'); return; }
   const isQuote = tab==='quote', isInventory = tab==='inventory', isLeads = tab==='leads', isProfile = tab==='profile', isAdmin = tab==='admin', isTools = tab==='tools';
   el('tabQuote').classList.toggle('hidden', !isQuote);
   el('tabInventory').classList.toggle('hidden', !isInventory);
@@ -1326,8 +1338,18 @@ function switchTab(tab) {
   if (isLeads) { exitLeadSelectMode && exitLeadSelectMode(); exitTicketSelectMode && exitTicketSelectMode(); }
   if (isInventory) initInventory();
   else if (isAdmin) { switchAdminSubTab(adminSubTab || 'staff'); }
-  else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); openSettingsTab(); }
+  else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); switchProfileSubTab(profileSubTab || 'tally'); }
   else if (isLeads) { switchLeadSubTab('leads'); }
+}
+var profileSubTab = 'tally';
+function switchProfileSubTab(tab) {
+  profileSubTab = tab;
+  var isTally = tab === 'tally', isSettings = tab === 'settings';
+  el('profileSubViewTally').classList.toggle('hidden', !isTally);
+  el('profileSubViewSettings').classList.toggle('hidden', !isSettings);
+  el('profileSubBtnTally').classList.toggle('active', isTally);
+  el('profileSubBtnSettings').classList.toggle('active', isSettings);
+  if (isSettings) openSettingsTab();
 }
 var invSubTab = 'inventory';
 function switchInvSubTab(tab) {
@@ -3255,7 +3277,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-6';
+var APP_VERSION = '20260508-7';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
