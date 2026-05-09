@@ -52,24 +52,36 @@ function handleAction(p) {
     case 'getPricing': {
       try {
         var pss = SpreadsheetApp.openById('1-ihijopdfiS5QL1Ikr_eGBaZiQZGqhkdn5cTXiBYq6Y');
-        var pSheet = pss.getSheets().filter(function(s) { return s.getSheetId() === 30606733; })[0];
-        if (!pSheet) return { ok: false, error: 'Pricing sheet tab not found' };
+        var sheets = pss.getSheets();
+        var pSheet = null;
+        for (var s = 0; s < sheets.length; s++) { if (sheets[s].getSheetId() === 982039705) { pSheet = sheets[s]; break; } }
+        if (!pSheet) pSheet = sheets[0];
+        if (!pSheet) return { ok: false, error: 'Sheet not found' };
         var rows = pSheet.getDataRange().getValues();
-        var headers = rows[0].map(function(h) { return String(h).trim(); });
-        var modelIdx = headers.indexOf('iPhone Model');
-        var tierIdx  = headers.indexOf('Tier');
-        var priceIdx = headers.indexOf('Repair Price');
-        if (modelIdx < 0 || tierIdx < 0 || priceIdx < 0) return { ok: false, error: 'Missing columns: ' + headers.join(', ') };
+        if (rows.length < 2) return { ok: false, error: 'No data in sheet' };
+        var headers = rows[0].map(function(h) { return String(h).trim().toLowerCase(); });
+        var modelIdx = headers.indexOf('iphone model');
+        var tierIdx  = headers.indexOf('tier');
+        var priceIdx = headers.indexOf('price');
+        if (modelIdx < 0) modelIdx = 0;
+        if (tierIdx  < 0) tierIdx  = 2;
+        if (priceIdx < 0) priceIdx = 4;
         var prices = {};
+        var tiersSeen = [];
         for (var i = 1; i < rows.length; i++) {
           var model = String(rows[i][modelIdx] || '').trim();
           var tier  = String(rows[i][tierIdx]  || '').trim().toLowerCase();
-          var price = rows[i][priceIdx];
-          if (!model || !tier || price === '' || price == null) continue;
+          var cost  = rows[i][priceIdx];
+          if (!model || !tier || cost === '' || cost == null || isNaN(Number(cost)) || Number(cost) <= 0) continue;
+          if (tiersSeen.indexOf(tier) < 0) tiersSeen.push(tier);
+          var tierKey = null;
+          if (tier.indexOf('standard') >= 0 || tier === 'std' || tier === 'lcd') tierKey = 'standard';
+          else if (tier.indexOf('premium') >= 0 || tier === 'oled' || tier === 'oem') tierKey = 'premium';
+          if (!tierKey) continue;
           if (!prices[model]) prices[model] = {};
-          prices[model][tier] = Number(price);
+          prices[model][tierKey] = Number(cost);
         }
-        if (!Object.keys(prices).length) return { ok: false, error: 'No prices found in sheet' };
+        if (!Object.keys(prices).length) return { ok: false, error: 'No prices found. Tiers in sheet: [' + tiersSeen.join(', ') + ']' };
         return { ok: true, prices: prices };
       } catch(e) {
         return { ok: false, error: e.toString() };
