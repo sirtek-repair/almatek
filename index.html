@@ -937,7 +937,7 @@
 
   <div id="profileSubViewSettings" class="hidden">
     <div class="card">
-      <div class="staff-section-title">AlmaTek Script</div>
+      <div class="staff-section-title">Staff Script</div>
       <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Script URL for data sync. Share this link with staff to connect their app.</p>
       <input type="url" id="settingsScriptUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
       <div style="display:flex;gap:6px;margin-top:8px;">
@@ -965,7 +965,7 @@
     </div>
 
     <div class="card" id="settingsResetSection" style="margin-top:16px;">
-      <div class="staff-section-title">Reset Staff Script</div>
+      <div class="staff-section-title">Pricing Script</div>
       <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Clears the saved script URL and disconnects data sync.</p>
       <button onclick="resetScriptConnection()" style="width:100%;padding:9px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Reset Connection</button>
     </div>
@@ -3264,11 +3264,11 @@ function openSettingsTab() {
 function saveSettingsScriptUrl() {
   var url = (el('settingsScriptUrl').value || '').trim();
   var err = el('settingsScriptErr');
-  if (!url || !url.startsWith('https://')) { err.textContent = 'Enter a valid URL.'; err.style.color = '#ef4444'; return; }
+  if (!url) { err.textContent = 'Enter a URL.'; err.style.color = '#ef4444'; return; }
   USERS_SCRIPT_URL = url; localStorage.setItem('almatek_script_url', url);
   err.textContent = 'Saved ✓'; err.style.color = 'var(--green)';
   setTimeout(function() { err.textContent = ''; }, 2000);
-  renderStaffTab();
+  syncFromSheets(); refreshPricingIfStale();
 }
 function saveSettingsToken() {
   var val = (el('settingsApiToken').value || '').trim();
