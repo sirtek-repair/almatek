@@ -496,6 +496,7 @@
     <textarea id="quoteNotes" placeholder="Add a message to include in the quote sent to the customer..." rows="2" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
   </div>
 
+  <div id="factoryScreenBadge" class="hidden" style="text-align:center;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.04em;"></div>
 
   <div id="quoteCard" class="quote-card hidden">
     <div class="ql">Quote to Customer</div>
@@ -3337,7 +3338,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260509-5';
+var APP_VERSION = '20260509-4';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
