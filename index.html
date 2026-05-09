@@ -2700,7 +2700,7 @@ updateWorldClock();
 setInterval(updateWorldClock, 30000);
 
 // Sync from Sheets on startup if already authenticated (skips login flow)
-if (authd) setTimeout(syncFromSheets, 500);
+if (authd) { setTimeout(syncFromSheets, 500); setTimeout(refreshPricingIfStale, 1000); }
 
 
 // Auto-sync every 90 seconds while the app is open
@@ -3320,7 +3320,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-14';
+var APP_VERSION = '20260508-15';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
