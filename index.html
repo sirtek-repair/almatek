@@ -3256,10 +3256,21 @@ function showChangePass() { switchTab('profile'); }
 function saveNewPassword() { saveSettingsPassword(); }
 function openSettingsTab() {
   if (USERS_SCRIPT_URL) el('settingsScriptUrl').value = USERS_SCRIPT_URL;
+  if (USERS_SCRIPT_URL && el('pricingScriptUrl')) el('pricingScriptUrl').value = USERS_SCRIPT_URL;
   el('settingsPassCurrent').value = ''; el('settingsPassNew').value = ''; el('settingsPassConfirm').value = '';
   el('settingsPassErr').textContent = ''; el('settingsScriptErr').textContent = ''; el('settingsTokenErr').textContent = '';
   var tok = el('settingsTokenSection'); if (tok) tok.style.display = isOwner ? 'block' : 'none';
   var chp = el('settingsChangePassSection'); if (chp) chp.style.display = (authd && !isOwner) ? 'block' : 'none';
+}
+function savePricingScriptUrl() {
+  var url = (el('pricingScriptUrl').value || '').trim();
+  var err = el('pricingScriptErr');
+  if (!url) { err.textContent = 'Paste the script URL.'; err.style.color = '#ef4444'; return; }
+  USERS_SCRIPT_URL = url; localStorage.setItem('almatek_script_url', url);
+  if (el('settingsScriptUrl')) el('settingsScriptUrl').value = url;
+  err.textContent = 'Saved ✓'; err.style.color = 'var(--green)';
+  setTimeout(function() { err.textContent = ''; }, 2000);
+  refreshPricingIfStale();
 }
 function saveSettingsScriptUrl() {
   var url = (el('settingsScriptUrl').value || '').trim();
