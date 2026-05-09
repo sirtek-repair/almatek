@@ -921,6 +921,7 @@
   <div class="orders-tab-nav" style="margin-bottom:16px;">
     <button class="orders-tab-btn active" id="profileSubBtnTally" onclick="switchProfileSubTab('tally')">💵 Tally</button>
     <button class="orders-tab-btn" id="profileSubBtnSettings" onclick="switchProfileSubTab('settings')">⚙ Settings</button>
+    <button class="orders-tab-btn hidden" id="profileSubBtnAdmin" onclick="switchProfileSubTab('admin')">🔧 Admin</button>
   </div>
 
   <div id="profileSubViewTally">
@@ -936,7 +937,7 @@
 
   <div id="profileSubViewSettings" class="hidden">
     <div class="card">
-      <div class="staff-section-title">AlmaTek Script</div>
+      <div class="staff-section-title">Staff Script</div>
       <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Script URL for data sync. Share this link with staff to connect their app.</p>
       <input type="url" id="settingsScriptUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
       <div style="display:flex;gap:6px;margin-top:8px;">
@@ -957,8 +958,14 @@
       <div id="settingsTokenErr" class="chpass-err" style="margin-top:6px;"></div>
     </div>
 
+    <div class="card" style="margin-top:16px;">
+      <div class="staff-section-title">Pricing</div>
+      <div id="pricingStatusLine" style="font-size:12px;color:var(--muted);margin:4px 0 12px;">—</div>
+      <button onclick="debugRefreshPricing()" style="width:100%;padding:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">↻ Refresh Pricing</button>
+    </div>
+
     <div class="card" id="settingsResetSection" style="margin-top:16px;">
-      <div class="staff-section-title">Reset Staff Script</div>
+      <div class="staff-section-title">Pricing Script</div>
       <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Clears the saved script URL and disconnects data sync.</p>
       <button onclick="resetScriptConnection()" style="width:100%;padding:9px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Reset Connection</button>
     </div>
@@ -973,39 +980,33 @@
     </div>
   </div>
 
-</div>
-</div>
-
-<!-- Admin Tab (owner only) -->
-<div id="tabAdmin" class="hidden">
-<div class="container">
-  <header style="text-align:center;padding:16px 0 12px;">
-    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">🔧 Admin</h1>
-  </header>
-  <div class="orders-tab-nav" style="margin-bottom:16px;">
-    <button class="orders-tab-btn active" id="adminSubBtnStaff" onclick="switchAdminSubTab('staff')">👥 Staff</button>
-    <button class="orders-tab-btn" id="adminSubBtnReports" onclick="switchAdminSubTab('reports')">📊 Reports</button>
-  </div>
-
-  <div id="adminSubViewStaff">
-    <div id="adminNoScriptMsg" class="hidden" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">No script connected — configure it in <button onclick="switchTab('profile')" style="background:none;border:none;color:var(--accent);font-family:inherit;font-size:13px;cursor:pointer;text-decoration:underline;">Profile</button></div>
-    <div id="staffMainSection" class="hidden"><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
-    <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
-  </div>
-
-  <div id="adminSubViewReports" class="hidden">
-    <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-      <button class="orders-tab-btn active" id="rptBtnDay" onclick="setReportPeriod('day',this)">Today</button>
-      <button class="orders-tab-btn" id="rptBtnWeek" onclick="setReportPeriod('week',this)">Week</button>
-      <button class="orders-tab-btn" id="rptBtnMonth" onclick="setReportPeriod('month',this)">Month</button>
-      <button class="orders-tab-btn" id="rptBtnYTD" onclick="setReportPeriod('ytd',this)">YTD</button>
-      <button id="rptShareBtn" onclick="shareReport()" style="margin-left:auto;padding:6px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share</button>
+  <div id="profileSubViewAdmin" class="hidden">
+    <div class="orders-tab-nav" style="margin-bottom:16px;">
+      <button class="orders-tab-btn active" id="adminSubBtnStaff" onclick="switchAdminSubTab('staff')">👥 Staff</button>
+      <button class="orders-tab-btn" id="adminSubBtnReports" onclick="switchAdminSubTab('reports')">📊 Reports</button>
     </div>
-    <div id="reportsSummary"></div>
-    <div id="reportsTicketList" style="margin-top:12px;"></div>
+    <div id="adminSubViewStaff">
+      <div id="adminNoScriptMsg" class="hidden" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">No script connected — configure it in Settings</div>
+      <div id="staffMainSection" class="hidden"><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
+      <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
+    </div>
+    <div id="adminSubViewReports" class="hidden">
+      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+        <button class="orders-tab-btn active" id="rptBtnDay" onclick="setReportPeriod('day',this)">Today</button>
+        <button class="orders-tab-btn" id="rptBtnWeek" onclick="setReportPeriod('week',this)">Week</button>
+        <button class="orders-tab-btn" id="rptBtnMonth" onclick="setReportPeriod('month',this)">Month</button>
+        <button class="orders-tab-btn" id="rptBtnYTD" onclick="setReportPeriod('ytd',this)">YTD</button>
+        <button id="rptShareBtn" onclick="shareReport()" style="margin-left:auto;padding:6px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share</button>
+      </div>
+      <div id="reportsSummary"></div>
+      <div id="reportsTicketList" style="margin-top:12px;"></div>
+    </div>
   </div>
+
 </div>
 </div>
+
+<div id="tabAdmin" class="hidden"></div>
 
 
 <!-- Tools Tab -->
@@ -1153,10 +1154,13 @@ function selectTier1(t) {
   if (el('tierBtn1Std')) el('tierBtn1Std').classList.toggle('active', t === 'standard');
   if (el('tierBtn1Pre')) el('tierBtn1Pre').classList.toggle('active', t === 'premium');
   if (el('tierBtn1Man')) el('tierBtn1Man').classList.toggle('active', isManual);
-  if (el('manualCostRow1')) el('manualCostRow1').classList.toggle('hidden', !isManual);
   if (!isManual) {
-    cost1 = model1 ? ((SCREEN_PRICES[model1] || {})[t] || 0) : 0;
+    cost1 = model1 ? ((spLookup(model1) || {})[t] || 0) : 0;
+    var noPrice = cost1 === 0 && model1;
+    if (el('manualCostRow1')) el('manualCostRow1').classList.toggle('hidden', !noPrice);
+    if (noPrice) cost1 = parseFloat((el('partCostIphone') ? el('partCostIphone').value : '') || '0') || 0;
   } else {
+    if (el('manualCostRow1')) el('manualCostRow1').classList.remove('hidden');
     cost1 = parseFloat((el('partCostIphone') ? el('partCostIphone').value : '') || '0') || 0;
   }
   tryRenderQuote();
@@ -1167,10 +1171,13 @@ function selectTier2(t) {
   if (el('tierBtn2Std')) el('tierBtn2Std').classList.toggle('active', t === 'standard');
   if (el('tierBtn2Pre')) el('tierBtn2Pre').classList.toggle('active', t === 'premium');
   if (el('tierBtn2Man')) el('tierBtn2Man').classList.toggle('active', isManual);
-  if (el('manualCostRow2')) el('manualCostRow2').classList.toggle('hidden', !isManual);
   if (!isManual) {
-    cost2 = model2 ? ((SCREEN_PRICES[model2] || {})[t] || 0) : 0;
+    cost2 = model2 ? ((spLookup(model2) || {})[t] || 0) : 0;
+    var noPrice2 = cost2 === 0 && model2;
+    if (el('manualCostRow2')) el('manualCostRow2').classList.toggle('hidden', !noPrice2);
+    if (noPrice2) cost2 = parseFloat((el('partCostIphone2') ? el('partCostIphone2').value : '') || '0') || 0;
   } else {
+    if (el('manualCostRow2')) el('manualCostRow2').classList.remove('hidden');
     cost2 = parseFloat((el('partCostIphone2') ? el('partCostIphone2').value : '') || '0') || 0;
   }
   renderDeal();
@@ -1356,35 +1363,38 @@ function switchTab(tab) {
   if (tab === 'cart') { switchTab('inventory'); switchInvSubTab('orders'); switchOrdersView('cart'); return; }
   if (tab === 'orders') { switchTab('inventory'); switchInvSubTab('orders'); return; }
   if (tab === 'settings') { profileSubTab = 'settings'; switchTab('profile'); return; }
-  const isQuote = tab==='quote', isInventory = tab==='inventory', isLeads = tab==='leads', isProfile = tab==='profile', isAdmin = tab==='admin', isTools = tab==='tools';
+  if (tab === 'admin') { profileSubTab = 'admin'; switchTab('profile'); return; }
+  const isQuote = tab==='quote', isInventory = tab==='inventory', isLeads = tab==='leads', isProfile = tab==='profile', isTools = tab==='tools';
   el('tabQuote').classList.toggle('hidden', !isQuote);
   el('tabInventory').classList.toggle('hidden', !isInventory);
   el('tabLeads').classList.toggle('hidden', !isLeads);
   el('tabProfile').classList.toggle('hidden', !isProfile);
-  el('tabAdmin').classList.toggle('hidden', !isAdmin);
+  el('tabAdmin').classList.add('hidden');
   el('tabTools').classList.toggle('hidden', !isTools);
   el('tabCart').classList.toggle('hidden', true);
   el('tabQuoteBtn').classList.toggle('active', isQuote);
   el('tabInvBtn').classList.toggle('active', isInventory);
   el('tabLeadsBtn').classList.toggle('active', isLeads);
   el('tabProfileBtn').classList.toggle('active', isProfile);
-  el('tabAdminBtn').classList.toggle('active', isAdmin);
+  el('tabAdminBtn').classList.add('hidden');
   el('tabToolsBtn').classList.toggle('active', isTools);
   if (isLeads) { exitLeadSelectMode && exitLeadSelectMode(); exitTicketSelectMode && exitTicketSelectMode(); }
   if (isInventory) initInventory();
-  else if (isAdmin) { switchAdminSubTab(adminSubTab || 'staff'); }
   else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); switchProfileSubTab(profileSubTab || 'tally'); }
   else if (isLeads) { switchLeadSubTab('leads'); }
 }
 var profileSubTab = 'tally';
 function switchProfileSubTab(tab) {
   profileSubTab = tab;
-  var isTally = tab === 'tally', isSettings = tab === 'settings';
+  var isTally = tab === 'tally', isSettings = tab === 'settings', isAdmin = tab === 'admin';
   el('profileSubViewTally').classList.toggle('hidden', !isTally);
   el('profileSubViewSettings').classList.toggle('hidden', !isSettings);
+  el('profileSubViewAdmin').classList.toggle('hidden', !isAdmin);
   el('profileSubBtnTally').classList.toggle('active', isTally);
   el('profileSubBtnSettings').classList.toggle('active', isSettings);
+  el('profileSubBtnAdmin').classList.toggle('active', isAdmin);
   if (isSettings) openSettingsTab();
+  if (isAdmin) switchAdminSubTab(adminSubTab || 'staff');
 }
 var invSubTab = 'inventory';
 function switchInvSubTab(tab) {
@@ -1962,12 +1972,15 @@ function applyLoginConfig(data) {
 function normalizePricingTiers(raw) {
   var out = {};
   Object.keys(raw).forEach(function(model) {
+    var key = model.trim().toLowerCase();
+    if (!key) return;
     var tiers = raw[model] || {};
-    out[model] = {};
-    Object.keys(tiers).forEach(function(t) { out[model][t.toLowerCase()] = tiers[t]; });
+    out[key] = out[key] || {};
+    Object.keys(tiers).forEach(function(t) { out[key][t.toLowerCase()] = tiers[t]; });
   });
   return out;
 }
+function spLookup(model) { return SCREEN_PRICES[(model||'').trim().toLowerCase()] || null; }
 function loadCachedPricing() {
   try {
     var cached = JSON.parse(localStorage.getItem('almatek_pricing') || 'null');
@@ -1977,23 +1990,34 @@ function loadCachedPricing() {
     }
   } catch(e) {}
 }
+function setPricingStatus(msg) { var el2 = el('pricingStatusLine'); if (el2) el2.textContent = msg; }
 function refreshPricingIfStale() {
-  if (!USERS_SCRIPT_URL || !authd) return;
+  if (!USERS_SCRIPT_URL || !authd) { setPricingStatus('Not logged in or no script URL'); return; }
+  setPricingStatus('Fetching…');
   sheetsCall({ action: 'getPricing' }).then(function(data) {
     if (data && data.ok && data.prices && Object.keys(data.prices).length > 0) {
       var norm = normalizePricingTiers(data.prices);
       SCREEN_PRICES = norm;
       localStorage.setItem('almatek_pricing', JSON.stringify({ prices: norm, ts: Date.now() }));
       initGlassPriceTags();
+      var keys = Object.keys(norm);
+      setPricingStatus(keys.length + ' models loaded — e.g. "' + keys[0] + '"');
+      showToast('Pricing updated ✓', 3000);
       if (model1 && type1 === 'iphone_screen') selectTier1(tier1 || 'standard');
       if (model2 && type2 === 'iphone_screen') selectTier2(tier2 || 'standard');
     } else {
       var msg = data && data.error ? data.error : (data && !data.ok ? 'Sheet returned no prices' : 'Pricing fetch failed');
-      showToast('⚠️ ' + msg + ' — tap to retry', 6000, refreshPricingIfStale);
+      setPricingStatus('Error: ' + msg);
+      showToast('⚠️ Pricing error — see Settings', 5000);
     }
   }).catch(function(err) {
-    showToast('⚠️ Pricing unavailable — tap to retry', 6000, refreshPricingIfStale);
+    setPricingStatus('Network error: ' + err);
+    showToast('⚠️ Pricing network error — see Settings', 5000);
   });
+}
+function debugRefreshPricing() {
+  setPricingStatus('Fetching…');
+  refreshPricingIfStale();
 }
 function onStaffLoginSuccess(pass, name, structure, data) {
   applyLoginConfig(data || {});
@@ -2021,7 +2045,8 @@ function updateAuthBtn() {
   var demoLbl = el('demoModeLabel'); if (demoLbl) demoLbl.style.display = authd ? 'none' : '';
   document.body.classList.toggle('demo-mode', !authd);
   document.body.classList.toggle('auth-mode', authd);
-  el('tabAdminBtn').classList.toggle('hidden', !isOwner);
+  el('tabAdminBtn').classList.add('hidden');
+  el('profileSubBtnAdmin').classList.toggle('hidden', !isOwner);
   var chp = el('chpassBtn'); if (chp) chp.style.display = (authd && !isOwner) ? 'inline' : 'none';
   el('suppliersDropdown').style.display = authd ? 'block' : 'none';
   el('supplierDemo').style.display = authd ? 'none' : 'inline';
@@ -2136,7 +2161,7 @@ function syncFromSheets() {
     var parts = [];
     if (up.leads || up.tickets) parts.push('↑ ' + [up.leads && up.leads + ' lead' + (up.leads !== 1 ? 's' : ''), up.tickets && up.tickets + ' ticket' + (up.tickets !== 1 ? 's' : '')].filter(Boolean).join(', '));
     if (dn.leads || dn.tickets) parts.push('↓ ' + [dn.leads && dn.leads + ' lead' + (dn.leads !== 1 ? 's' : ''), dn.tickets && dn.tickets + ' ticket' + (dn.tickets !== 1 ? 's' : '')].filter(Boolean).join(', '));
-    showToast(parts.length ? parts.join('  ') : (msg || 'Synced ✓'));
+    if (msg) showToast(msg);
   }
 
   sheetsCall({ action: 'getLeads' }).then(function(data) {
@@ -2165,8 +2190,6 @@ function syncFromSheets() {
       if (leadSubTab === 'leads' && typeof renderLeadsList === 'function') renderLeadsList();
       if (leadSubTab === 'followup') renderFollowUpTab();
       updateFollowUpBadge();
-    } else if (data && data.error) {
-      finish('Script needs update — redeploy Apps Script');
     }
     finish();
   }).catch(finish);
@@ -2200,10 +2223,6 @@ function syncFromSheets() {
       if (leadSubTab === 'tickets' && ticketSubView === 'closed' && typeof renderPickedUpList === 'function') renderPickedUpList();
       if (leadSubTab === 'followup') renderFollowUpTab();
       if (leadSubTab === 'specialorder') renderSpecialOrdersList();
-    } else if (data && data.error) {
-      // Old script deployment — push local tickets anyway, server deduplicates
-      ticketsStorage.forEach(function(t) { sheetsCall({ action: 'createTicket', ticket: t }); up.tickets++; });
-      showToast('Script needs update — redeploy Apps Script then tap ↻ again');
     }
     finish();
   }).catch(finish);
@@ -2308,7 +2327,7 @@ function buildQuoteText() {
     lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
   } else if (type1 === 'iphone_screen' && model1 && mode1 === 'select') {
     // ── iPhone screen — standard / premium choice ─────────────
-    var prices = SCREEN_PRICES[model1] || {};
+    var prices = spLookup(model1) || {};
     var hasStd = prices.standard != null, hasPrem = prices.premium != null;
     if (hasStd && hasPrem) {
       lines.push('For your ' + model1 + ', we have two options available:');
@@ -2564,17 +2583,7 @@ function getTicketsNeedingFollowUp() {
   });
 }
 
-function updateFollowUpBadge() {
-  var badge = el('followUpBadge'); if (!badge) return;
-  var count;
-  if (!authd) {
-    count = DEMO_LEADS.filter(function(l) { return l.status === 'follow_up_scheduled' || l.status === 'new'; }).length + DEMO_TICKETS.filter(function(t) { return t.status === 'ready_for_pickup' || t.status === 'part_arrived'; }).length;
-  } else {
-    count = getLeadsNeedingFollowUp().length + getTicketsNeedingFollowUp().length;
-  }
-  badge.textContent = count;
-  badge.classList.toggle('hidden', count === 0);
-}
+function updateFollowUpBadge() {}
 
 function renderPickedUpList() {
   var listEl = el('pickedUpList'); if (!listEl) return;
@@ -2971,7 +2980,7 @@ function setTicketTier(tier, ticketId) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
   ticket.tier = tier;
   var modelKey = ticket.repairModel || ticket.device || '';
-  var prices = SCREEN_PRICES[modelKey];
+  var prices = spLookup(modelKey);
   if (prices && prices[tier] != null) {
     var newPrice = withTax(prices[tier]);
     if (!ticket.items) ticket.items = [];
@@ -3255,11 +3264,11 @@ function openSettingsTab() {
 function saveSettingsScriptUrl() {
   var url = (el('settingsScriptUrl').value || '').trim();
   var err = el('settingsScriptErr');
-  if (!url || !url.startsWith('https://')) { err.textContent = 'Enter a valid URL.'; err.style.color = '#ef4444'; return; }
+  if (!url) { err.textContent = 'Enter a URL.'; err.style.color = '#ef4444'; return; }
   USERS_SCRIPT_URL = url; localStorage.setItem('almatek_script_url', url);
   err.textContent = 'Saved ✓'; err.style.color = 'var(--green)';
   setTimeout(function() { err.textContent = ''; }, 2000);
-  renderStaffTab();
+  syncFromSheets(); refreshPricingIfStale();
 }
 function saveSettingsToken() {
   var val = (el('settingsApiToken').value || '').trim();
@@ -3320,7 +3329,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-16';
+var APP_VERSION = '20260509-1';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
