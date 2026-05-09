@@ -2169,8 +2169,6 @@ function syncFromSheets() {
       if (leadSubTab === 'leads' && typeof renderLeadsList === 'function') renderLeadsList();
       if (leadSubTab === 'followup') renderFollowUpTab();
       updateFollowUpBadge();
-    } else if (data && data.error) {
-      finish('Script needs update — redeploy Apps Script');
     }
     finish();
   }).catch(finish);
@@ -2204,10 +2202,6 @@ function syncFromSheets() {
       if (leadSubTab === 'tickets' && ticketSubView === 'closed' && typeof renderPickedUpList === 'function') renderPickedUpList();
       if (leadSubTab === 'followup') renderFollowUpTab();
       if (leadSubTab === 'specialorder') renderSpecialOrdersList();
-    } else if (data && data.error) {
-      // Old script deployment — push local tickets anyway, server deduplicates
-      ticketsStorage.forEach(function(t) { sheetsCall({ action: 'createTicket', ticket: t }); up.tickets++; });
-      showToast('Script needs update — redeploy Apps Script then tap ↻ again');
     }
     finish();
   }).catch(finish);
