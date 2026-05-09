@@ -358,7 +358,7 @@
   <button class="tab-btn active" id="tabQuoteBtn" onclick="switchTab('quote')">💰 Quote</button>
   <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 <span class="brand">LeadTek</span></button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
-  <button class="tab-btn" id="tabProfileBtn" onclick="switchTab('profile')">💵 Profile</button>
+  <button class="tab-btn" id="tabProfileBtn" onclick="switchTab('profile')">👤 Profile</button>
   <button class="tab-btn hidden" id="tabAdminBtn" onclick="switchTab('admin')">🔧 Admin</button>
   <button class="tab-btn" id="tabToolsBtn" onclick="switchTab('tools')">🚀 Tools</button>
 </div>
@@ -504,6 +504,8 @@
     <label class="field-label" style="margin-bottom:6px;display:block;">Notes</label>
     <textarea id="quoteNotes" placeholder="Add a message to include in the quote sent to the customer..." rows="2" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
   </div>
+
+  <div id="factoryScreenBadge" class="hidden" style="text-align:center;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.04em;"></div>
 
   <div id="quoteCard" class="quote-card hidden">
     <div class="ql">Quote to Customer</div>
@@ -919,7 +921,7 @@
     <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">💵 Profile</h1>
   </header>
   <div class="orders-tab-nav" style="margin-bottom:16px;">
-    <button class="orders-tab-btn active" id="profileSubBtnTally" onclick="switchProfileSubTab('tally')">💵 Tally</button>
+    <button class="orders-tab-btn active" id="profileSubBtnTally" onclick="switchProfileSubTab('tally')">Tally</button>
     <button class="orders-tab-btn" id="profileSubBtnSettings" onclick="switchProfileSubTab('settings')">⚙ Settings</button>
     <button class="orders-tab-btn hidden" id="profileSubBtnAdmin" onclick="switchProfileSubTab('admin')">🔧 Admin</button>
   </div>
@@ -1089,6 +1091,28 @@ const FACTORY_SCREEN_TYPE = {
 };
 
 let SCREEN_PRICES = {};
+const FACTORY_SCREEN = {
+  'iPhone Air':'OLED','iPhone 17 Pro Max':'OLED','iPhone 17 Pro':'OLED','iPhone 17':'OLED',
+  'iPhone 16e':'OLED','iPhone 16 Pro Max':'OLED','iPhone 16 Pro':'OLED','iPhone 16 Plus':'OLED','iPhone 16':'OLED',
+  'iPhone 15 Pro Max':'OLED','iPhone 15 Pro':'OLED','iPhone 15 Plus':'OLED','iPhone 15':'OLED',
+  'iPhone 14 Pro Max':'OLED','iPhone 14 Pro':'OLED','iPhone 14 Plus':'OLED','iPhone 14':'OLED',
+  'iPhone 13 Pro Max':'OLED','iPhone 13 Pro':'OLED','iPhone 13':'OLED','iPhone 13 Mini':'OLED',
+  'iPhone 12 Pro Max':'OLED','iPhone 12 Pro':'OLED','iPhone 12':'OLED','iPhone 12 Mini':'OLED',
+  'iPhone 11 Pro Max':'OLED','iPhone 11 Pro':'OLED',
+  'iPhone X':'OLED','iPhone XS Max':'OLED','iPhone XS':'OLED',
+  'iPhone XR':'LCD','iPhone 11':'LCD',
+  'iPhone 8 Plus':'LCD','iPhone 8 / SE (2nd & 3rd Gen)':'LCD',
+  'iPhone 7 Plus':'LCD','iPhone 7':'LCD','iPhone 6S':'LCD','iPhone 6':'LCD'
+};
+function updateFactoryScreenBadge(model) {
+  var badge = el('factoryScreenBadge'); if (!badge) return;
+  var type = model ? FACTORY_SCREEN[model] : null;
+  if (!type) { badge.classList.add('hidden'); return; }
+  var isOled = type === 'OLED';
+  badge.textContent = model + ' · ' + type + ' from factory';
+  badge.style.color = isOled ? '#a78bfa' : '#60a5fa';
+  badge.classList.remove('hidden');
+}
 
 let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2='', mode1='select', mode2='select', secondOpen=false, mobileOpen=false, mobileFee=0;
 var SUPPLIERS = ['Kimi Soho','Bros Phone Parts (Bklyn)','Parts4Cells (Houston)','Mobile Sentrix (Virginia)','eBay','Amazon','LaptopScreen.com'];
@@ -1144,7 +1168,7 @@ function onRepairChange() {
   else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value=''; }
 }
 
-function onModel1Change() { model1 = el('modelSelect1').value; selectTier1(tier1 || 'standard'); }
+function onModel1Change() { model1 = el('modelSelect1').value; updateFactoryScreenBadge(model1); selectTier1(tier1 || 'standard'); }
 function onModel2Change() { model2 = el('modelSelect2').value; selectTier2(tier2 || 'standard'); }
 function updateTierDisplay1() {}
 function updateTierDisplay2() {}
@@ -1214,7 +1238,7 @@ function tryRenderQuote() {
   el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
-function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); }
+function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
 
 var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', ipad:'iPad', kimi:'Kimi Repair', android:'Android', laptop:'Laptop' };
 
