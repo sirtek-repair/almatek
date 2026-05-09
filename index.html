@@ -3320,10 +3320,10 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260508-15';
+var APP_VERSION = '20260508-16';
 (function() {
   var stored = localStorage.getItem('almatek_version');
-  if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); location.reload(true); return; }
+  if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
   localStorage.setItem('almatek_version', APP_VERSION);
 })();
 if ('serviceWorker' in navigator) {
