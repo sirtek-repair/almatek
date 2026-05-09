@@ -1789,7 +1789,7 @@ function placeCartOrder() {
   var btn = el('placeOrderBtn');
   if (btn) { btn.textContent = 'Placing…'; btn.disabled = true; }
   var promises = orderCart.map(function(item) {
-    var fields = { 'Item': [item.id], 'QTY': item.qty, 'Supplier': supplier, 'date recieved': orderDate };
+    var fields = { 'Item': [item.id], 'QTY': item.qty, 'supplier': supplier, 'date recieved': new Date(orderDate + 'T12:00:00').toISOString() };
     return atFetch(AT_BASE + '/' + AT_ORDERS, { method: 'POST', body: JSON.stringify({ fields: fields }) });
   });
   Promise.all(promises).then(function(results) {
@@ -1815,13 +1815,14 @@ function renderOrderedList() {
   var listEl = el('ordersOrderedList'); if (!listEl) return;
   if (!allOrderRecords.length) { listEl.innerHTML = '<div class="orders-empty-state">No orders</div>'; return; }
   var sorted = allOrderRecords.slice().sort(function(a, b) {
-    return new Date(b.fields['fldeHBNhXCrqAJrjp'] || 0) - new Date(a.fields['fldeHBNhXCrqAJrjp'] || 0);
+    return new Date(b.fields['fldeHBNhXCrqAJrjp'] || b.createdTime || 0) - new Date(a.fields['fldeHBNhXCrqAJrjp'] || a.createdTime || 0);
   });
   listEl.innerHTML = sorted.map(function(r) {
     var name = r.fields['fldF0TJARgHugOh83'] || '—';
     var qty = r.fields['fldbKVKkNgZtShHwh'] || 1;
     var supplier = r.fields['fldVq43gyw9HVLYNI'] ? (r.fields['fldVq43gyw9HVLYNI'].name || r.fields['fldVq43gyw9HVLYNI']) : '';
-    var date = r.fields['fldeHBNhXCrqAJrjp'] ? new Date(r.fields['fldeHBNhXCrqAJrjp']).toLocaleDateString('en-US',{timeZone:'America/New_York'}) : '';
+    var rawDate = r.fields['fldeHBNhXCrqAJrjp'] || r.createdTime;
+    var date = rawDate ? new Date(rawDate).toLocaleDateString('en-US',{timeZone:'America/New_York'}) : '';
     var isReceived = !!r.fields['fldwGKyfgOuue1eyE'];
     var action = isReceived
       ? '<span class="order-status received">Received</span>'
@@ -3419,7 +3420,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260509-12';
+var APP_VERSION = '20260509-14';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
