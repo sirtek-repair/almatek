@@ -1154,11 +1154,13 @@ function selectTier1(t) {
   if (el('tierBtn1Std')) el('tierBtn1Std').classList.toggle('active', t === 'standard');
   if (el('tierBtn1Pre')) el('tierBtn1Pre').classList.toggle('active', t === 'premium');
   if (el('tierBtn1Man')) el('tierBtn1Man').classList.toggle('active', isManual);
-  if (el('manualCostRow1')) el('manualCostRow1').classList.toggle('hidden', !isManual);
   if (!isManual) {
     cost1 = model1 ? ((spLookup(model1) || {})[t] || 0) : 0;
-    if (cost1 === 0 && model1) { selectTier1('manual'); return; }
+    var noPrice = cost1 === 0 && model1;
+    if (el('manualCostRow1')) el('manualCostRow1').classList.toggle('hidden', !noPrice);
+    if (noPrice) cost1 = parseFloat((el('partCostIphone') ? el('partCostIphone').value : '') || '0') || 0;
   } else {
+    if (el('manualCostRow1')) el('manualCostRow1').classList.remove('hidden');
     cost1 = parseFloat((el('partCostIphone') ? el('partCostIphone').value : '') || '0') || 0;
   }
   tryRenderQuote();
@@ -1169,11 +1171,13 @@ function selectTier2(t) {
   if (el('tierBtn2Std')) el('tierBtn2Std').classList.toggle('active', t === 'standard');
   if (el('tierBtn2Pre')) el('tierBtn2Pre').classList.toggle('active', t === 'premium');
   if (el('tierBtn2Man')) el('tierBtn2Man').classList.toggle('active', isManual);
-  if (el('manualCostRow2')) el('manualCostRow2').classList.toggle('hidden', !isManual);
   if (!isManual) {
     cost2 = model2 ? ((spLookup(model2) || {})[t] || 0) : 0;
-    if (cost2 === 0 && model2) { selectTier2('manual'); return; }
+    var noPrice2 = cost2 === 0 && model2;
+    if (el('manualCostRow2')) el('manualCostRow2').classList.toggle('hidden', !noPrice2);
+    if (noPrice2) cost2 = parseFloat((el('partCostIphone2') ? el('partCostIphone2').value : '') || '0') || 0;
   } else {
+    if (el('manualCostRow2')) el('manualCostRow2').classList.remove('hidden');
     cost2 = parseFloat((el('partCostIphone2') ? el('partCostIphone2').value : '') || '0') || 0;
   }
   renderDeal();
