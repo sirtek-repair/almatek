@@ -1156,6 +1156,7 @@ function selectTier1(t) {
   if (el('manualCostRow1')) el('manualCostRow1').classList.toggle('hidden', !isManual);
   if (!isManual) {
     cost1 = model1 ? ((spLookup(model1) || {})[t] || 0) : 0;
+    if (cost1 === 0 && model1) { selectTier1('manual'); return; }
   } else {
     cost1 = parseFloat((el('partCostIphone') ? el('partCostIphone').value : '') || '0') || 0;
   }
@@ -1170,6 +1171,7 @@ function selectTier2(t) {
   if (el('manualCostRow2')) el('manualCostRow2').classList.toggle('hidden', !isManual);
   if (!isManual) {
     cost2 = model2 ? ((spLookup(model2) || {})[t] || 0) : 0;
+    if (cost2 === 0 && model2) { selectTier2('manual'); return; }
   } else {
     cost2 = parseFloat((el('partCostIphone2') ? el('partCostIphone2').value : '') || '0') || 0;
   }
@@ -2562,17 +2564,7 @@ function getTicketsNeedingFollowUp() {
   });
 }
 
-function updateFollowUpBadge() {
-  var badge = el('followUpBadge'); if (!badge) return;
-  var count;
-  if (!authd) {
-    count = DEMO_LEADS.filter(function(l) { return l.status === 'follow_up_scheduled' || l.status === 'new'; }).length + DEMO_TICKETS.filter(function(t) { return t.status === 'ready_for_pickup' || t.status === 'part_arrived'; }).length;
-  } else {
-    count = getLeadsNeedingFollowUp().length + getTicketsNeedingFollowUp().length;
-  }
-  badge.textContent = count;
-  badge.classList.toggle('hidden', count === 0);
-}
+function updateFollowUpBadge() {}
 
 function renderPickedUpList() {
   var listEl = el('pickedUpList'); if (!listEl) return;
