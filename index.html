@@ -358,7 +358,7 @@
   <button class="tab-btn active" id="tabQuoteBtn" onclick="switchTab('quote')">💰 Quote</button>
   <button class="tab-btn" id="tabLeadsBtn" onclick="switchTab('leads')">👤 <span class="brand">LeadTek</span></button>
   <button class="tab-btn" id="tabInvBtn" onclick="switchTab('inventory')">📦 Inventory</button>
-  <button class="tab-btn" id="tabProfileBtn" onclick="switchTab('profile')">💵 Profile</button>
+  <button class="tab-btn" id="tabProfileBtn" onclick="switchTab('profile')">👤 Profile</button>
   <button class="tab-btn hidden" id="tabAdminBtn" onclick="switchTab('admin')">🔧 Admin</button>
   <button class="tab-btn" id="tabToolsBtn" onclick="switchTab('tools')">🚀 Tools</button>
 </div>
@@ -921,7 +921,7 @@
     <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">💵 Profile</h1>
   </header>
   <div class="orders-tab-nav" style="margin-bottom:16px;">
-    <button class="orders-tab-btn active" id="profileSubBtnTally" onclick="switchProfileSubTab('tally')">💵 Tally</button>
+    <button class="orders-tab-btn active" id="profileSubBtnTally" onclick="switchProfileSubTab('tally')">Tally</button>
     <button class="orders-tab-btn" id="profileSubBtnSettings" onclick="switchProfileSubTab('settings')">⚙ Settings</button>
     <button class="orders-tab-btn hidden" id="profileSubBtnAdmin" onclick="switchProfileSubTab('admin')">🔧 Admin</button>
   </div>
@@ -3364,7 +3364,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260509-2';
+var APP_VERSION = '20260509-3';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
