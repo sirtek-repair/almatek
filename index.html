@@ -2343,11 +2343,11 @@ function renderLeadsList() {
   var cardsHtml = filtered.length ? filtered.map(function(l) {
     var mainBadge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
     var shareBtn = leadSelectMode ? '' : '<button onclick="shareLeadCard(\'' + l.id + '\',event)" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;display:flex;align-items:center;" title="Share">' + SHARE_ICON + '</button>';
-    var dateStr = new Date(l.createdAt).toLocaleDateString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric'});
+    var _ld = new Date(l.createdAt); var dateStr = isNaN(_ld.getTime()) ? '' : _ld.toLocaleDateString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric'});
     var selClass = (leadSelectMode && selectedLeadIds.has(l.id)) ? ' sel-selected' : '';
     var checkIndicator = leadSelectMode ? '<span style="width:18px;height:18px;border-radius:4px;border:2px solid ' + (selectedLeadIds.has(l.id) ? 'var(--accent)' : 'var(--border)') + ';background:' + (selectedLeadIds.has(l.id) ? 'var(--accent)' : 'transparent') + ';display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0;margin-right:8px;">' + (selectedLeadIds.has(l.id) ? '✓' : '') + '</span>' : '';
     var onclickAttr = leadSelectMode ? 'toggleLeadSelection(\'' + l.id + '\')' : 'openLeadDetail(\'' + l.id + '\')';
-    var createdByStr = (l.createdBy && l.createdBy !== 'staff') ? ' · ' + l.createdBy : '';
+    var _lcb = safeDisplayName(l.createdBy); var createdByStr = (_lcb && _lcb !== 'staff') ? ' · ' + _lcb : '';
     return '<div class="inv-item' + selClass + '" data-lid="' + l.id + '" onclick="' + onclickAttr + '" style="cursor:pointer;"><div class="inv-item-top"><div style="display:flex;align-items:center;">' + checkIndicator + '<div><div class="inv-item-name cx-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + createdByStr + '</div></div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
   el('leadsList').innerHTML = selectBar + cardsHtml;
@@ -2473,7 +2473,7 @@ function openLeadDetail(leadId) {
 
 function closeLeadDetail() { el('leadDetailModal').classList.add('hidden'); currentLeadId = null; el('newNoteText').value = ''; var fup = el('followUpPickerRow'); if (fup) fup.classList.add('hidden'); }
 function updateDetailBalance() {}
-function safeDisplayName(n) { return (n && !/^\d{4,}$/.test(String(n).trim())) ? n : ''; }
+function safeDisplayName(n) { return (n && !/^\d+$/.test(String(n).trim())) ? String(n) : ''; }
 function saveLeadIssueInline(leadId) {
   var lead = leadsStorage.find(function(l) { return l.id === leadId; }); if (!lead) return;
   var newIssue = (el('leadIssueEdit') ? el('leadIssueEdit').value : '').trim();
@@ -2824,7 +2824,7 @@ function renderSpecialOrdersList() {
   container.innerHTML = orders.map(function(t) {
     var color = SO_COLORS[t.status] || '#f59e0b';
     var badge = '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (SO_LABELS[t.status] || t.status) + '</span>';
-    var dateStr = new Date(t.createdAt).toLocaleDateString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric'});
+    var _sd = new Date(t.createdAt); var dateStr = isNaN(_sd.getTime()) ? '' : _sd.toLocaleDateString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric'});
     return '<div class="inv-item" onclick="openTicketDetail(\'' + t.id + '\')" style="cursor:pointer;"><div class="inv-item-top"><div><div class="inv-item-name cx-name">' + t.name + '</div><div class="inv-item-model">' + (t.phone || '') + ' · ' + t.device + '</div></div>' + badge + '</div>' + (t.issue ? '<div class="inv-item-meta">' + t.issue.substring(0, 60) + '</div>' : '') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + (t.supplier ? ' · ' + t.supplier : '') + '</div></div>';
   }).join('');
 }
@@ -2846,7 +2846,7 @@ function renderTicketsList() {
     var badge = '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[t.status] || t.status) + '</span>';
     var tierPip = t.tier === 'premium' ? '<span style="font-size:11px;margin-left:4px;">⭐</span>' : '';
     var shareBtn = ticketSelectMode ? '' : '<button onclick="shareTicketCard(\'' + t.id + '\',event)" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;display:flex;align-items:center;" title="Share">' + SHARE_ICON + '</button>';
-    var dateStr = new Date(t.createdAt).toLocaleDateString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric'});
+    var _td = new Date(t.createdAt); var dateStr = isNaN(_td.getTime()) ? '' : _td.toLocaleDateString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric'});
     var selClass = (ticketSelectMode && selectedTicketIds.has(t.id)) ? ' sel-selected' : '';
     var checkIndicator = ticketSelectMode ? '<span style="width:18px;height:18px;border-radius:4px;border:2px solid ' + (selectedTicketIds.has(t.id) ? 'var(--accent)' : 'var(--border)') + ';background:' + (selectedTicketIds.has(t.id) ? 'var(--accent)' : 'transparent') + ';display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0;margin-right:8px;">' + (selectedTicketIds.has(t.id) ? '✓' : '') + '</span>' : '';
     var onclickAttr = ticketSelectMode ? 'toggleTicketSelection(\'' + t.id + '\')' : 'openTicketDetail(\'' + t.id + '\')';
@@ -2854,7 +2854,7 @@ function renderTicketsList() {
       '<div class="inv-item-top"><div style="display:flex;align-items:center;">' + checkIndicator + '<div><div class="inv-item-name cx-name">' + (t.name||'Unnamed') + tierPip + ' <span style="font-size:11px;color:var(--muted);">' + flowIcon + '</span></div>' +
       '<div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div></div><div style="display:flex;align-items:center;gap:4px;">' + badge + shareBtn + '</div></div>' +
       (t.issue ? '<div class="inv-item-meta">' + t.issue.substring(0,60) + '</div>' : '') +
-      '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + ((t.createdBy && t.createdBy !== 'staff') ? ' · ' + t.createdBy : '') + '</div>' +
+      '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + (function(){ var _n=safeDisplayName(t.createdBy); return (_n && _n!=='staff') ? ' · '+_n : ''; })() + '</div>' +
     '</div>';
   }).join('');
 }
@@ -2892,7 +2892,7 @@ function openTicketDetail(ticketId) {
   var isInStock = ticket.flow === 'in_stock';
   var html = '<div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">';
   html += '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[status] || status) + '</span>';
-  if (ticket.createdBy && ticket.createdBy !== 'staff') html += '<span style="font-size:11px;color:var(--muted);">by <strong style="color:var(--text);">' + ticket.createdBy + '</strong></span>';
+  var _tcb = safeDisplayName(ticket.createdBy); if (_tcb && _tcb !== 'staff') html += '<span style="font-size:11px;color:var(--muted);">by <strong style="color:var(--text);">' + _tcb + '</strong></span>';
   html += '</div>';
   html += '<a href="https://qrr.to/207b6c1c" target="_blank" rel="noopener" style="display:block;width:100%;padding:10px 14px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);border-radius:8px;text-align:center;font-size:13px;font-weight:600;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">📅 Square Appointments</a>';
   // Flow toggle
@@ -3420,7 +3420,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260509-14';
+var APP_VERSION = '20260509-15';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
