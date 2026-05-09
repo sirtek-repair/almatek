@@ -2348,7 +2348,7 @@ function renderLeadsList() {
     var selClass = (leadSelectMode && selectedLeadIds.has(l.id)) ? ' sel-selected' : '';
     var checkIndicator = leadSelectMode ? '<span style="width:18px;height:18px;border-radius:4px;border:2px solid ' + (selectedLeadIds.has(l.id) ? 'var(--accent)' : 'var(--border)') + ';background:' + (selectedLeadIds.has(l.id) ? 'var(--accent)' : 'transparent') + ';display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0;margin-right:8px;">' + (selectedLeadIds.has(l.id) ? '✓' : '') + '</span>' : '';
     var onclickAttr = leadSelectMode ? 'toggleLeadSelection(\'' + l.id + '\')' : 'openLeadDetail(\'' + l.id + '\')';
-    var _lcb = safeDisplayName(l.createdBy); var createdByStr = (_lcb && _lcb !== 'staff') ? ' · ' + _lcb : '';
+    var createdByStr = ' · ' + creatorLabel(l.createdBy);
     return '<div class="inv-item' + selClass + '" data-lid="' + l.id + '" onclick="' + onclickAttr + '" style="cursor:pointer;"><div class="inv-item-top"><div style="display:flex;align-items:center;">' + checkIndicator + '<div><div class="inv-item-name cx-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + createdByStr + '</div></div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
   el('leadsList').innerHTML = selectBar + cardsHtml;
@@ -2455,8 +2455,7 @@ function openLeadDetail(leadId) {
   currentLeadId = leadId; var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
   el('detailLeadName').textContent = lead.name || 'Unnamed';
   var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;"><div><span class="stock-badge" style="background:' + getStatusColor(lead.status) + '20;color:' + getStatusColor(lead.status) + '">' + getStatusLabel(lead.status) + '</span></div><div><button onclick="closeLeadDetail();editLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px;">✏️ Edit</button><button onclick="deleteLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Delete</button></div></div>';
-  var createdByName = safeDisplayName(lead.createdBy);
-  if (createdByName && createdByName !== 'staff') html += '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Created by <strong style="color:var(--text);">' + createdByName + '</strong></div>';
+  html += '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Created by <strong style="color:var(--text);">' + creatorLabel(lead.createdBy) + '</strong></div>';
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (lead.phone||'—') + '</div></div><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (lead.device||'—') + '</div></div></div>';
   if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + lead.email + '</div></div>';
   html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ISSUE</div><textarea id="leadIssueEdit" rows="2" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;outline:none;" onfocus="this.style.borderColor=\'var(--accent)\'" onblur="this.style.borderColor=\'var(--border)\'">' + (lead.issue||'').replace(/</g,'&lt;') + '</textarea><button onclick="saveLeadIssueInline(\'' + lead.id + '\')" style="margin-top:6px;padding:6px 14px;background:var(--accent);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Save</button></div>';
@@ -2474,7 +2473,8 @@ function openLeadDetail(leadId) {
 
 function closeLeadDetail() { el('leadDetailModal').classList.add('hidden'); currentLeadId = null; el('newNoteText').value = ''; var fup = el('followUpPickerRow'); if (fup) fup.classList.add('hidden'); }
 function updateDetailBalance() {}
-function safeDisplayName(n) { return (n && !/^\d+$/.test(String(n).trim())) ? String(n) : ''; }
+function safeDisplayName(n) { var s = (n && !/^\d+$/.test(String(n).trim())) ? String(n) : ''; return (s && s.toLowerCase() !== 'staff') ? s : ''; }
+function creatorLabel(n) { var s = safeDisplayName(n); return s || 'Staff'; }
 function saveLeadIssueInline(leadId) {
   var lead = leadsStorage.find(function(l) { return l.id === leadId; }); if (!lead) return;
   var newIssue = (el('leadIssueEdit') ? el('leadIssueEdit').value : '').trim();
@@ -2855,7 +2855,7 @@ function renderTicketsList() {
       '<div class="inv-item-top"><div style="display:flex;align-items:center;">' + checkIndicator + '<div><div class="inv-item-name cx-name">' + (t.name||'Unnamed') + tierPip + ' <span style="font-size:11px;color:var(--muted);">' + flowIcon + '</span></div>' +
       '<div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div></div><div style="display:flex;align-items:center;gap:4px;">' + badge + shareBtn + '</div></div>' +
       (t.issue ? '<div class="inv-item-meta">' + t.issue.substring(0,60) + '</div>' : '') +
-      '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + (function(){ var _n=safeDisplayName(t.createdBy); return (_n && _n!=='staff') ? ' · '+_n : ''; })() + '</div>' +
+      '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + ' · ' + creatorLabel(t.createdBy) + '</div>' +
     '</div>';
   }).join('');
 }
@@ -2893,7 +2893,7 @@ function openTicketDetail(ticketId) {
   var isInStock = ticket.flow === 'in_stock';
   var html = '<div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">';
   html += '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[status] || status) + '</span>';
-  var _tcb = safeDisplayName(ticket.createdBy); if (_tcb && _tcb !== 'staff') html += '<span style="font-size:11px;color:var(--muted);">by <strong style="color:var(--text);">' + _tcb + '</strong></span>';
+  html += '<span style="font-size:11px;color:var(--muted);">by <strong style="color:var(--text);">' + creatorLabel(ticket.createdBy) + '</strong></span>';
   html += '</div>';
   html += '<a href="https://qrr.to/207b6c1c" target="_blank" rel="noopener" style="display:block;width:100%;padding:10px 14px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);border-radius:8px;text-align:center;font-size:13px;font-weight:600;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">📅 Square Appointments</a>';
   // Flow toggle
@@ -3421,7 +3421,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260509-16';
+var APP_VERSION = '20260509-17';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
