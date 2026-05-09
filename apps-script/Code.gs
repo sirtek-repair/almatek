@@ -52,31 +52,24 @@ function handleAction(p) {
     case 'getPricing': {
       try {
         var pss = SpreadsheetApp.openById('1-ihijopdfiS5QL1Ikr_eGBaZiQZGqhkdn5cTXiBYq6Y');
-        var sheets = pss.getSheets();
-        var pSheet = null;
-        for (var s = 0; s < sheets.length; s++) { if (sheets[s].getSheetId() === 982039705) { pSheet = sheets[s]; break; } }
-        if (!pSheet) pSheet = sheets[0];
-        if (!pSheet) return { ok: false, error: 'Pricing sheet not found' };
+        var pSheet = pss.getSheets().filter(function(s) { return s.getSheetId() === 30606733; })[0];
+        if (!pSheet) return { ok: false, error: 'Pricing sheet tab not found' };
         var rows = pSheet.getDataRange().getValues();
-        if (rows.length < 2) return { ok: false, error: 'No data in pricing sheet' };
-        // Columns: A=iPhone Model, B=SKU, C=Tier, D=Product Name, E=Price
-        var modelIdx = 0, tierIdx = 2, priceIdx = 4;
+        var headers = rows[0].map(function(h) { return String(h).trim(); });
+        var modelIdx = headers.indexOf('iPhone Model');
+        var tierIdx  = headers.indexOf('Tier');
+        var priceIdx = headers.indexOf('Repair Price');
+        if (modelIdx < 0 || tierIdx < 0 || priceIdx < 0) return { ok: false, error: 'Missing columns: ' + headers.join(', ') };
         var prices = {};
-        var tiersSeen = [];
         for (var i = 1; i < rows.length; i++) {
           var model = String(rows[i][modelIdx] || '').trim();
           var tier  = String(rows[i][tierIdx]  || '').trim().toLowerCase();
-          var cost  = rows[i][priceIdx];
-          if (!model || !tier || cost === '' || cost == null || isNaN(Number(cost)) || Number(cost) <= 0) continue;
-          if (tiersSeen.indexOf(tier) < 0) tiersSeen.push(tier);
-          var tierKey = null;
-          if (tier.indexOf('standard') >= 0 || tier === 'std' || tier === 'lcd') tierKey = 'standard';
-          else if (tier.indexOf('premium') >= 0 || tier === 'oled' || tier === 'oem') tierKey = 'premium';
-          if (!tierKey) continue;
+          var price = rows[i][priceIdx];
+          if (!model || !tier || price === '' || price == null) continue;
           if (!prices[model]) prices[model] = {};
-          prices[model][tierKey] = Number(cost);
+          prices[model][tier] = Number(price);
         }
-        if (!Object.keys(prices).length) return { ok: false, error: 'No prices found. Tiers seen: ' + (tiersSeen.join(', ') || 'none') };
+        if (!Object.keys(prices).length) return { ok: false, error: 'No prices found in sheet' };
         return { ok: true, prices: prices };
       } catch(e) {
         return { ok: false, error: e.toString() };
