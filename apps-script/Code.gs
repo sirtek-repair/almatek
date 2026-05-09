@@ -59,18 +59,17 @@ function handleAction(p) {
         if (!pSheet) return { ok: false, error: 'Pricing sheet not found' };
         var rows = pSheet.getDataRange().getValues();
         if (rows.length < 2) return { ok: false, error: 'No data in pricing sheet' };
-        var headers = rows[0].map(function(h) { return String(h).trim().toLowerCase(); });
-        var iphoneIdx = headers.indexOf('iphone screen');
-        var priceIdx = 4; // column E (0-based)
-        if (iphoneIdx < 0) return { ok: false, error: 'Missing "iPhone Screen" column. Found: ' + rows[0].join(', ') };
+        var iphoneIdx = 0; // column A — model name
+        var priceIdx  = 4; // column E — part cost
         var prices = {};
         for (var i = 1; i < rows.length; i++) {
           var model = String(rows[i][iphoneIdx] || '').trim();
           if (!model) continue;
           var cost = rows[i][priceIdx];
-          if (cost === '' || cost == null || isNaN(Number(cost))) continue;
+          if (cost === '' || cost == null || isNaN(Number(cost)) || Number(cost) <= 0) continue;
           prices[model] = { standard: Number(cost), premium: Number(cost) };
         }
+        if (!Object.keys(prices).length) return { ok: false, error: 'No prices found — check column A (model) and column E (price)' };
         return { ok: true, prices: prices };
       } catch(e) {
         return { ok: false, error: e.toString() };
