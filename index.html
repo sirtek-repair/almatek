@@ -958,16 +958,15 @@
       <div id="settingsTokenErr" class="chpass-err" style="margin-top:6px;"></div>
     </div>
 
-    <div class="card" style="margin-top:16px;">
-      <div class="staff-section-title">Pricing</div>
-      <div id="pricingStatusLine" style="font-size:12px;color:var(--muted);margin:4px 0 12px;">—</div>
-      <button onclick="debugRefreshPricing()" style="width:100%;padding:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">↻ Refresh Pricing</button>
-    </div>
-
     <div class="card" id="settingsResetSection" style="margin-top:16px;">
       <div class="staff-section-title">Pricing Script</div>
-      <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Clears the saved script URL and disconnects data sync.</p>
-      <button onclick="resetScriptConnection()" style="width:100%;padding:9px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Reset Connection</button>
+      <div id="pricingStatusLine" style="font-size:12px;color:var(--muted);margin:4px 0 10px;">—</div>
+      <input type="url" id="pricingScriptUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button onclick="savePricingScriptUrl()" style="flex:1;padding:9px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save & Refresh</button>
+        <button onclick="debugRefreshPricing()" style="padding:9px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">↻</button>
+      </div>
+      <div id="pricingScriptErr" class="chpass-err" style="margin-top:6px;"></div>
     </div>
 
     <div class="card" id="settingsChangePassSection" style="margin-top:16px;margin-bottom:24px;">
@@ -3257,10 +3256,21 @@ function showChangePass() { switchTab('profile'); }
 function saveNewPassword() { saveSettingsPassword(); }
 function openSettingsTab() {
   if (USERS_SCRIPT_URL) el('settingsScriptUrl').value = USERS_SCRIPT_URL;
+  if (USERS_SCRIPT_URL && el('pricingScriptUrl')) el('pricingScriptUrl').value = USERS_SCRIPT_URL;
   el('settingsPassCurrent').value = ''; el('settingsPassNew').value = ''; el('settingsPassConfirm').value = '';
   el('settingsPassErr').textContent = ''; el('settingsScriptErr').textContent = ''; el('settingsTokenErr').textContent = '';
   var tok = el('settingsTokenSection'); if (tok) tok.style.display = isOwner ? 'block' : 'none';
   var chp = el('settingsChangePassSection'); if (chp) chp.style.display = (authd && !isOwner) ? 'block' : 'none';
+}
+function savePricingScriptUrl() {
+  var url = (el('pricingScriptUrl').value || '').trim();
+  var err = el('pricingScriptErr');
+  if (!url) { err.textContent = 'Paste the script URL.'; err.style.color = '#ef4444'; return; }
+  USERS_SCRIPT_URL = url; localStorage.setItem('almatek_script_url', url);
+  if (el('settingsScriptUrl')) el('settingsScriptUrl').value = url;
+  err.textContent = 'Saved ✓'; err.style.color = 'var(--green)';
+  setTimeout(function() { err.textContent = ''; }, 2000);
+  refreshPricingIfStale();
 }
 function saveSettingsScriptUrl() {
   var url = (el('settingsScriptUrl').value || '').trim();
