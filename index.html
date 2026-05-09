@@ -462,11 +462,6 @@
           <input type="number" id="partCostIphone" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
           <p class="hint">Round up to whole dollar</p>
         </div>
-        <div id="supplierRow1" style="margin-top:8px;margin-bottom:4px;">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:0.05em;">SUPPLIER</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;" id="supplierBtns1"></div>
-        </div>
-        <input type="text" id="orderRef1" placeholder="Order # / date (for tax records)" style="width:100%;margin-top:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;" oninput="quoteOrderRef=this.value" />
       </div>
     </div>
 
@@ -492,11 +487,6 @@
       <label class="field-label" for="partCost" id="partCostLabel">Part Cost</label>
       <input type="number" id="partCost" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
       <p class="hint">Round up to whole dollar</p>
-      <div id="supplierRow2" style="margin-top:8px;margin-bottom:4px;">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:0.05em;">SUPPLIER</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="supplierBtns2"></div>
-      </div>
-      <input type="text" id="orderRef2" placeholder="Order # / date (for tax records)" style="width:100%;margin-top:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;" oninput="quoteOrderRef=this.value" />
     </div>
   </div>
 
@@ -1115,22 +1105,6 @@ function updateFactoryScreenBadge(model) {
 }
 
 let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2='', mode1='select', mode2='select', secondOpen=false, mobileOpen=false, mobileFee=0;
-var SUPPLIERS = ['Kimi Soho','Bros Phone Parts (Bklyn)','Parts4Cells (Houston)','Mobile Sentrix (Virginia)','eBay','Amazon','LaptopScreen.com'];
-var quoteSupplier = '', quoteOrderRef = '';
-function renderSupplierBtns() {
-  ['supplierBtns1','supplierBtns2'].forEach(function(id) {
-    var el2 = el(id); if (!el2) return;
-    el2.innerHTML = SUPPLIERS.map(function(s) {
-      var active = quoteSupplier === s;
-      var style = active ? 'padding:5px 10px;background:var(--accent);border:none;color:#fff;border-radius:20px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:700;' : 'padding:5px 10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:20px;font-size:11px;font-family:inherit;cursor:pointer;';
-      return '<button type="button" onclick="setQuoteSupplier(\'' + s.replace(/'/g,"\\'") + '\')" style="' + style + '">' + s + '</button>';
-    }).join('');
-  });
-}
-function setQuoteSupplier(name) {
-  quoteSupplier = quoteSupplier === name ? '' : name;
-  renderSupplierBtns();
-}
 const el = id => document.getElementById(id);
 
 function fullPrice(cost, type) { return cost * 1.2 + LABOR[type]; }
@@ -1152,7 +1126,7 @@ function getPrice2() {
 }
 
 function onRepairChange() {
-  type1 = el('repairType').value; cost1=0; model1=''; tier1=''; quoteSupplier=''; quoteOrderRef=''; resetMobile(); resetSecond();
+  type1 = el('repairType').value; cost1=0; model1=''; tier1=''; resetMobile(); resetSecond();
   ['costCard','quoteCard','mobileToggleRow','secondToggle'].forEach(id => el(id).classList.add('hidden'));
   ['iphoneSection','glassSection','deviceSection','freeSection'].forEach(id => el(id).classList.add('hidden'));
   if (!type1) return;
@@ -1160,12 +1134,11 @@ function onRepairChange() {
   if (type1 === 'iphone_screen') {
     el('iphoneSection').classList.remove('hidden');
     el('modelSelect1').value = ''; model1 = '';
-    renderSupplierBtns(); if(el('orderRef1')) el('orderRef1').value='';
     selectTier1('standard');
   }
   else if (type1 === 'back_glass') { el('glassSection').classList.remove('hidden'); clearBtns('#glassSection'); }
   else if (type1 === 'device') { el('deviceSection').classList.remove('hidden'); clearBtns('#deviceSection'); }
-  else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value=''; }
+  else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; }
 }
 
 function onModel1Change() { model1 = el('modelSelect1').value; updateFactoryScreenBadge(model1); selectTier1(tier1 || 'standard'); }
@@ -1214,7 +1187,7 @@ function onDeviceSelect1(subtype, btn) {
   clearBtns('#deviceSection'); btn.classList.add('active');
   type1 = subtype; cost1 = 0;
   el('freeSection').classList.remove('hidden');
-  el('partCost').value = ''; renderSupplierBtns(); if(el('orderRef2')) el('orderRef2').value='';
+  el('partCost').value = '';
   var lbl = el('partCostLabel'); if (lbl) lbl.textContent = 'Part Cost';
   tryRenderQuote();
 }
@@ -1340,7 +1313,7 @@ function saveTicketFromQuote() {
   var miles = parseFloat((el('milesInput') ? el('milesInput').value : '') || 0) || 0;
   var attNotesVal = (el('attNotes') ? el('attNotes').value : '').trim();
   var initTicketNotes = attNotesVal ? [{ text: fmtNotePrefix() + '\n' + attNotesVal, createdAt: now, author: currentUser || 'staff' }] : [];
-  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', supplier: quoteSupplier || '', orderRef: quoteOrderRef || '', items: initItems, notes: initTicketNotes, createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
+  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', supplier: '', orderRef: '', items: initItems, notes: initTicketNotes, createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage(); syncTicketCreate(newTicket);
   closeAddToTicketModal(); updateTicketsBadge(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('tickets');
@@ -3364,7 +3337,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260509-2';
+var APP_VERSION = '20260509-4';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
