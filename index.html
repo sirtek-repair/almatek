@@ -921,6 +921,7 @@
   <div class="orders-tab-nav" style="margin-bottom:16px;">
     <button class="orders-tab-btn active" id="profileSubBtnTally" onclick="switchProfileSubTab('tally')">💵 Tally</button>
     <button class="orders-tab-btn" id="profileSubBtnSettings" onclick="switchProfileSubTab('settings')">⚙ Settings</button>
+    <button class="orders-tab-btn hidden" id="profileSubBtnAdmin" onclick="switchProfileSubTab('admin')">🔧 Admin</button>
   </div>
 
   <div id="profileSubViewTally">
@@ -979,39 +980,33 @@
     </div>
   </div>
 
-</div>
-</div>
-
-<!-- Admin Tab (owner only) -->
-<div id="tabAdmin" class="hidden">
-<div class="container">
-  <header style="text-align:center;padding:16px 0 12px;">
-    <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">🔧 Admin</h1>
-  </header>
-  <div class="orders-tab-nav" style="margin-bottom:16px;">
-    <button class="orders-tab-btn active" id="adminSubBtnStaff" onclick="switchAdminSubTab('staff')">👥 Staff</button>
-    <button class="orders-tab-btn" id="adminSubBtnReports" onclick="switchAdminSubTab('reports')">📊 Reports</button>
-  </div>
-
-  <div id="adminSubViewStaff">
-    <div id="adminNoScriptMsg" class="hidden" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">No script connected — configure it in <button onclick="switchTab('profile')" style="background:none;border:none;color:var(--accent);font-family:inherit;font-size:13px;cursor:pointer;text-decoration:underline;">Profile</button></div>
-    <div id="staffMainSection" class="hidden"><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
-    <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
-  </div>
-
-  <div id="adminSubViewReports" class="hidden">
-    <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-      <button class="orders-tab-btn active" id="rptBtnDay" onclick="setReportPeriod('day',this)">Today</button>
-      <button class="orders-tab-btn" id="rptBtnWeek" onclick="setReportPeriod('week',this)">Week</button>
-      <button class="orders-tab-btn" id="rptBtnMonth" onclick="setReportPeriod('month',this)">Month</button>
-      <button class="orders-tab-btn" id="rptBtnYTD" onclick="setReportPeriod('ytd',this)">YTD</button>
-      <button id="rptShareBtn" onclick="shareReport()" style="margin-left:auto;padding:6px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share</button>
+  <div id="profileSubViewAdmin" class="hidden">
+    <div class="orders-tab-nav" style="margin-bottom:16px;">
+      <button class="orders-tab-btn active" id="adminSubBtnStaff" onclick="switchAdminSubTab('staff')">👥 Staff</button>
+      <button class="orders-tab-btn" id="adminSubBtnReports" onclick="switchAdminSubTab('reports')">📊 Reports</button>
     </div>
-    <div id="reportsSummary"></div>
-    <div id="reportsTicketList" style="margin-top:12px;"></div>
+    <div id="adminSubViewStaff">
+      <div id="adminNoScriptMsg" class="hidden" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">No script connected — configure it in Settings</div>
+      <div id="staffMainSection" class="hidden"><div id="staffUserList"><p style="color:var(--muted);font-size:13px;">Loading…</p></div><div style="margin-top:16px;"><div class="staff-section-title">Add User</div><div class="staff-add-row"><input type="text" id="newUserName" placeholder="Name" autocomplete="off" /><input type="password" id="newUserPass" placeholder="Temp password" autocomplete="off" /></div><div style="display:flex;gap:6px;margin-top:8px;"><button id="newStructStandard" class="need-sub-btn active" style="font-size:12px;" onclick="el('newStructStandard').classList.add('active');el('newStructFlat').classList.remove('active');">Standard</button><button id="newStructFlat" class="need-sub-btn" style="font-size:12px;" onclick="el('newStructFlat').classList.add('active');el('newStructStandard').classList.remove('active');">Flat Rate</button><button class="staff-add-btn" style="margin-left:auto;" onclick="addStaffUser()">Add</button></div><div id="addUserErr" class="chpass-err"></div></div></div>
+      <div class="card" style="margin-top:16px;"><div class="staff-section-title">Reset a Password</div><p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Override any user's password without knowing their current one.</p><div class="staff-add-row"><input type="text" id="resetUserName" placeholder="Name" autocomplete="off" /><input type="password" id="resetUserPass" placeholder="New password" autocomplete="off" /><button class="staff-add-btn" onclick="resetUserPassword()">Reset</button></div><div id="resetPassErr" class="chpass-err"></div></div>
+    </div>
+    <div id="adminSubViewReports" class="hidden">
+      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+        <button class="orders-tab-btn active" id="rptBtnDay" onclick="setReportPeriod('day',this)">Today</button>
+        <button class="orders-tab-btn" id="rptBtnWeek" onclick="setReportPeriod('week',this)">Week</button>
+        <button class="orders-tab-btn" id="rptBtnMonth" onclick="setReportPeriod('month',this)">Month</button>
+        <button class="orders-tab-btn" id="rptBtnYTD" onclick="setReportPeriod('ytd',this)">YTD</button>
+        <button id="rptShareBtn" onclick="shareReport()" style="margin-left:auto;padding:6px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share</button>
+      </div>
+      <div id="reportsSummary"></div>
+      <div id="reportsTicketList" style="margin-top:12px;"></div>
+    </div>
   </div>
+
 </div>
 </div>
+
+<div id="tabAdmin" class="hidden"></div>
 
 
 <!-- Tools Tab -->
@@ -1364,35 +1359,38 @@ function switchTab(tab) {
   if (tab === 'cart') { switchTab('inventory'); switchInvSubTab('orders'); switchOrdersView('cart'); return; }
   if (tab === 'orders') { switchTab('inventory'); switchInvSubTab('orders'); return; }
   if (tab === 'settings') { profileSubTab = 'settings'; switchTab('profile'); return; }
-  const isQuote = tab==='quote', isInventory = tab==='inventory', isLeads = tab==='leads', isProfile = tab==='profile', isAdmin = tab==='admin', isTools = tab==='tools';
+  if (tab === 'admin') { profileSubTab = 'admin'; switchTab('profile'); return; }
+  const isQuote = tab==='quote', isInventory = tab==='inventory', isLeads = tab==='leads', isProfile = tab==='profile', isTools = tab==='tools';
   el('tabQuote').classList.toggle('hidden', !isQuote);
   el('tabInventory').classList.toggle('hidden', !isInventory);
   el('tabLeads').classList.toggle('hidden', !isLeads);
   el('tabProfile').classList.toggle('hidden', !isProfile);
-  el('tabAdmin').classList.toggle('hidden', !isAdmin);
+  el('tabAdmin').classList.add('hidden');
   el('tabTools').classList.toggle('hidden', !isTools);
   el('tabCart').classList.toggle('hidden', true);
   el('tabQuoteBtn').classList.toggle('active', isQuote);
   el('tabInvBtn').classList.toggle('active', isInventory);
   el('tabLeadsBtn').classList.toggle('active', isLeads);
   el('tabProfileBtn').classList.toggle('active', isProfile);
-  el('tabAdminBtn').classList.toggle('active', isAdmin);
+  el('tabAdminBtn').classList.add('hidden');
   el('tabToolsBtn').classList.toggle('active', isTools);
   if (isLeads) { exitLeadSelectMode && exitLeadSelectMode(); exitTicketSelectMode && exitTicketSelectMode(); }
   if (isInventory) initInventory();
-  else if (isAdmin) { switchAdminSubTab(adminSubTab || 'staff'); }
   else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); switchProfileSubTab(profileSubTab || 'tally'); }
   else if (isLeads) { switchLeadSubTab('leads'); }
 }
 var profileSubTab = 'tally';
 function switchProfileSubTab(tab) {
   profileSubTab = tab;
-  var isTally = tab === 'tally', isSettings = tab === 'settings';
+  var isTally = tab === 'tally', isSettings = tab === 'settings', isAdmin = tab === 'admin';
   el('profileSubViewTally').classList.toggle('hidden', !isTally);
   el('profileSubViewSettings').classList.toggle('hidden', !isSettings);
+  el('profileSubViewAdmin').classList.toggle('hidden', !isAdmin);
   el('profileSubBtnTally').classList.toggle('active', isTally);
   el('profileSubBtnSettings').classList.toggle('active', isSettings);
+  el('profileSubBtnAdmin').classList.toggle('active', isAdmin);
   if (isSettings) openSettingsTab();
+  if (isAdmin) switchAdminSubTab(adminSubTab || 'staff');
 }
 var invSubTab = 'inventory';
 function switchInvSubTab(tab) {
@@ -2043,7 +2041,8 @@ function updateAuthBtn() {
   var demoLbl = el('demoModeLabel'); if (demoLbl) demoLbl.style.display = authd ? 'none' : '';
   document.body.classList.toggle('demo-mode', !authd);
   document.body.classList.toggle('auth-mode', authd);
-  el('tabAdminBtn').classList.toggle('hidden', !isOwner);
+  el('tabAdminBtn').classList.add('hidden');
+  el('profileSubBtnAdmin').classList.toggle('hidden', !isOwner);
   var chp = el('chpassBtn'); if (chp) chp.style.display = (authd && !isOwner) ? 'inline' : 'none';
   el('suppliersDropdown').style.display = authd ? 'block' : 'none';
   el('supplierDemo').style.display = authd ? 'none' : 'inline';
