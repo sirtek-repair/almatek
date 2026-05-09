@@ -957,6 +957,12 @@
       <div id="settingsTokenErr" class="chpass-err" style="margin-top:6px;"></div>
     </div>
 
+    <div class="card" style="margin-top:16px;">
+      <div class="staff-section-title">Pricing</div>
+      <div id="pricingStatusLine" style="font-size:12px;color:var(--muted);margin:4px 0 12px;">—</div>
+      <button onclick="debugRefreshPricing()" style="width:100%;padding:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">↻ Refresh Pricing</button>
+    </div>
+
     <div class="card" id="settingsResetSection" style="margin-top:16px;">
       <div class="staff-section-title">Reset Staff Script</div>
       <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Clears the saved script URL and disconnects data sync.</p>
@@ -1982,28 +1988,34 @@ function loadCachedPricing() {
     }
   } catch(e) {}
 }
+function setPricingStatus(msg) { var el2 = el('pricingStatusLine'); if (el2) el2.textContent = msg; }
 function refreshPricingIfStale() {
-  if (!USERS_SCRIPT_URL || !authd) { console.log('[pricing] skipped: url=' + !!USERS_SCRIPT_URL + ' authd=' + authd); return; }
-  console.log('[pricing] fetching…');
+  if (!USERS_SCRIPT_URL || !authd) { setPricingStatus('Not logged in or no script URL'); return; }
+  setPricingStatus('Fetching…');
   sheetsCall({ action: 'getPricing' }).then(function(data) {
-    console.log('[pricing] response:', JSON.stringify(data).slice(0, 300));
     if (data && data.ok && data.prices && Object.keys(data.prices).length > 0) {
       var norm = normalizePricingTiers(data.prices);
       SCREEN_PRICES = norm;
       localStorage.setItem('almatek_pricing', JSON.stringify({ prices: norm, ts: Date.now() }));
       initGlassPriceTags();
       var keys = Object.keys(norm);
-      showToast('Pricing: ' + keys.length + ' models — e.g. "' + keys[0] + '"', 10000);
+      setPricingStatus(keys.length + ' models loaded — e.g. "' + keys[0] + '"');
+      showToast('Pricing updated ✓', 3000);
       if (model1 && type1 === 'iphone_screen') selectTier1(tier1 || 'standard');
       if (model2 && type2 === 'iphone_screen') selectTier2(tier2 || 'standard');
     } else {
       var msg = data && data.error ? data.error : (data && !data.ok ? 'Sheet returned no prices' : 'Pricing fetch failed');
-      console.log('[pricing] error:', msg);
-      showToast('⚠️ ' + msg + ' — tap to retry', 8000, refreshPricingIfStale);
+      setPricingStatus('Error: ' + msg);
+      showToast('⚠️ Pricing error — see Settings', 5000);
     }
   }).catch(function(err) {
-    showToast('⚠️ Pricing unavailable — tap to retry', 6000, refreshPricingIfStale);
+    setPricingStatus('Network error: ' + err);
+    showToast('⚠️ Pricing network error — see Settings', 5000);
   });
+}
+function debugRefreshPricing() {
+  setPricingStatus('Fetching…');
+  refreshPricingIfStale();
 }
 function onStaffLoginSuccess(pass, name, structure, data) {
   applyLoginConfig(data || {});
