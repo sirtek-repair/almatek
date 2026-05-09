@@ -1988,7 +1988,7 @@ function refreshPricingIfStale() {
       SCREEN_PRICES = norm;
       localStorage.setItem('almatek_pricing', JSON.stringify({ prices: norm, ts: Date.now() }));
       initGlassPriceTags();
-      showToast('Pricing loaded: ' + Object.keys(norm).length + ' models', 3000);
+      showToast('Pricing loaded: ' + Object.keys(norm).length + ' models', 8000);
       if (model1 && type1 === 'iphone_screen') selectTier1(tier1 || 'standard');
       if (model2 && type2 === 'iphone_screen') selectTier2(tier2 || 'standard');
     } else {
