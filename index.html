@@ -481,6 +481,10 @@
           <input type="number" id="partCostIphone" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
           <p class="hint">Round up to whole dollar</p>
         </div>
+        <div class="stock-row hidden" id="stockRow1" style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+          <span class="stock-badge" id="stockBadge1"></span>
+          <span class="stock-detail" id="stockDetail1"></span>
+        </div>
       </div>
     </div>
 
@@ -596,6 +600,10 @@
           <div id="manualCostRow2" class="hidden" style="margin-top:8px;">
             <input type="number" id="partCostIphone2" placeholder="$0" min="0" step="1" oninput="onCost2Change()" />
             <p class="hint">Round up to whole dollar</p>
+          </div>
+          <div class="stock-row hidden" id="stockRow2" style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+            <span class="stock-badge" id="stockBadge2"></span>
+            <span class="stock-detail" id="stockDetail2"></span>
           </div>
         </div>
       </div>
@@ -1210,6 +1218,8 @@ function selectTier1(t) {
     if (el('manualCostRow1')) el('manualCostRow1').classList.remove('hidden');
     cost1 = parseFloat((el('partCostIphone') ? el('partCostIphone').value : '') || '0') || 0;
   }
+  if (model1 && type1 === 'iphone_screen' && !isManual) showStockBadge('1', model1, t);
+  else { var r = el('stockRow1'); if (r) r.classList.add('hidden'); }
   tryRenderQuote();
 }
 function selectTier2(t) {
@@ -1226,6 +1236,8 @@ function selectTier2(t) {
     if (el('manualCostRow2')) el('manualCostRow2').classList.remove('hidden');
     cost2 = parseFloat((el('partCostIphone2') ? el('partCostIphone2').value : '') || '0') || 0;
   }
+  if (model2 && type2 === 'iphone_screen' && !isManual) showStockBadge('2', model2, t);
+  else { var r2 = el('stockRow2'); if (r2) r2.classList.add('hidden'); }
   renderDeal();
 }
 
@@ -3386,7 +3398,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260509-7';
+var APP_VERSION = '20260509-6';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
