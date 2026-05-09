@@ -59,17 +59,18 @@ function handleAction(p) {
         if (!pSheet) return { ok: false, error: 'Pricing sheet not found' };
         var rows = pSheet.getDataRange().getValues();
         if (rows.length < 2) return { ok: false, error: 'No data in pricing sheet' };
-        var iphoneIdx = 0; // column A — model name
-        var priceIdx  = 4; // column E — part cost
+        // Columns: A=iPhone Model, B=SKU, C=Tier, D=Product Name, E=Price
+        var modelIdx = 0, tierIdx = 2, priceIdx = 4;
         var prices = {};
         for (var i = 1; i < rows.length; i++) {
-          var model = String(rows[i][iphoneIdx] || '').trim();
-          if (!model) continue;
-          var cost = rows[i][priceIdx];
-          if (cost === '' || cost == null || isNaN(Number(cost)) || Number(cost) <= 0) continue;
-          prices[model] = { standard: Number(cost), premium: Number(cost) };
+          var model = String(rows[i][modelIdx] || '').trim();
+          var tier  = String(rows[i][tierIdx]  || '').trim().toLowerCase();
+          var cost  = rows[i][priceIdx];
+          if (!model || !tier || cost === '' || cost == null || isNaN(Number(cost)) || Number(cost) <= 0) continue;
+          if (!prices[model]) prices[model] = {};
+          if (tier === 'standard' || tier === 'premium') prices[model][tier] = Number(cost);
         }
-        if (!Object.keys(prices).length) return { ok: false, error: 'No prices found — check column A (model) and column E (price)' };
+        if (!Object.keys(prices).length) return { ok: false, error: 'No prices found in sheet' };
         return { ok: true, prices: prices };
       } catch(e) {
         return { ok: false, error: e.toString() };
