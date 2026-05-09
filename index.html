@@ -1983,19 +1983,23 @@ function loadCachedPricing() {
   } catch(e) {}
 }
 function refreshPricingIfStale() {
-  if (!USERS_SCRIPT_URL || !authd) return;
+  if (!USERS_SCRIPT_URL || !authd) { console.log('[pricing] skipped: url=' + !!USERS_SCRIPT_URL + ' authd=' + authd); return; }
+  console.log('[pricing] fetching…');
   sheetsCall({ action: 'getPricing' }).then(function(data) {
+    console.log('[pricing] response:', JSON.stringify(data).slice(0, 300));
     if (data && data.ok && data.prices && Object.keys(data.prices).length > 0) {
       var norm = normalizePricingTiers(data.prices);
       SCREEN_PRICES = norm;
       localStorage.setItem('almatek_pricing', JSON.stringify({ prices: norm, ts: Date.now() }));
       initGlassPriceTags();
-      showToast('Pricing loaded: ' + Object.keys(norm).length + ' models', 8000);
+      var keys = Object.keys(norm);
+      showToast('Pricing: ' + keys.length + ' models — e.g. "' + keys[0] + '"', 10000);
       if (model1 && type1 === 'iphone_screen') selectTier1(tier1 || 'standard');
       if (model2 && type2 === 'iphone_screen') selectTier2(tier2 || 'standard');
     } else {
       var msg = data && data.error ? data.error : (data && !data.ok ? 'Sheet returned no prices' : 'Pricing fetch failed');
-      showToast('⚠️ ' + msg + ' — tap to retry', 6000, refreshPricingIfStale);
+      console.log('[pricing] error:', msg);
+      showToast('⚠️ ' + msg + ' — tap to retry', 8000, refreshPricingIfStale);
     }
   }).catch(function(err) {
     showToast('⚠️ Pricing unavailable — tap to retry', 6000, refreshPricingIfStale);
