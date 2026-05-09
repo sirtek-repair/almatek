@@ -2140,7 +2140,7 @@ function syncFromSheets() {
     var parts = [];
     if (up.leads || up.tickets) parts.push('↑ ' + [up.leads && up.leads + ' lead' + (up.leads !== 1 ? 's' : ''), up.tickets && up.tickets + ' ticket' + (up.tickets !== 1 ? 's' : '')].filter(Boolean).join(', '));
     if (dn.leads || dn.tickets) parts.push('↓ ' + [dn.leads && dn.leads + ' lead' + (dn.leads !== 1 ? 's' : ''), dn.tickets && dn.tickets + ' ticket' + (dn.tickets !== 1 ? 's' : '')].filter(Boolean).join(', '));
-    showToast(parts.length ? parts.join('  ') : (msg || 'Synced ✓'));
+    if (msg) showToast(msg);
   }
 
   sheetsCall({ action: 'getLeads' }).then(function(data) {
