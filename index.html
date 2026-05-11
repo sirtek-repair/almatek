@@ -1499,6 +1499,7 @@ function switchTicketSubView(view) {
   if (!isActive) renderPickedUpList(); else renderTicketsList();
 }
 function switchLeadSubTab(tab) {
+  closeAllMenus();
   leadSubTab = tab;
   var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup', isSpecial = tab === 'specialorder';
   el('leadViewLeads').classList.toggle('hidden', !isLeads);
@@ -2179,13 +2180,17 @@ function atTicketFields(t) {
 }
 function atToLead(rec) {
   var f = rec.fields || {};
-  var l = { _atId: rec.id, id: f.id || ('lead_at_'+rec.id), name: f.name||'', phone: f.phone||'', altPhone: f.altPhone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', status: f.status||'new', tier: f.tier||'standard', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, followUpAt: f.followUpAt||'', followUpNotes: f.followUpNotes||'', assignedTo: f.assignedTo||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', bookedAt: f.bookedAt||'', closedAt: f.closedAt||'', lastContactedAt: f.lastContactedAt||'', contactAttempts: Number(f.contactAttempts)||0, repairType: f.repairType||'', repairModel: f.repairModel||'' };
+  var existingId = (f.id || '').trim();
+  if (!existingId) { var cached = leadsStorage.find(function(x) { return x._atId === rec.id; }); if (cached) existingId = cached.id; }
+  var l = { _atId: rec.id, id: existingId || ('lead_at_'+rec.id), name: f.name||'', phone: f.phone||'', altPhone: f.altPhone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', status: f.status||'new', tier: f.tier||'standard', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, followUpAt: f.followUpAt||'', followUpNotes: f.followUpNotes||'', assignedTo: f.assignedTo||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', bookedAt: f.bookedAt||'', closedAt: f.closedAt||'', lastContactedAt: f.lastContactedAt||'', contactAttempts: Number(f.contactAttempts)||0, repairType: f.repairType||'', repairModel: f.repairModel||'' };
   try { l.notes = JSON.parse(f.notes||'[]'); } catch(e) { l.notes = []; }
   return l;
 }
 function atToTicket(rec) {
   var f = rec.fields || {};
-  var t = { _atId: rec.id, id: f.id || ('ticket_at_'+rec.id), name: f.name||'', phone: f.phone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', flow: f.flow||'in_stock', status: f.status||'waiting_for_repair', tier: f.tier||'standard', repairType: f.repairType||'', repairModel: f.repairModel||'', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, mobileFee: Number(f.mobileFee)||0, mobileFeeMiles: Number(f.mobileFeeMiles)||0, supplier: f.supplier||'', orderRef: f.orderRef||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', fromLeadId: f.fromLeadId||'' };
+  var existingId = (f.id || '').trim();
+  if (!existingId) { var cached = ticketsStorage.find(function(x) { return x._atId === rec.id; }); if (cached) existingId = cached.id; }
+  var t = { _atId: rec.id, id: existingId || ('ticket_at_'+rec.id), name: f.name||'', phone: f.phone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', flow: f.flow||'in_stock', status: f.status||'waiting_for_repair', tier: f.tier||'standard', repairType: f.repairType||'', repairModel: f.repairModel||'', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, mobileFee: Number(f.mobileFee)||0, mobileFeeMiles: Number(f.mobileFeeMiles)||0, supplier: f.supplier||'', orderRef: f.orderRef||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', fromLeadId: f.fromLeadId||'' };
   try { t.items = JSON.parse(f.items||'[]'); } catch(e) { t.items = []; }
   try { t.notes = JSON.parse(f.notes||'[]'); } catch(e) { t.notes = []; }
   return t;
@@ -2469,7 +2474,7 @@ function shareLeadCard(leadId, e) {
 }
 
 function openLeadDetail(leadId) {
-  currentLeadId = leadId; var lead = leadsStorage.find(l => l.id === leadId); if (!lead) return;
+  currentLeadId = leadId; var lead = leadsStorage.find(l => l.id === leadId); if (!lead) { syncFromSheets(); showToast('Refreshing…'); return; }
   el('detailLeadName').textContent = lead.name || 'Unnamed';
   var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;"><div><span class="stock-badge" style="background:' + getStatusColor(lead.status) + '20;color:' + getStatusColor(lead.status) + '">' + getStatusLabel(lead.status) + '</span></div><div><button onclick="closeLeadDetail();editLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px;">✏️ Edit</button><button onclick="deleteLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Delete</button></div></div>';
   html += '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Created by <strong style="color:var(--text);">' + creatorLabel(lead.createdBy) + '</strong></div>';
@@ -2939,7 +2944,7 @@ function shareTicketCard(ticketId, e) {
 
 function openTicketDetail(ticketId) {
   currentTicketId = ticketId;
-  var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
+  var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) { syncFromSheets(); showToast('Refreshing…'); return; }
   if (!ticket.items) ticket.items = [];
   el('ticketDetailName').textContent = (ticket.name || 'Unnamed') + ' — Ticket';
   var stages = ticket.flow === 'in_stock' ? REPAIR_STAGES : SO_STAGES;
@@ -3481,7 +3486,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260511-21';
+var APP_VERSION = '20260511-22';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
