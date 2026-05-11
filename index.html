@@ -2103,7 +2103,14 @@ function onStaffLoginSuccess(pass, name, structure, data) {
   authd = true; isOwner = false; localStorage.setItem('almatek_is_owner', 'false');
   el('authOverlay').classList.add('hidden');
   updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
-  syncFromSheets(); refreshPricingIfStale();
+  if (!apiPass && USERS_SCRIPT_URL) {
+    sheetsCall({ action: 'getConfig' }).then(function(cfg) {
+      if (cfg && cfg.ok) applyLoginConfig(cfg);
+      syncFromSheets(); refreshPricingIfStale();
+    }).catch(function() { syncFromSheets(); refreshPricingIfStale(); });
+  } else {
+    syncFromSheets(); refreshPricingIfStale();
+  }
 }
 function onReviewClick(btn) {
   if (!authd) { showToast('Log in to use'); return; }
@@ -3489,7 +3496,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260511-25';
+var APP_VERSION = '20260511-26';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
