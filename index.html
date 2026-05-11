@@ -1524,6 +1524,7 @@ const AT_BASE = 'appDFaflvCWvIGhZB', AT_INV = 'tblGqxylJqQjAgJ40', AT_ORDERS = '
 const OWNER_PASS_HASH = 'f60a3e2e8ee48ddcc27f5e2089da6588067de28ea9a1d0c124cfdab30f062d48';
 if (localStorage.getItem('almatek_auth_v') !== '2') { localStorage.removeItem('almatek_pass'); localStorage.removeItem('almatek_is_owner'); localStorage.setItem('almatek_auth_v', '2'); }
 var authPass = localStorage.getItem('almatek_pass') || '', apiPass = localStorage.getItem('almatek_api_pass') || '', isOwner = localStorage.getItem('almatek_is_owner') === 'true', currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
+if (authPass && authPass !== '_auth_') { isOwner = false; localStorage.setItem('almatek_is_owner', 'false'); }
 if (isOwner && !currentUser) { currentUser = 'Sir'; localStorage.setItem('almatek_current_user', 'Sir'); }
 
 const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7P3ixTJATVr2YbDAhYpUTAz5HAtECUwFDcESDFlHcB60TaeKMmjT9lKc17FHKPWlc/exec';
@@ -2258,13 +2259,7 @@ function setSyncStatus(state) {
 
 var _syncing = false, _syncWatchdog = null;
 function syncFromSheets() {
-  if (!apiPass) {
-    el('authInput').value = ''; el('authError').textContent = '';
-    el('authOverlay').classList.remove('hidden');
-    el('authSetupBox').classList.remove('hidden');
-    el('authSetupUrl').value = ''; setTimeout(function() { el('authSetupUrl').focus(); }, 100);
-    return;
-  }
+  if (!apiPass) return;
   if (_syncing) { showToast('Already syncing…'); return; }
   _syncing = true;
   setSyncStatus('syncing');
@@ -3494,7 +3489,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260511-24';
+var APP_VERSION = '20260511-25';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
