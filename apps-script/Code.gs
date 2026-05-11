@@ -141,7 +141,7 @@ function handleAction(p) {
     }
     case 'createLead': {
       var sheet = getOrCreate('Leads', [
-        'id','name','phone','email','device','issue','status','tier',
+        'id','name','phone','altPhone','email','device','issue','status','tier',
         'followUpAt','followUpNotes','quote','deposit','assignedTo',
         'createdBy','createdAt','updatedAt','notes'
       ]);
@@ -149,7 +149,7 @@ function handleAction(p) {
       var existingRows = sheet.getDataRange().getValues();
       for (var ei = 1; ei < existingRows.length; ei++) { if (existingRows[ei][0] === l.id) return { ok: true }; }
       sheet.appendRow([
-        l.id, l.name, l.phone, l.email, l.device, l.issue, l.status, l.tier || 'standard',
+        l.id, l.name, l.phone, l.altPhone || '', l.email, l.device, l.issue, l.status, l.tier || 'standard',
         l.followUpAt, l.followUpNotes, l.quote || 0, l.deposit || 0,
         l.assignedTo, l.createdBy, l.createdAt, l.updatedAt,
         JSON.stringify(l.notes || [])
