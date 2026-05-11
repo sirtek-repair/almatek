@@ -1357,7 +1357,7 @@ function saveLeadFromQuote() {
   var now = new Date().toISOString();
   var atlNotesVal = (el('atlNotes') ? el('atlNotes').value : '').trim();
   var initLeadNotes = atlNotesVal ? [{ text: fmtNotePrefix() + '\n' + atlNotesVal, createdAt: now, author: currentUser || 'staff' }] : [];
-  var newLead = { id: 'lead_' + Date.now(), name: name, phone: phone, altPhone: '', email: (el('atlEmail').value||'').trim(), device: deviceStr, issue: issueStr, status: 'new', followUpAt: '', followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: initLeadNotes, quote: total, deposit: 0, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', createdAt: now, updatedAt: now };
+  var newLead = { id: 'lead_' + Date.now(), name: name, phone: phone, altPhone: '', email: (el('atlEmail').value||'').trim(), device: deviceStr, issue: issueStr, status: 'new', followUpAt: '', followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: initLeadNotes, quote: total, deposit: 0, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', address: mobileOpen ? (el('cxAddrInput') ? el('cxAddrInput').value.trim() : '') : '', createdAt: now, updatedAt: now };
   leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead);
   closeAddToLeadModal(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('leads');
@@ -1385,7 +1385,7 @@ function saveTicketFromQuote() {
   var miles = parseFloat((el('milesInput') ? el('milesInput').value : '') || 0) || 0;
   var attNotesVal = (el('attNotes') ? el('attNotes').value : '').trim();
   var initTicketNotes = attNotesVal ? [{ text: fmtNotePrefix() + '\n' + attNotesVal, createdAt: now, author: currentUser || 'staff' }] : [];
-  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', supplier: '', orderRef: '', items: initItems, notes: initTicketNotes, createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
+  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, address: mobileOpen ? (el('cxAddrInput') ? el('cxAddrInput').value.trim() : '') : '', tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', supplier: '', orderRef: '', items: initItems, notes: initTicketNotes, createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage(); syncTicketCreate(newTicket);
   closeAddToTicketModal(); updateTicketsBadge(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('tickets');
@@ -1477,6 +1477,7 @@ function switchInvSubTab(tab) {
 }
 var adminSubTab = 'staff';
 function switchAdminSubTab(tab) {
+  if (tab === 'staff' && !isOwner) tab = 'reports';
   adminSubTab = tab;
   var isStaff = tab === 'staff', isRep = tab === 'reports';
   el('adminSubViewStaff').classList.toggle('hidden', !isStaff);
@@ -2098,7 +2099,7 @@ function onStaffLoginSuccess(pass, name, structure, data) {
   localStorage.setItem('almatek_pass', pass);
   if (name) localStorage.setItem('almatek_current_user', name);
   localStorage.setItem('almatek_user_structure', currentUserStructure);
-  authd = true; isOwner = false;
+  authd = true; isOwner = false; localStorage.setItem('almatek_is_owner', 'false');
   el('authOverlay').classList.add('hidden');
   updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
   syncFromSheets(); refreshPricingIfStale();
@@ -2119,6 +2120,7 @@ function updateAuthBtn() {
   document.body.classList.toggle('auth-mode', authd);
   el('tabAdminBtn').classList.add('hidden');
   el('profileSubBtnAdmin').classList.toggle('hidden', !isOwner);
+  var staffSubBtn = el('adminSubBtnStaff'); if (staffSubBtn) staffSubBtn.classList.toggle('hidden', !isOwner);
   var chp = el('chpassBtn'); if (chp) chp.style.display = (authd && !isOwner) ? 'inline' : 'none';
   el('suppliersDropdown').style.display = authd ? 'block' : 'none';
   el('supplierDemo').style.display = authd ? 'none' : 'inline';
@@ -2169,12 +2171,12 @@ function saveLeadsToStorage() { var s={}; leadsStorage=leadsStorage.filter(funct
 // ── Airtable leads/tickets helpers ───────────────────────────────────
 function _atDate(v) { if (!v) return undefined; var d = new Date(v); return isNaN(d.getTime()) ? undefined : d.toISOString(); }
 function atLeadFields(l) {
-  var f = { name: l.name||'', id: l.id||'', phone: l.phone||'', altPhone: l.altPhone||'', email: l.email||'', device: l.device||'', issue: l.issue||'', status: l.status||'new', tier: l.tier||'standard', quote: Number(l.quote)||0, deposit: Number(l.deposit)||0, notes: JSON.stringify(l.notes||[]), followUpNotes: l.followUpNotes||'', assignedTo: l.assignedTo||'', createdBy: l.createdBy||'', contactAttempts: Number(l.contactAttempts)||0, repairType: l.repairType||'', repairModel: l.repairModel||'' };
+  var f = { name: l.name||'', id: l.id||'', phone: l.phone||'', altPhone: l.altPhone||'', email: l.email||'', device: l.device||'', issue: l.issue||'', status: l.status||'new', tier: l.tier||'standard', quote: Number(l.quote)||0, deposit: Number(l.deposit)||0, notes: JSON.stringify(l.notes||[]), followUpNotes: l.followUpNotes||'', assignedTo: l.assignedTo||'', createdBy: l.createdBy||'', contactAttempts: Number(l.contactAttempts)||0, repairType: l.repairType||'', repairModel: l.repairModel||'', address: l.address||'' };
   ['followUpAt','createdAt','updatedAt','bookedAt','closedAt','lastContactedAt'].forEach(function(k) { var d = _atDate(l[k]); if (d) f[k] = d; });
   return f;
 }
 function atTicketFields(t) {
-  var f = { name: t.name||'', id: t.id||'', phone: t.phone||'', email: t.email||'', device: t.device||'', issue: t.issue||'', flow: t.flow||'in_stock', status: t.status||'waiting_for_repair', tier: t.tier||'standard', repairType: t.repairType||'', repairModel: t.repairModel||'', quote: Number(t.quote)||0, deposit: Number(t.deposit)||0, mobileFee: Number(t.mobileFee)||0, mobileFeeMiles: Number(t.mobileFeeMiles)||0, supplier: t.supplier||'', orderRef: t.orderRef||'', items: JSON.stringify(t.items||[]), notes: JSON.stringify(t.notes||[]), createdBy: t.createdBy||'', fromLeadId: t.fromLeadId||'' };
+  var f = { name: t.name||'', id: t.id||'', phone: t.phone||'', email: t.email||'', device: t.device||'', issue: t.issue||'', flow: t.flow||'in_stock', status: t.status||'waiting_for_repair', tier: t.tier||'standard', repairType: t.repairType||'', repairModel: t.repairModel||'', quote: Number(t.quote)||0, deposit: Number(t.deposit)||0, mobileFee: Number(t.mobileFee)||0, mobileFeeMiles: Number(t.mobileFeeMiles)||0, address: t.address||'', supplier: t.supplier||'', orderRef: t.orderRef||'', items: JSON.stringify(t.items||[]), notes: JSON.stringify(t.notes||[]), createdBy: t.createdBy||'', fromLeadId: t.fromLeadId||'' };
   ['createdAt','updatedAt'].forEach(function(k) { var d = _atDate(t[k]); if (d) f[k] = d; });
   return f;
 }
@@ -2182,7 +2184,7 @@ function atToLead(rec) {
   var f = rec.fields || {};
   var existingId = (f.id || '').trim();
   if (!existingId) { var cached = leadsStorage.find(function(x) { return x._atId === rec.id; }); if (cached) existingId = cached.id; }
-  var l = { _atId: rec.id, id: existingId || ('lead_at_'+rec.id), name: f.name||'', phone: f.phone||'', altPhone: f.altPhone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', status: f.status||'new', tier: f.tier||'standard', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, followUpAt: f.followUpAt||'', followUpNotes: f.followUpNotes||'', assignedTo: f.assignedTo||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', bookedAt: f.bookedAt||'', closedAt: f.closedAt||'', lastContactedAt: f.lastContactedAt||'', contactAttempts: Number(f.contactAttempts)||0, repairType: f.repairType||'', repairModel: f.repairModel||'' };
+  var l = { _atId: rec.id, id: existingId || ('lead_at_'+rec.id), name: f.name||'', phone: f.phone||'', altPhone: f.altPhone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', status: f.status||'new', tier: f.tier||'standard', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, followUpAt: f.followUpAt||'', followUpNotes: f.followUpNotes||'', assignedTo: f.assignedTo||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', bookedAt: f.bookedAt||'', closedAt: f.closedAt||'', lastContactedAt: f.lastContactedAt||'', contactAttempts: Number(f.contactAttempts)||0, repairType: f.repairType||'', repairModel: f.repairModel||'', address: f.address||'' };
   try { l.notes = JSON.parse(f.notes||'[]'); } catch(e) { l.notes = []; }
   return l;
 }
@@ -2190,7 +2192,7 @@ function atToTicket(rec) {
   var f = rec.fields || {};
   var existingId = (f.id || '').trim();
   if (!existingId) { var cached = ticketsStorage.find(function(x) { return x._atId === rec.id; }); if (cached) existingId = cached.id; }
-  var t = { _atId: rec.id, id: existingId || ('ticket_at_'+rec.id), name: f.name||'', phone: f.phone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', flow: f.flow||'in_stock', status: f.status||'waiting_for_repair', tier: f.tier||'standard', repairType: f.repairType||'', repairModel: f.repairModel||'', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, mobileFee: Number(f.mobileFee)||0, mobileFeeMiles: Number(f.mobileFeeMiles)||0, supplier: f.supplier||'', orderRef: f.orderRef||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', fromLeadId: f.fromLeadId||'' };
+  var t = { _atId: rec.id, id: existingId || ('ticket_at_'+rec.id), name: f.name||'', phone: f.phone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', flow: f.flow||'in_stock', status: f.status||'waiting_for_repair', tier: f.tier||'standard', repairType: f.repairType||'', repairModel: f.repairModel||'', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, mobileFee: Number(f.mobileFee)||0, mobileFeeMiles: Number(f.mobileFeeMiles)||0, address: f.address||'', supplier: f.supplier||'', orderRef: f.orderRef||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', fromLeadId: f.fromLeadId||'' };
   try { t.items = JSON.parse(f.items||'[]'); } catch(e) { t.items = []; }
   try { t.notes = JSON.parse(f.notes||'[]'); } catch(e) { t.notes = []; }
   return t;
@@ -2495,6 +2497,7 @@ function openLeadDetail(leadId) {
     html += '<div id="altPhoneInputRow" style="display:none;background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ALT PHONE</div><div style="display:flex;gap:6px;align-items:center;"><input type="tel" id="leadAltPhoneEdit" placeholder="Alt phone number" style="' + inStyle + '" /><button onclick="saveLeadField(\'' + lead.id + '\',\'altPhone\',\'leadAltPhoneEdit\')" style="' + saveBtnStyle + '">Save</button></div></div>';
   }
   if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">EMAIL</div><div style="font-size:14px;">' + lead.email + '</div></div>';
+  if (lead.address) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ADDRESS</div><div style="display:flex;gap:6px;align-items:center;"><input type="text" id="leadAddressEdit" value="' + escQ(lead.address) + '" style="' + inStyle + '" /><button onclick="saveLeadField(\'' + lead.id + '\',\'address\',\'leadAddressEdit\')" style="' + saveBtnStyle + '">Save</button></div></div>';
   html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ISSUE</div><textarea id="leadIssueEdit" rows="2" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;outline:none;" onfocus="this.style.borderColor=\'var(--accent)\'" onblur="this.style.borderColor=\'var(--border)\'">' + (lead.issue||'').replace(/</g,'&lt;') + '</textarea><button onclick="saveLeadField(\'' + lead.id + '\',\'issue\',\'leadIssueEdit\')" style="margin-top:6px;padding:6px 14px;background:var(--accent);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Save</button></div>';
   var qVal = lead.quote || 0;
   var inputStyle = 'width:100%;margin-bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;box-sizing:border-box;';
@@ -2691,7 +2694,7 @@ function convertLeadToTicket() {
   var leadInitItems = lead.quote > 0 ? [{ label: lead.issue || lead.device || 'Repair', price: lead.quote }] : [];
   var transferredNotes = (lead.notes || []).slice();
   transferredNotes.push({ text: fmtNotePrefix() + '\nConverted from lead to ticket', createdAt: now, author: currentUser || 'staff' });
-  var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, mobileFee: 0, mobileFeeMiles: 0, tier: lead.tier || 'standard', repairType: lead.repairType || '', repairModel: lead.repairModel || lead.device || '', fromLeadId: lead.id, items: leadInitItems, notes: transferredNotes, createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
+  var newTicket = { id: 'ticket_' + Date.now(), name: lead.name, phone: lead.phone, email: lead.email || '', device: lead.device || '', issue: lead.issue || '', flow: 'in_stock', status: 'waiting_for_repair', quote: lead.quote || 0, deposit: lead.deposit || 0, mobileFee: 0, mobileFeeMiles: 0, address: lead.address || '', tier: lead.tier || 'standard', repairType: lead.repairType || '', repairModel: lead.repairModel || lead.device || '', fromLeadId: lead.id, items: leadInitItems, notes: transferredNotes, createdBy: lead.createdBy || currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage(); syncTicketCreate(newTicket);
   closeLeadDetail();
   switchLeadSubTab('tickets');
@@ -2984,6 +2987,7 @@ function openTicketDetail(ticketId) {
   html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (ticket.device||'—') + '</div></div></div>';
   if (ticket.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + ticket.email + '</div></div>';
   if (ticket.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + ticket.issue + '</div></div>';
+  if (ticket.address) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">📍 Address</div><div style="font-size:13px;">' + ticket.address + '</div></div>';
   // Stepper
   var stepperHtml = stages.map(function(s, i) {
     var done = i < stageIdx, active = i === stageIdx;
@@ -3490,7 +3494,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260511-23';
+var APP_VERSION = '20260511-24';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
