@@ -2349,8 +2349,7 @@ function renderLeadsList() {
     var checkIndicator = leadSelectMode ? '<span style="width:18px;height:18px;border-radius:4px;border:2px solid ' + (selectedLeadIds.has(l.id) ? 'var(--accent)' : 'var(--border)') + ';background:' + (selectedLeadIds.has(l.id) ? 'var(--accent)' : 'transparent') + ';display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0;margin-right:8px;">' + (selectedLeadIds.has(l.id) ? '✓' : '') + '</span>' : '';
     var onclickAttr = leadSelectMode ? 'toggleLeadSelection(\'' + l.id + '\')' : 'openLeadDetail(\'' + l.id + '\')';
     var createdByStr = ' · ' + creatorLabel(l.createdBy);
-    var phoneLine = (l.phone||'') + (l.altPhone ? ' · Alt: ' + l.altPhone : '') + (l.device ? ' · ' + l.device : '');
-    return '<div class="inv-item' + selClass + '" data-lid="' + l.id + '" onclick="' + onclickAttr + '" style="cursor:pointer;"><div class="inv-item-top"><div style="display:flex;align-items:center;">' + checkIndicator + '<div><div class="inv-item-name cx-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + phoneLine + '</div></div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + createdByStr + '</div></div>';
+    return '<div class="inv-item' + selClass + '" data-lid="' + l.id + '" onclick="' + onclickAttr + '" style="cursor:pointer;"><div class="inv-item-top"><div style="display:flex;align-items:center;">' + checkIndicator + '<div><div class="inv-item-name cx-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + (l.phone||'') + (l.device?' · '+l.device:'') + '</div></div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + createdByStr + '</div></div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
   el('leadsList').innerHTML = selectBar + cardsHtml;
 }
@@ -2457,20 +2456,9 @@ function openLeadDetail(leadId) {
   el('detailLeadName').textContent = lead.name || 'Unnamed';
   var html = '<div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;"><div><span class="stock-badge" style="background:' + getStatusColor(lead.status) + '20;color:' + getStatusColor(lead.status) + '">' + getStatusLabel(lead.status) + '</span></div><div><button onclick="closeLeadDetail();editLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px;">✏️ Edit</button><button onclick="deleteLead(\'' + lead.id + '\')" style="background:none;border:1px solid var(--border);color:#ef4444;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️ Delete</button></div></div>';
   html += '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Created by <strong style="color:var(--text);">' + creatorLabel(lead.createdBy) + '</strong></div>';
-  var inStyle = 'flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;font-weight:600;font-family:inherit;';
-  var saveBtnStyle = 'padding:5px 10px;background:var(--accent);border:none;color:#fff;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;';
-  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">';
-  html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">PHONE</div><div style="display:flex;gap:6px;align-items:center;"><input type="tel" id="leadPhoneEdit" value="' + escQ(lead.phone||'') + '" style="' + inStyle + '" /><button onclick="saveLeadField(\'' + lead.id + '\',\'phone\',\'leadPhoneEdit\')" style="' + saveBtnStyle + '">Save</button></div></div>';
-  html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">DEVICE</div><div style="display:flex;gap:6px;align-items:center;"><input type="text" id="leadDeviceEdit" value="' + escQ(lead.device||'') + '" style="' + inStyle + '" /><button onclick="saveLeadField(\'' + lead.id + '\',\'device\',\'leadDeviceEdit\')" style="' + saveBtnStyle + '">Save</button></div></div>';
-  html += '</div>';
-  if (lead.altPhone) {
-    html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ALT PHONE</div><div style="display:flex;gap:6px;align-items:center;"><input type="tel" id="leadAltPhoneEdit" value="' + escQ(lead.altPhone) + '" style="' + inStyle + '" /><button onclick="saveLeadField(\'' + lead.id + '\',\'altPhone\',\'leadAltPhoneEdit\')" style="' + saveBtnStyle + '">Save</button></div></div>';
-  } else {
-    html += '<div id="altPhoneAddRow" style="margin-bottom:8px;"><button onclick="showAltPhoneInput()" style="background:none;border:1px dashed var(--border);color:var(--muted);padding:6px 14px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;">+ Alt phone</button></div>';
-    html += '<div id="altPhoneInputRow" style="display:none;background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ALT PHONE</div><div style="display:flex;gap:6px;align-items:center;"><input type="tel" id="leadAltPhoneEdit" placeholder="Alt phone number" style="' + inStyle + '" /><button onclick="saveLeadField(\'' + lead.id + '\',\'altPhone\',\'leadAltPhoneEdit\')" style="' + saveBtnStyle + '">Save</button></div></div>';
-  }
-  if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">EMAIL</div><div style="font-size:14px;">' + lead.email + '</div></div>';
-  html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ISSUE</div><textarea id="leadIssueEdit" rows="2" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;outline:none;" onfocus="this.style.borderColor=\'var(--accent)\'" onblur="this.style.borderColor=\'var(--border)\'">' + (lead.issue||'').replace(/</g,'&lt;') + '</textarea><button onclick="saveLeadField(\'' + lead.id + '\',\'issue\',\'leadIssueEdit\')" style="margin-top:6px;padding:6px 14px;background:var(--accent);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Save</button></div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;"><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (lead.phone||'—') + '</div></div><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (lead.device||'—') + '</div></div></div>';
+  if (lead.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + lead.email + '</div></div>';
+  html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ISSUE</div><textarea id="leadIssueEdit" rows="2" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;outline:none;" onfocus="this.style.borderColor=\'var(--accent)\'" onblur="this.style.borderColor=\'var(--border)\'">' + (lead.issue||'').replace(/</g,'&lt;') + '</textarea><button onclick="saveLeadIssueInline(\'' + lead.id + '\')" style="margin-top:6px;padding:6px 14px;background:var(--accent);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Save</button></div>';
   var qVal = lead.quote || 0;
   var inputStyle = 'width:100%;margin-bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;box-sizing:border-box;';
   html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
@@ -2487,18 +2475,6 @@ function closeLeadDetail() { el('leadDetailModal').classList.add('hidden'); curr
 function updateDetailBalance() {}
 function safeDisplayName(n) { var s = (n && !/^\d+$/.test(String(n).trim())) ? String(n) : ''; return (s && s.toLowerCase() !== 'staff') ? s : ''; }
 function creatorLabel(n) { var s = safeDisplayName(n); return s || 'Staff'; }
-function showAltPhoneInput() {
-  var r = el('altPhoneAddRow'); if (r) r.style.display = 'none';
-  var i = el('altPhoneInputRow'); if (i) { i.style.display = 'block'; }
-  if (el('leadAltPhoneEdit')) el('leadAltPhoneEdit').focus();
-}
-function saveLeadField(leadId, field, inputId) {
-  var lead = leadsStorage.find(function(l) { return l.id === leadId; }); if (!lead) return;
-  var val = (el(inputId) ? el(inputId).value : '').trim();
-  lead[field] = val; lead.updatedAt = new Date().toISOString();
-  saveLeadsToStorage(); var u = {}; u[field] = val; syncUpdateToSheet(leadId, u);
-  renderLeadsList(); openLeadDetail(leadId); showToast('Saved ✓');
-}
 function saveLeadIssueInline(leadId) {
   var lead = leadsStorage.find(function(l) { return l.id === leadId; }); if (!lead) return;
   var newIssue = (el('leadIssueEdit') ? el('leadIssueEdit').value : '').trim();
@@ -3445,7 +3421,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260509-18';
+var APP_VERSION = '20260509-17';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
