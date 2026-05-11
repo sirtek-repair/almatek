@@ -771,10 +771,10 @@
   </header>
 
   <div class="orders-tab-nav" style="display:flex;align-items:center;gap:4px;">
-    <button class="orders-tab-btn active" id="leadSubBtnLeads" onclick="switchLeadSubTab('leads')">Leads</button>
+    <button class="orders-tab-btn active" id="leadSubBtnLeads" onclick="switchLeadSubTab('leads')">Leads <span id="leadsBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" id="leadSubBtnTickets" onclick="switchLeadSubTab('tickets')">🎫 Tickets <span id="ticketsBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" id="leadSubBtnFollowUp" onclick="switchLeadSubTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
-    <button class="orders-tab-btn" id="leadSubBtnSpecial" onclick="switchLeadSubTab('specialorder')">📦 Special Order <span id="specialOrderBadge" class="hidden" style="background:#f59e0b;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+    <button class="orders-tab-btn" id="leadSubBtnSpecial" onclick="switchLeadSubTab('specialorder')">📦 Special Order <span id="specialOrderBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button id="syncBtn" onclick="syncFromSheets()" title="Sync with cloud" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;padding:4px 8px;color:var(--muted);line-height:1;">↻</button>
   </div>
 
@@ -2278,7 +2278,7 @@ function syncFromSheets() {
       pending.forEach(function(l) { atSaveLead(l); });
       leadsStorage = atLeads.concat(pending);
       saveLeadsToStorage();
-      if (leadSubTab === 'leads' && typeof renderLeadsList === 'function') renderLeadsList();
+      if (typeof renderLeadsList === 'function') renderLeadsList();
       if (leadSubTab === 'followup') renderFollowUpTab();
       updateFollowUpBadge();
     }
@@ -2293,10 +2293,10 @@ function syncFromSheets() {
       ticketsStorage = atTickets.concat(pending);
       saveTicketsToStorage();
       updateTicketsBadge(); updateFollowUpBadge();
-      if (leadSubTab === 'tickets' && typeof renderTicketsList === 'function') renderTicketsList();
-      if (leadSubTab === 'tickets' && ticketSubView === 'closed' && typeof renderPickedUpList === 'function') renderPickedUpList();
+      if (typeof renderTicketsList === 'function') renderTicketsList();
+      if (ticketSubView === 'closed' && typeof renderPickedUpList === 'function') renderPickedUpList();
       if (leadSubTab === 'followup') renderFollowUpTab();
-      if (leadSubTab === 'specialorder') renderSpecialOrdersList();
+      renderSpecialOrdersList();
     }
     finish();
   }).catch(finish);
@@ -2356,6 +2356,7 @@ function renderLeadsList() {
     return '<div class="inv-item' + selClass + '" data-lid="' + l.id + '" onclick="' + onclickAttr + '" style="cursor:pointer;"><div class="inv-item-top"><div style="display:flex;align-items:center;">' + checkIndicator + '<div><div class="inv-item-name cx-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + phoneLine + '</div></div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + createdByStr + '</div></div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
   el('leadsList').innerHTML = selectBar + cardsHtml;
+  updateLeadsBadge();
 }
 
 function fmtNotePrefix() {
@@ -2691,7 +2692,18 @@ function getTicketsNeedingFollowUp() {
   });
 }
 
-function updateFollowUpBadge() {}
+function updateFollowUpBadge() {
+  var badge = el('followUpBadge'); if (!badge) return;
+  var count = getLeadsNeedingFollowUp().length + getTicketsNeedingFollowUp().length;
+  badge.textContent = count;
+  badge.classList.toggle('hidden', count === 0);
+}
+function updateLeadsBadge() {
+  var badge = el('leadsBadge'); if (!badge) return;
+  var count = leadsStorage.filter(function(l) { return l.status !== 'converted'; }).length;
+  badge.textContent = count;
+  badge.classList.toggle('hidden', count === 0);
+}
 
 function renderPickedUpList() {
   var listEl = el('pickedUpList'); if (!listEl) return;
@@ -3448,7 +3460,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260511-19';
+var APP_VERSION = '20260511-20';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
