@@ -2278,16 +2278,18 @@ function syncFromSheets() {
   atFetch(AT_BASE + '/' + AT_LEADS_TBL + '?pageSize=100').then(function(data) {
     if (data && data.records) {
       var atLeads = data.records.map(atToLead);
+      var atAtIdSet = new Set(atLeads.map(function(l) { return l._atId; }));
       var atIdSet = new Set(atLeads.map(function(l) { return l.id; }));
       var pending = leadsStorage.filter(function(l) { return !l._atId && !atIdSet.has(l.id); });
       pending.forEach(function(l) { atSaveLead(l); });
+      var preserved = leadsStorage.filter(function(l) { return l._atId && !atAtIdSet.has(l._atId); });
       atLeads.forEach(function(l) {
         if (!safeDisplayName(l.createdBy)) {
           var inf = inferCreatorFromNotes(l.notes);
           if (inf) { l.createdBy = inf; atSaveLead(l); }
         }
       });
-      leadsStorage = atLeads.concat(pending);
+      leadsStorage = atLeads.concat(pending).concat(preserved);
       saveLeadsToStorage();
       if (typeof renderLeadsList === 'function') renderLeadsList();
       if (leadSubTab === 'followup') renderFollowUpTab();
@@ -2298,16 +2300,18 @@ function syncFromSheets() {
   atFetch(AT_BASE + '/' + AT_TICKETS_TBL + '?pageSize=100').then(function(data) {
     if (data && data.records) {
       var atTickets = data.records.map(atToTicket);
+      var atAtIdSet = new Set(atTickets.map(function(t) { return t._atId; }));
       var atIdSet = new Set(atTickets.map(function(t) { return t.id; }));
       var pending = ticketsStorage.filter(function(t) { return !t._atId && !atIdSet.has(t.id); });
       pending.forEach(function(t) { atSaveTicket(t); });
+      var preserved = ticketsStorage.filter(function(t) { return t._atId && !atAtIdSet.has(t._atId); });
       atTickets.forEach(function(t) {
         if (!safeDisplayName(t.createdBy)) {
           var inf = inferCreatorFromNotes(t.notes);
           if (inf) { t.createdBy = inf; atSaveTicket(t); }
         }
       });
-      ticketsStorage = atTickets.concat(pending);
+      ticketsStorage = atTickets.concat(pending).concat(preserved);
       saveTicketsToStorage();
       updateTicketsBadge(); updateFollowUpBadge();
       if (typeof renderTicketsList === 'function') renderTicketsList();
@@ -3486,7 +3490,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260511-22';
+var APP_VERSION = '20260511-23';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
