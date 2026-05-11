@@ -771,10 +771,10 @@
   </header>
 
   <div class="orders-tab-nav" style="display:flex;align-items:center;gap:4px;">
-    <button class="orders-tab-btn active" id="leadSubBtnLeads" onclick="switchLeadSubTab('leads')">Leads</button>
+    <button class="orders-tab-btn active" id="leadSubBtnLeads" onclick="switchLeadSubTab('leads')">Leads <span id="leadsBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" id="leadSubBtnTickets" onclick="switchLeadSubTab('tickets')">🎫 Tickets <span id="ticketsBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" id="leadSubBtnFollowUp" onclick="switchLeadSubTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
-    <button class="orders-tab-btn" id="leadSubBtnSpecial" onclick="switchLeadSubTab('specialorder')">📦 Special Order <span id="specialOrderBadge" class="hidden" style="background:#f59e0b;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+    <button class="orders-tab-btn" id="leadSubBtnSpecial" onclick="switchLeadSubTab('specialorder')">📦 Special Order <span id="specialOrderBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button id="syncBtn" onclick="syncFromSheets()" title="Sync with cloud" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;padding:4px 8px;color:var(--muted);line-height:1;">↻</button>
   </div>
 
@@ -1518,7 +1518,7 @@ function switchLeadSubTab(tab) {
 
 // Worker + Airtable config
 var WORKER_URL = 'https://almatek.sirtek-repair.workers.dev';
-const AT_BASE = 'appDFaflvCWvIGhZB', AT_INV = 'tblGqxylJqQjAgJ40', AT_ORDERS = 'tbli8pFcvU1mV5O6B', AT_SOLD = 'tblTw2ZVlJABAkJoo';
+const AT_BASE = 'appDFaflvCWvIGhZB', AT_INV = 'tblGqxylJqQjAgJ40', AT_ORDERS = 'tbli8pFcvU1mV5O6B', AT_SOLD = 'tblTw2ZVlJABAkJoo', AT_LEADS_TBL = 'tblDmh7FfklhbHI2s', AT_TICKETS_TBL = 'tblrKmv6arnS9HNp6';
 const OWNER_PASS_HASH = 'f60a3e2e8ee48ddcc27f5e2089da6588067de28ea9a1d0c124cfdab30f062d48';
 if (localStorage.getItem('almatek_auth_v') !== '2') { localStorage.removeItem('almatek_pass'); localStorage.removeItem('almatek_is_owner'); localStorage.setItem('almatek_auth_v', '2'); }
 var authPass = localStorage.getItem('almatek_pass') || '', apiPass = localStorage.getItem('almatek_api_pass') || '', isOwner = localStorage.getItem('almatek_is_owner') === 'true', currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
@@ -2165,35 +2165,76 @@ function loadLeadsFromStorage() {
 }
 function saveLeadsToStorage() { var s={}; leadsStorage=leadsStorage.filter(function(l){if(s[l.id])return false;s[l.id]=true;return true;}); localStorage.setItem('almatek_leads', JSON.stringify(leadsStorage)); }
 
-function syncLeadToSheet(lead) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'createLead', lead: lead }); }
-function syncLeadUpdate(lead) {
-  if (!USERS_SCRIPT_URL) return;
-  sheetsCall({ action: 'updateLead', leadId: lead.id, updates: {
-    name: lead.name, phone: lead.phone, email: lead.email, device: lead.device,
-    issue: lead.issue, status: lead.status, followUpAt: lead.followUpAt||'',
-    followUpNotes: lead.followUpNotes||'', assignedTo: lead.assignedTo||'',
-    lastContactedAt: lead.lastContactedAt||'', contactAttempts: lead.contactAttempts||0,
-    bookedAt: lead.bookedAt||'', closedAt: lead.closedAt||'', notes: lead.notes||[],
-    quote: lead.quote||0, deposit: lead.deposit||0, tier: lead.tier||'standard',
-    repairType: lead.repairType||'', repairModel: lead.repairModel||'', updatedAt: lead.updatedAt
-  }});
+// ── Airtable leads/tickets helpers ───────────────────────────────────
+function _atDate(v) { if (!v) return undefined; var d = new Date(v); return isNaN(d.getTime()) ? undefined : d.toISOString(); }
+function atLeadFields(l) {
+  var f = { name: l.name||'', id: l.id||'', phone: l.phone||'', altPhone: l.altPhone||'', email: l.email||'', device: l.device||'', issue: l.issue||'', status: l.status||'new', tier: l.tier||'standard', quote: Number(l.quote)||0, deposit: Number(l.deposit)||0, notes: JSON.stringify(l.notes||[]), followUpNotes: l.followUpNotes||'', assignedTo: l.assignedTo||'', createdBy: l.createdBy||'', contactAttempts: Number(l.contactAttempts)||0, repairType: l.repairType||'', repairModel: l.repairModel||'' };
+  ['followUpAt','createdAt','updatedAt','bookedAt','closedAt','lastContactedAt'].forEach(function(k) { var d = _atDate(l[k]); if (d) f[k] = d; });
+  return f;
 }
-function syncUpdateToSheet(leadId, updates) { if (!USERS_SCRIPT_URL) return Promise.resolve(); return sheetsCall({ action: 'updateLead', leadId: leadId, updates: updates }); }
-
-function syncTicketCreate(ticket) { if (!USERS_SCRIPT_URL || !ticket) return; sheetsCall({ action: 'createTicket', ticket: ticket }); }
-function syncTicketDelete(ticketId) { if (!USERS_SCRIPT_URL) return; sheetsCall({ action: 'deleteTicket', ticketId: ticketId }); }
-function syncTicket(ticket) {
-  if (!USERS_SCRIPT_URL || !ticket) return;
-  sheetsCall({ action: 'updateTicket', ticketId: ticket.id, updates: {
-    name: ticket.name, phone: ticket.phone, email: ticket.email,
-    device: ticket.device, issue: ticket.issue, flow: ticket.flow, status: ticket.status,
-    tier: ticket.tier, repairType: ticket.repairType||'', repairModel: ticket.repairModel||'',
-    quote: ticket.quote||0, deposit: ticket.deposit||0,
-    mobileFee: ticket.mobileFee||0, mobileFeeMiles: ticket.mobileFeeMiles||0,
-    supplier: ticket.supplier||'', orderRef: ticket.orderRef||'',
-    items: ticket.items||[], notes: ticket.notes||[]
-  }});
+function atTicketFields(t) {
+  var f = { name: t.name||'', id: t.id||'', phone: t.phone||'', email: t.email||'', device: t.device||'', issue: t.issue||'', flow: t.flow||'in_stock', status: t.status||'waiting_for_repair', tier: t.tier||'standard', repairType: t.repairType||'', repairModel: t.repairModel||'', quote: Number(t.quote)||0, deposit: Number(t.deposit)||0, mobileFee: Number(t.mobileFee)||0, mobileFeeMiles: Number(t.mobileFeeMiles)||0, supplier: t.supplier||'', orderRef: t.orderRef||'', items: JSON.stringify(t.items||[]), notes: JSON.stringify(t.notes||[]), createdBy: t.createdBy||'', fromLeadId: t.fromLeadId||'' };
+  ['createdAt','updatedAt'].forEach(function(k) { var d = _atDate(t[k]); if (d) f[k] = d; });
+  return f;
 }
+function atToLead(rec) {
+  var f = rec.fields || {};
+  var l = { _atId: rec.id, id: f.id || ('lead_at_'+rec.id), name: f.name||'', phone: f.phone||'', altPhone: f.altPhone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', status: f.status||'new', tier: f.tier||'standard', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, followUpAt: f.followUpAt||'', followUpNotes: f.followUpNotes||'', assignedTo: f.assignedTo||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', bookedAt: f.bookedAt||'', closedAt: f.closedAt||'', lastContactedAt: f.lastContactedAt||'', contactAttempts: Number(f.contactAttempts)||0, repairType: f.repairType||'', repairModel: f.repairModel||'' };
+  try { l.notes = JSON.parse(f.notes||'[]'); } catch(e) { l.notes = []; }
+  return l;
+}
+function atToTicket(rec) {
+  var f = rec.fields || {};
+  var t = { _atId: rec.id, id: f.id || ('ticket_at_'+rec.id), name: f.name||'', phone: f.phone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', flow: f.flow||'in_stock', status: f.status||'waiting_for_repair', tier: f.tier||'standard', repairType: f.repairType||'', repairModel: f.repairModel||'', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, mobileFee: Number(f.mobileFee)||0, mobileFeeMiles: Number(f.mobileFeeMiles)||0, supplier: f.supplier||'', orderRef: f.orderRef||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', fromLeadId: f.fromLeadId||'' };
+  try { t.items = JSON.parse(f.items||'[]'); } catch(e) { t.items = []; }
+  try { t.notes = JSON.parse(f.notes||'[]'); } catch(e) { t.notes = []; }
+  return t;
+}
+function atSaveLead(lead) {
+  if (!apiPass || !lead) return;
+  var fields = atLeadFields(lead);
+  if (lead._atId) {
+    atFetch(AT_BASE + '/' + AT_LEADS_TBL + '/' + lead._atId, { method: 'PATCH', body: JSON.stringify({ fields: fields }) });
+  } else {
+    atFetch(AT_BASE + '/' + AT_LEADS_TBL, { method: 'POST', body: JSON.stringify({ fields: fields }) }).then(function(data) {
+      if (data && data.id) { lead._atId = data.id; saveLeadsToStorage(); }
+    });
+  }
+}
+function atSaveTicket(ticket) {
+  if (!apiPass || !ticket) return;
+  var fields = atTicketFields(ticket);
+  if (ticket._atId) {
+    atFetch(AT_BASE + '/' + AT_TICKETS_TBL + '/' + ticket._atId, { method: 'PATCH', body: JSON.stringify({ fields: fields }) });
+  } else {
+    atFetch(AT_BASE + '/' + AT_TICKETS_TBL, { method: 'POST', body: JSON.stringify({ fields: fields }) }).then(function(data) {
+      if (data && data.id) { ticket._atId = data.id; saveTicketsToStorage(); }
+    });
+  }
+}
+function atDeleteLead(lead) {
+  if (!lead) return;
+  if (USERS_SCRIPT_URL) {
+    sheetsCall({ action: 'createLead', lead: lead });
+    sheetsCall({ action: 'updateLead', leadId: lead.id, updates: { status: 'archived', updatedAt: new Date().toISOString() } });
+  }
+  if (apiPass && lead._atId) atFetch(AT_BASE + '/' + AT_LEADS_TBL + '/' + lead._atId, { method: 'DELETE' });
+}
+function atDeleteTicket(ticket) {
+  if (!ticket) return;
+  if (USERS_SCRIPT_URL) {
+    sheetsCall({ action: 'createTicket', ticket: ticket });
+    sheetsCall({ action: 'updateTicket', ticketId: ticket.id, updates: { status: 'archived', updatedAt: new Date().toISOString() } });
+  }
+  if (apiPass && ticket._atId) atFetch(AT_BASE + '/' + AT_TICKETS_TBL + '/' + ticket._atId, { method: 'DELETE' });
+}
+// Thin wrappers — all lead/ticket writes now go to Airtable
+function syncLeadToSheet(lead) { atSaveLead(lead); }
+function syncLeadUpdate(lead) { atSaveLead(lead); }
+function syncUpdateToSheet(leadId, updates) { var lead = leadsStorage.find(function(l) { return l.id === leadId; }); if (lead) atSaveLead(lead); }
+function syncTicketCreate(ticket) { atSaveTicket(ticket); }
+function syncTicketDelete(ticketId) {}
+function syncTicket(ticket) { atSaveTicket(ticket); }
 
 function setSyncStatus(state) {
   var btns = [el('syncBtn'), el('leadsRefreshBtn'), el('ticketsRefreshBtn')];
@@ -2210,7 +2251,7 @@ function setSyncStatus(state) {
 
 var _syncing = false, _syncWatchdog = null;
 function syncFromSheets() {
-  if (!USERS_SCRIPT_URL) {
+  if (!apiPass) {
     el('authInput').value = ''; el('authError').textContent = '';
     el('authOverlay').classList.remove('hidden');
     el('authSetupBox').classList.remove('hidden');
@@ -2222,78 +2263,40 @@ function syncFromSheets() {
   setSyncStatus('syncing');
   if (_syncWatchdog) clearTimeout(_syncWatchdog);
   _syncWatchdog = setTimeout(function() { _syncing = false; setSyncStatus('idle'); showToast('Sync timed out — tap ↻ to retry'); }, 30000);
-  var up = { leads: 0, tickets: 0 }, dn = { leads: 0, tickets: 0 };
   var done = 0;
-  function finish(msg) {
+  function finish() {
     if (++done < 2) return;
     if (_syncWatchdog) { clearTimeout(_syncWatchdog); _syncWatchdog = null; }
-    _syncing = false;
-    setSyncStatus('idle');
-    var parts = [];
-    if (up.leads || up.tickets) parts.push('↑ ' + [up.leads && up.leads + ' lead' + (up.leads !== 1 ? 's' : ''), up.tickets && up.tickets + ' ticket' + (up.tickets !== 1 ? 's' : '')].filter(Boolean).join(', '));
-    if (dn.leads || dn.tickets) parts.push('↓ ' + [dn.leads && dn.leads + ' lead' + (dn.leads !== 1 ? 's' : ''), dn.tickets && dn.tickets + ' ticket' + (dn.tickets !== 1 ? 's' : '')].filter(Boolean).join(', '));
-    if (msg) showToast(msg);
+    _syncing = false; setSyncStatus('idle');
+    showToast('Synced ✓');
   }
-
-  sheetsCall({ action: 'getLeads' }).then(function(data) {
-    if (data && data.ok && Array.isArray(data.leads)) {
-      var sheetMap = {};
-      data.leads.forEach(function(l) { sheetMap[l.id] = l; _knownSheetLeadIds.add(l.id); });
-      saveKnownSheetLeads();
-      var lChanged = false;
-      data.leads.forEach(function(s) { if (deletedLeadIds.has(s.id)) { sheetsCall({ action: 'deleteLead', leadId: s.id }); lChanged = true; } });
-      if (lChanged) saveDeletedLeads();
-      var localMap = {};
-      leadsStorage.forEach(function(l) { localMap[l.id] = l; });
-      leadsStorage.forEach(function(local) {
-        if (deletedLeadIds.has(local.id)) return;
-        if (!sheetMap[local.id]) { sheetsCall({ action: 'createLead', lead: local }); up.leads++; }
-        else if (new Date(local.updatedAt||0) > new Date(sheetMap[local.id].updatedAt||0)) { syncLeadUpdate(local); up.leads++; }
-      });
-      var merged = data.leads.filter(function(s) { return !deletedLeadIds.has(s.id) && s.status !== 'archived'; }).map(function(s) {
-        var loc = localMap[s.id];
-        if (!loc) { dn.leads++; return s; }
-        return new Date(s.updatedAt||0) >= new Date(loc.updatedAt||0) ? s : loc;
-      });
-      leadsStorage.forEach(function(l) { if (!sheetMap[l.id] && !deletedLeadIds.has(l.id)) merged.push(l); });
-      var seenIds = {}; leadsStorage = merged.filter(function(l) { if (seenIds[l.id]) return false; seenIds[l.id] = true; return true; });
+  atFetch(AT_BASE + '/' + AT_LEADS_TBL + '?pageSize=100').then(function(data) {
+    if (data && data.records) {
+      var atLeads = data.records.map(atToLead);
+      var atIdSet = new Set(atLeads.map(function(l) { return l.id; }));
+      var pending = leadsStorage.filter(function(l) { return !l._atId && !atIdSet.has(l.id); });
+      pending.forEach(function(l) { atSaveLead(l); });
+      leadsStorage = atLeads.concat(pending);
       saveLeadsToStorage();
-      if (leadSubTab === 'leads' && typeof renderLeadsList === 'function') renderLeadsList();
+      if (typeof renderLeadsList === 'function') renderLeadsList();
       if (leadSubTab === 'followup') renderFollowUpTab();
       updateFollowUpBadge();
     }
     finish();
   }).catch(finish);
-
-  sheetsCall({ action: 'getTickets' }).then(function(data) {
-    if (data && data.ok && Array.isArray(data.tickets)) {
-      var sheetMap = {};
-      data.tickets.forEach(function(t) { sheetMap[t.id] = t; _knownSheetTicketIds.add(t.id); });
-      saveKnownSheetTickets();
-      var tChanged = false;
-      data.tickets.forEach(function(s) { if (deletedTicketIds.has(s.id)) { sheetsCall({ action: 'deleteTicket', ticketId: s.id }); tChanged = true; } });
-      if (tChanged) saveDeletedTickets();
-      var localMap = {};
-      ticketsStorage.forEach(function(t) { localMap[t.id] = t; });
-      ticketsStorage.forEach(function(local) {
-        if (deletedTicketIds.has(local.id)) return;
-        if (!sheetMap[local.id]) { sheetsCall({ action: 'createTicket', ticket: local }); up.tickets++; }
-        else if (new Date(local.updatedAt||0) > new Date(sheetMap[local.id].updatedAt||0)) { syncTicket(local); up.tickets++; }
-      });
-      var merged = data.tickets.filter(function(s) { return !deletedTicketIds.has(s.id) && s.status !== 'archived'; }).map(function(s) {
-        var loc = localMap[s.id];
-        if (!loc) { dn.tickets++; return s; }
-        return new Date(s.updatedAt||0) >= new Date(loc.updatedAt||0) ? s : loc;
-      });
-      ticketsStorage.forEach(function(t) { if (!sheetMap[t.id] && !deletedTicketIds.has(t.id)) merged.push(t); });
-      var seenTIds = {}; ticketsStorage = merged.filter(function(t) { if (seenTIds[t.id]) return false; seenTIds[t.id] = true; return true; });
+  atFetch(AT_BASE + '/' + AT_TICKETS_TBL + '?pageSize=100').then(function(data) {
+    if (data && data.records) {
+      var atTickets = data.records.map(atToTicket);
+      var atIdSet = new Set(atTickets.map(function(t) { return t.id; }));
+      var pending = ticketsStorage.filter(function(t) { return !t._atId && !atIdSet.has(t.id); });
+      pending.forEach(function(t) { atSaveTicket(t); });
+      ticketsStorage = atTickets.concat(pending);
       saveTicketsToStorage();
-      updateTicketsBadge();
-      updateFollowUpBadge();
-      if (leadSubTab === 'tickets' && typeof renderTicketsList === 'function') renderTicketsList();
-      if (leadSubTab === 'tickets' && ticketSubView === 'closed' && typeof renderPickedUpList === 'function') renderPickedUpList();
+      updateTicketsBadge(); updateFollowUpBadge();
+      if (typeof renderTicketsList === 'function') renderTicketsList();
+      if (ticketSubView === 'closed' && typeof renderPickedUpList === 'function') renderPickedUpList();
       if (leadSubTab === 'followup') renderFollowUpTab();
-      if (leadSubTab === 'specialorder') renderSpecialOrdersList();
+      renderSpecialOrdersList();
     }
     finish();
   }).catch(finish);
@@ -2353,6 +2356,7 @@ function renderLeadsList() {
     return '<div class="inv-item' + selClass + '" data-lid="' + l.id + '" onclick="' + onclickAttr + '" style="cursor:pointer;"><div class="inv-item-top"><div style="display:flex;align-items:center;">' + checkIndicator + '<div><div class="inv-item-name cx-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + phoneLine + '</div></div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + createdByStr + '</div></div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
   el('leadsList').innerHTML = selectBar + cardsHtml;
+  updateLeadsBadge();
 }
 
 function fmtNotePrefix() {
@@ -2641,9 +2645,9 @@ function updateExistingLead() {
 function deleteLead(leadId) {
   if (!confirm('Delete this lead?')) return;
   var lead = leadsStorage.find(function(l) { return l.id === leadId; });
-  if (lead) { syncUpdateToSheet(leadId, { status: 'archived', updatedAt: new Date().toISOString() }); }
+  atDeleteLead(lead);
   leadsStorage = leadsStorage.filter(function(l) { return l.id !== leadId; });
-  saveLeadsToStorage(); deletedLeadIds.add(leadId); saveDeletedLeads();
+  saveLeadsToStorage();
   closeLeadDetail(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead deleted ✓');
 }
 
@@ -2688,7 +2692,18 @@ function getTicketsNeedingFollowUp() {
   });
 }
 
-function updateFollowUpBadge() {}
+function updateFollowUpBadge() {
+  var badge = el('followUpBadge'); if (!badge) return;
+  var count = getLeadsNeedingFollowUp().length + getTicketsNeedingFollowUp().length;
+  badge.textContent = count;
+  badge.classList.toggle('hidden', count === 0);
+}
+function updateLeadsBadge() {
+  var badge = el('leadsBadge'); if (!badge) return;
+  var count = leadsStorage.filter(function(l) { return l.status !== 'converted'; }).length;
+  badge.textContent = count;
+  badge.classList.toggle('hidden', count === 0);
+}
 
 function renderPickedUpList() {
   var listEl = el('pickedUpList'); if (!listEl) return;
@@ -3195,9 +3210,9 @@ function revertTicketToLead(ticketId) {
 function deleteTicket(ticketId) {
   if (!confirm('Delete this ticket?')) return;
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; });
-  if (ticket) { sheetsCall({ action: 'updateTicket', ticketId: ticketId, updates: { status: 'archived', updatedAt: new Date().toISOString() } }); }
+  atDeleteTicket(ticket);
   ticketsStorage = ticketsStorage.filter(function(t) { return t.id !== ticketId; });
-  saveTicketsToStorage(); deletedTicketIds.add(ticketId); saveDeletedTickets();
+  saveTicketsToStorage();
   closeTicketDetail(); renderTicketsList(); updateTicketsBadge(); updateFollowUpBadge(); showToast('Ticket deleted ✓');
 }
 
@@ -3445,7 +3460,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260509-18';
+var APP_VERSION = '20260511-20';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
