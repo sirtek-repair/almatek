@@ -2253,18 +2253,25 @@ function atToTicket(rec) {
   try { t.notes = JSON.parse(f.notes||'[]'); } catch(e) { t.notes = []; }
   return t;
 }
+function _atSaveErr(label, data, e) {
+  var msg;
+  if (e) { msg = label + ' network error: ' + e.message; }
+  else { msg = label + ' error: ' + JSON.stringify(data.error); }
+  console.error('[atSave]', msg, data || e);
+  alert(msg);
+}
 function atSaveLead(lead) {
   if (!apiPass || !lead) return;
   var fields = atLeadFields(lead);
   if (lead._atId) {
     atFetch(AT_BASE + '/' + AT_LEADS_TBL + '/' + lead._atId, { method: 'PATCH', body: JSON.stringify({ fields: fields, typecast: true }) }).then(function(data) {
-      if (data && data.error) showToast('⚠ Lead save error: ' + (data.error.message || data.error.type || 'unknown'), 8000);
-    }).catch(function(e) { showToast('⚠ Lead save failed: ' + e.message, 8000); });
+      if (data && data.error) _atSaveErr('Lead PATCH', data);
+    }).catch(function(e) { _atSaveErr('Lead PATCH', null, e); });
   } else {
     atFetch(AT_BASE + '/' + AT_LEADS_TBL, { method: 'POST', body: JSON.stringify({ fields: fields, typecast: true }) }).then(function(data) {
       if (data && data.id) { lead._atId = data.id; saveLeadsToStorage(); }
-      else if (data && data.error) showToast('⚠ Lead save error: ' + (data.error.message || data.error.type || 'unknown'), 8000);
-    }).catch(function(e) { showToast('⚠ Lead save failed: ' + e.message, 8000); });
+      else if (data && data.error) _atSaveErr('Lead POST', data);
+    }).catch(function(e) { _atSaveErr('Lead POST', null, e); });
   }
 }
 function atSaveTicket(ticket) {
@@ -2272,13 +2279,13 @@ function atSaveTicket(ticket) {
   var fields = atTicketFields(ticket);
   if (ticket._atId) {
     atFetch(AT_BASE + '/' + AT_TICKETS_TBL + '/' + ticket._atId, { method: 'PATCH', body: JSON.stringify({ fields: fields, typecast: true }) }).then(function(data) {
-      if (data && data.error) showToast('⚠ Ticket save error: ' + (data.error.message || data.error.type || 'unknown'), 8000);
-    }).catch(function(e) { showToast('⚠ Ticket save failed: ' + e.message, 8000); });
+      if (data && data.error) _atSaveErr('Ticket PATCH', data);
+    }).catch(function(e) { _atSaveErr('Ticket PATCH', null, e); });
   } else {
     atFetch(AT_BASE + '/' + AT_TICKETS_TBL, { method: 'POST', body: JSON.stringify({ fields: fields, typecast: true }) }).then(function(data) {
       if (data && data.id) { ticket._atId = data.id; saveTicketsToStorage(); }
-      else if (data && data.error) showToast('⚠ Ticket save error: ' + (data.error.message || data.error.type || 'unknown'), 8000);
-    }).catch(function(e) { showToast('⚠ Ticket save failed: ' + e.message, 8000); });
+      else if (data && data.error) _atSaveErr('Ticket POST', data);
+    }).catch(function(e) { _atSaveErr('Ticket POST', null, e); });
   }
 }
 function atDeleteLead(lead) {
@@ -3574,7 +3581,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260512-32';
+var APP_VERSION = '20260512-33';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
