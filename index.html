@@ -1064,6 +1064,22 @@
       <span class="app-tile-icon">⏱</span>
       <span class="app-tile-label">Clockify</span>
     </a>
+    <a href="https://claude.ai" target="_blank" rel="noopener" class="app-tile">
+      <span class="app-tile-icon">🤖</span>
+      <span class="app-tile-label">Claude</span>
+    </a>
+    <a href="https://gemini.google.com" target="_blank" rel="noopener" class="app-tile">
+      <span class="app-tile-icon">✨</span>
+      <span class="app-tile-label">Gemini</span>
+    </a>
+    <a href="https://perplexity.ai" target="_blank" rel="noopener" class="app-tile">
+      <span class="app-tile-icon">🔍</span>
+      <span class="app-tile-label">Perplexity</span>
+    </a>
+    <a href="https://chat.deepseek.com" target="_blank" rel="noopener" class="app-tile">
+      <span class="app-tile-icon">🐋</span>
+      <span class="app-tile-label">DeepSeek</span>
+    </a>
   </div>
   <div class="demo-only" style="display:flex;flex-wrap:wrap;gap:12px;padding:8px 0;">
     <span class="app-tile"><span class="app-tile-icon">📹</span><span class="app-tile-label">Video Call</span></span>
@@ -3502,7 +3518,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260512-29';
+var APP_VERSION = '20260512-30';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
