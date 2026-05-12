@@ -418,6 +418,7 @@
       <button class="hlink" id="repairedBtn" onclick="copyLink(this, 'https://repairedcollective.com', 'Repaired Collective')"><span class="brand" style="font-weight:300;">Repaired</span> <span class="brand" style="font-weight:400;">Collective</span></button>
       <button class="hlink" id="reviewBtn" onclick="onReviewClick(this)">⭐ Your Review Link</button>
       <span class="hlink" id="supplierDemo" style="display:none;">your part supplier</span>
+      <button class="hlink" onclick="openCalc()">🧮</button>
       <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Log In</button>
       <button id="chpassBtn" class="chpass-link" onclick="showChangePass()">Change Password</button>
     </div>
@@ -1080,6 +1081,10 @@
       <span class="app-tile-icon">🐋</span>
       <span class="app-tile-label">DeepSeek</span>
     </a>
+    <span class="app-tile" onclick="openCalc()" style="cursor:pointer;">
+      <span class="app-tile-icon">🧮</span>
+      <span class="app-tile-label">Calculator</span>
+    </span>
   </div>
   <div class="demo-only" style="display:flex;flex-wrap:wrap;gap:12px;padding:8px 0;">
     <span class="app-tile"><span class="app-tile-icon">📹</span><span class="app-tile-label">Video Call</span></span>
@@ -1107,6 +1112,33 @@
       <button class="chpass-cancel" onclick="el('clockMockModal').classList.add('hidden')">Cancel</button>
       <button class="chpass-cancel" onclick="resetClockMock()">Reset</button>
       <button class="chpass-save" onclick="applyClockMock()">Set Time</button>
+    </div>
+  </div>
+</div>
+
+<!-- Calculator Modal -->
+<div id="calcModal" class="chpass-overlay hidden" onclick="if(event.target===this)el('calcModal').classList.add('hidden')">
+  <div class="chpass-box" style="max-width:260px;padding:16px;">
+    <div id="calcDisplay" style="background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:28px;font-weight:700;text-align:right;margin-bottom:12px;letter-spacing:-0.02em;min-height:50px;display:flex;align-items:center;justify-content:flex-end;overflow:hidden;word-break:break-all;">0</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+      <button onclick="calcPress('AC')" style="grid-column:span 2;padding:12px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">AC</button>
+      <button onclick="calcPress('±')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;">±</button>
+      <button onclick="calcPress('÷')" style="padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;">÷</button>
+      <button onclick="calcPress('7')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">7</button>
+      <button onclick="calcPress('8')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">8</button>
+      <button onclick="calcPress('9')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">9</button>
+      <button onclick="calcPress('×')" style="padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;">×</button>
+      <button onclick="calcPress('4')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">4</button>
+      <button onclick="calcPress('5')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">5</button>
+      <button onclick="calcPress('6')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">6</button>
+      <button onclick="calcPress('−')" style="padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;">−</button>
+      <button onclick="calcPress('1')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">1</button>
+      <button onclick="calcPress('2')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">2</button>
+      <button onclick="calcPress('3')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">3</button>
+      <button onclick="calcPress('+')" style="padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;">+</button>
+      <button onclick="calcPress('0')" style="grid-column:span 2;padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;text-align:left;padding-left:20px;">0</button>
+      <button onclick="calcPress('.')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">.</button>
+      <button onclick="calcPress('=')" style="padding:12px;background:#10b981;color:#fff;border:none;border-radius:8px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;">=</button>
     </div>
   </div>
 </div>
@@ -2897,6 +2929,30 @@ document.addEventListener('visibilitychange', function() {
   if (!document.hidden && authd && !_syncing) syncFromSheets();
 });
 
+// Calculator
+var _calcDisp = '0', _calcOp = '', _calcPrev = '', _calcFresh = false;
+function openCalc() { _calcDisp='0';_calcOp='';_calcPrev='';_calcFresh=false; var d=el('calcDisplay'); if(d)d.textContent='0'; el('calcModal').classList.remove('hidden'); }
+function calcPress(key) {
+  var ops = ['+','−','×','÷'];
+  if (key === 'AC') { _calcDisp='0';_calcOp='';_calcPrev='';_calcFresh=false; }
+  else if (key === '±') { _calcDisp = String(-parseFloat(_calcDisp)||0); }
+  else if (ops.includes(key)) { _calcPrev=_calcDisp; _calcOp=key; _calcFresh=true; }
+  else if (key === '=') {
+    if (_calcOp && _calcPrev !== '') {
+      var a=parseFloat(_calcPrev), b=parseFloat(_calcDisp), r;
+      if (_calcOp==='+') r=a+b; else if (_calcOp==='−') r=a-b; else if (_calcOp==='×') r=a*b; else r=b!==0?a/b:NaN;
+      _calcDisp = isNaN(r)?'Error':String(parseFloat(r.toFixed(10))); _calcOp='';_calcPrev='';_calcFresh=false;
+    }
+  } else if (key === '.') {
+    if (_calcFresh) { _calcDisp='0.'; _calcFresh=false; }
+    else if (!_calcDisp.includes('.')) _calcDisp+='.';
+  } else {
+    if (_calcFresh||_calcDisp==='0'||_calcDisp==='Error') { _calcDisp=key; _calcFresh=false; }
+    else _calcDisp+=key;
+  }
+  var d=el('calcDisplay'); if(d)d.textContent=_calcDisp;
+}
+
 var currentTicketId = null;
 
 function updateTicketsBadge() {
@@ -3518,7 +3574,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260512-30';
+var APP_VERSION = '20260512-31';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
