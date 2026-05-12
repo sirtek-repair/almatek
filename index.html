@@ -2179,12 +2179,12 @@ function saveLeadsToStorage() { var s={}; leadsStorage=leadsStorage.filter(funct
 // ── Airtable leads/tickets helpers ───────────────────────────────────
 function _atDate(v) { if (!v) return undefined; var d = new Date(v); return isNaN(d.getTime()) ? undefined : d.toISOString(); }
 function atLeadFields(l) {
-  var f = { name: l.name||'', id: l.id||'', phone: l.phone||'', altPhone: l.altPhone||'', email: l.email||'', device: l.device||'', issue: l.issue||'', status: l.status||'new', tier: l.tier||'standard', quote: Number(l.quote)||0, deposit: Number(l.deposit)||0, notes: JSON.stringify(l.notes||[]), followUpNotes: l.followUpNotes||'', assignedTo: l.assignedTo||'', createdBy: l.createdBy||'', contactAttempts: Number(l.contactAttempts)||0, repairType: l.repairType||'', repairModel: l.repairModel||'', address: l.address||'' };
+  var f = { name: l.name||'', id: l.id||'', phone: l.phone||'', altPhone: l.altPhone||'', email: l.email||'', device: l.device||'', issue: l.issue||'', status: l.status||'new', tier: l.tier||'standard', quote: Number(l.quote)||0, deposit: Number(l.deposit)||0, notes: JSON.stringify(l.notes||[]), followUpNotes: l.followUpNotes||'', assignedTo: l.assignedTo||'', createdBy: l.createdBy||'', contactAttempts: Number(l.contactAttempts)||0, repairType: l.repairType||'', repairModel: l.repairModel||'' };
   ['followUpAt','createdAt','updatedAt','bookedAt','closedAt','lastContactedAt'].forEach(function(k) { var d = _atDate(l[k]); if (d) f[k] = d; });
   return f;
 }
 function atTicketFields(t) {
-  var f = { name: t.name||'', id: t.id||'', phone: t.phone||'', email: t.email||'', device: t.device||'', issue: t.issue||'', flow: t.flow||'in_stock', status: t.status||'waiting_for_repair', tier: t.tier||'standard', repairType: t.repairType||'', repairModel: t.repairModel||'', quote: Number(t.quote)||0, deposit: Number(t.deposit)||0, mobileFee: Number(t.mobileFee)||0, mobileFeeMiles: Number(t.mobileFeeMiles)||0, address: t.address||'', supplier: t.supplier||'', orderRef: t.orderRef||'', items: JSON.stringify(t.items||[]), notes: JSON.stringify(t.notes||[]), createdBy: t.createdBy||'', fromLeadId: t.fromLeadId||'' };
+  var f = { name: t.name||'', id: t.id||'', phone: t.phone||'', email: t.email||'', device: t.device||'', issue: t.issue||'', flow: t.flow||'in_stock', status: t.status||'waiting_for_repair', tier: t.tier||'standard', repairType: t.repairType||'', repairModel: t.repairModel||'', quote: Number(t.quote)||0, deposit: Number(t.deposit)||0, mobileFee: Number(t.mobileFee)||0, mobileFeeMiles: Number(t.mobileFeeMiles)||0, supplier: t.supplier||'', orderRef: t.orderRef||'', items: JSON.stringify(t.items||[]), notes: JSON.stringify(t.notes||[]), createdBy: t.createdBy||'', fromLeadId: t.fromLeadId||'' };
   ['createdAt','updatedAt'].forEach(function(k) { var d = _atDate(t[k]); if (d) f[k] = d; });
   return f;
 }
@@ -3496,7 +3496,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260511-26';
+var APP_VERSION = '20260512-27';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
