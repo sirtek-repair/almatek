@@ -2209,22 +2209,28 @@ function atSaveLead(lead) {
   if (!apiPass || !lead) return;
   var fields = atLeadFields(lead);
   if (lead._atId) {
-    atFetch(AT_BASE + '/' + AT_LEADS_TBL + '/' + lead._atId, { method: 'PATCH', body: JSON.stringify({ fields: fields }) });
+    atFetch(AT_BASE + '/' + AT_LEADS_TBL + '/' + lead._atId, { method: 'PATCH', body: JSON.stringify({ fields: fields }) }).then(function(data) {
+      if (data && data.error) showToast('⚠ Lead save error: ' + (data.error.message || data.error.type || 'unknown'));
+    }).catch(function(e) { showToast('⚠ Lead save failed: ' + e.message); });
   } else {
     atFetch(AT_BASE + '/' + AT_LEADS_TBL, { method: 'POST', body: JSON.stringify({ fields: fields }) }).then(function(data) {
       if (data && data.id) { lead._atId = data.id; saveLeadsToStorage(); }
-    });
+      else if (data && data.error) showToast('⚠ Lead save error: ' + (data.error.message || data.error.type || 'unknown'));
+    }).catch(function(e) { showToast('⚠ Lead save failed: ' + e.message); });
   }
 }
 function atSaveTicket(ticket) {
   if (!apiPass || !ticket) return;
   var fields = atTicketFields(ticket);
   if (ticket._atId) {
-    atFetch(AT_BASE + '/' + AT_TICKETS_TBL + '/' + ticket._atId, { method: 'PATCH', body: JSON.stringify({ fields: fields }) });
+    atFetch(AT_BASE + '/' + AT_TICKETS_TBL + '/' + ticket._atId, { method: 'PATCH', body: JSON.stringify({ fields: fields }) }).then(function(data) {
+      if (data && data.error) showToast('⚠ Ticket save error: ' + (data.error.message || data.error.type || 'unknown'));
+    }).catch(function(e) { showToast('⚠ Ticket save failed: ' + e.message); });
   } else {
     atFetch(AT_BASE + '/' + AT_TICKETS_TBL, { method: 'POST', body: JSON.stringify({ fields: fields }) }).then(function(data) {
       if (data && data.id) { ticket._atId = data.id; saveTicketsToStorage(); }
-    });
+      else if (data && data.error) showToast('⚠ Ticket save error: ' + (data.error.message || data.error.type || 'unknown'));
+    }).catch(function(e) { showToast('⚠ Ticket save failed: ' + e.message); });
   }
 }
 function atDeleteLead(lead) {
@@ -3496,7 +3502,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260512-28';
+var APP_VERSION = '20260512-29';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
