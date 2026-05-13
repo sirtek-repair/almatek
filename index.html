@@ -425,6 +425,10 @@
     <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST2">—</div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT2">—</div></div><span class="wc-mock-badge hidden" id="wcMockBadge2" onclick="openClockMockModal()">MOCK</span><button class="wc-edit-btn" onclick="openClockMockModal()" title="Set planning time">✏️</button></div>
   </header>
 
+  <div id="scheduleStrip" style="display:none;margin:0 0 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);padding:9px 14px;font-size:12.5px;line-height:1.5;">
+    <div id="scheduleStripContent"></div>
+  </div>
+
   <div class="card">
     <label class="field-label" for="repairType">Repair Type</label>
     <select id="repairType" onchange="onRepairChange()">
@@ -1496,6 +1500,7 @@ function switchTab(tab) {
   el('tabAdminBtn').classList.add('hidden');
   el('tabToolsBtn').classList.toggle('active', isTools);
   if (isLeads) { exitLeadSelectMode && exitLeadSelectMode(); exitTicketSelectMode && exitTicketSelectMode(); }
+  if (isQuote) loadSchedule();
   if (isInventory) initInventory();
   else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); switchProfileSubTab(profileSubTab || 'tally'); }
   else if (isLeads) { switchLeadSubTab('leads'); }
@@ -1578,6 +1583,45 @@ if (isOwner && !currentUser) { currentUser = 'Sir'; localStorage.setItem('almate
 const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7P3ixTJATVr2YbDAhYpUTAz5HAtECUwFDcESDFlHcB60TaeKMmjT9lKc17FHKPWlc/exec';
 var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || DEFAULT_SCRIPT_URL, USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
 if (!localStorage.getItem('almatek_script_url')) localStorage.setItem('almatek_script_url', DEFAULT_SCRIPT_URL);
+var SCHEDULE_CAL_ID = 'da5d00a37971f98d6d6a8cbda2bd5bdb311d3c06ee5bc15f5f5efcbaf683e3fe@group.calendar.google.com';
+var _schedCache = null, _schedCacheAt = 0, _schedTimer = null;
+function _fmtTime(d) { var h=d.getHours(),m=d.getMinutes(),ap=h>=12?'pm':'am'; h=h%12||12; return h+(m?':'+String(m).padStart(2,'0'):'')+ap; }
+function renderScheduleStrip(events) {
+  var strip=el('scheduleStrip'), content=el('scheduleStripContent'); if(!strip||!content) return;
+  if(!authd){strip.style.display='none';return;}
+  var now=new Date(), onNow=[], upcoming=[];
+  (events||[]).forEach(function(ev){
+    if(ev.allDay) return;
+    var s=new Date(ev.start), e=new Date(ev.end);
+    if(e<=now) return;
+    if(s<=now) onNow.push({name:ev.name,end:e});
+    else upcoming.push({name:ev.name,start:s,end:e});
+  });
+  upcoming.sort(function(a,b){return a.start-b.start;});
+  var html='';
+  if(onNow.length){
+    html+='<span style="color:var(--green);">●</span> On shift: '+onNow.map(function(e){return '<strong>'+e.name+'</strong> <span style="color:var(--muted);">until '+_fmtTime(e.end)+'</span>';}).join(' · ');
+  } else {
+    html+='<span style="color:var(--muted);">● No one on shift right now</span>';
+  }
+  if(upcoming.length){
+    var nx=upcoming[0];
+    html+=' &nbsp;<span style="color:var(--border);">|</span>&nbsp; Next: <strong>'+nx.name+'</strong> <span style="color:var(--muted);">at '+_fmtTime(nx.start)+'</span>';
+  }
+  content.innerHTML=html; strip.style.display='';
+}
+function loadSchedule(force) {
+  if(!authd||!USERS_SCRIPT_URL) return;
+  var now=Date.now();
+  if(!force && _schedCache && now-_schedCacheAt < 15*60*1000){renderScheduleStrip(_schedCache);return;}
+  sheetsCall({action:'getSchedule',calendarId:SCHEDULE_CAL_ID}).then(function(data){
+    if(data && Array.isArray(data.events)){_schedCache=data.events;_schedCacheAt=Date.now();renderScheduleStrip(data.events);}
+  }).catch(function(){});
+}
+function startScheduleRefresh() {
+  if(_schedTimer) return;
+  _schedTimer=setInterval(function(){if(authd) loadSchedule(true);},15*60*1000);
+}
 function sheetsCall(payload) {
   if (!USERS_SCRIPT_URL) return Promise.resolve({});
   var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
@@ -2073,10 +2117,10 @@ function tryAuth() {
           sheetsCall({ action: 'getConfig' }).then(function(cfg) {
             if (cfg && cfg.ok) applyLoginConfig(cfg);
             if (!apiPass) showApiPassModal();
-            syncFromSheets(); refreshPricingIfStale();
-          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); refreshPricingIfStale(); });
+            syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh();
+          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh(); });
         } else {
-          syncFromSheets(); refreshPricingIfStale();
+          syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh();
           if (!apiPass) setTimeout(showApiPassModal, 400);
         }
         return;
@@ -2926,7 +2970,7 @@ updateWorldClock();
 setInterval(updateWorldClock, 30000);
 
 // Sync from Sheets on startup if already authenticated (skips login flow)
-if (authd) { setTimeout(syncFromSheets, 500); setTimeout(refreshPricingIfStale, 1000); }
+if (authd) { setTimeout(syncFromSheets, 500); setTimeout(refreshPricingIfStale, 1000); setTimeout(loadSchedule, 1500); startScheduleRefresh(); }
 
 
 // Auto-sync every 90 seconds while the app is open
@@ -3582,7 +3626,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260512-34';
+var APP_VERSION = '20260513-35';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
