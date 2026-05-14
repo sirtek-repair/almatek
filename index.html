@@ -3481,9 +3481,11 @@ function renderStaffTab() {
   el('staffUserList').innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading…</p>';
   sheetsCall({ action: 'list' }).then(function(data) {
     if (!data.ok && !data.users) {
-      var detail = data._httpError ? 'HTTP ' + data._httpError : data._parseError ? 'Invalid response (not JSON)' : data.error ? data.error : 'No response from script';
-      var preview = data._body ? '<br><span style="font-size:10px;opacity:.7;word-break:break-all;">' + data._body + '</span>' : '';
-      el('staffUserList').innerHTML = '<p style="color:#ef4444;font-size:13px;">Error loading users: ' + detail + preview + '</p>';
+      var isParseErr = !!data._parseError;
+      var detail = data._httpError ? 'HTTP ' + data._httpError : isParseErr ? 'Script URL returned non-JSON — make sure the URL in Settings points to your Apps Script, not a calendar link' : data.error ? data.error : 'No response from script';
+      var rawPreview = data._body ? data._body.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '';
+      var preview = rawPreview ? '<br><span style="font-size:10px;opacity:.7;word-break:break-all;">' + rawPreview.slice(0,120) + '</span>' : '';
+      el('staffUserList').innerHTML = '<p style="color:#ef4444;font-size:13px;">Error: ' + detail + preview + '</p>';
       return;
     }
     var users = data.users || [];
@@ -3647,7 +3649,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-42';
+var APP_VERSION = '20260514-43';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
