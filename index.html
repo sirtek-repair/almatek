@@ -678,7 +678,7 @@
 </div>
 <div class="orders-tab-nav" style="margin-bottom:16px;">
   <button class="orders-tab-btn active" id="invSubBtnInventory" onclick="switchInvSubTab('inventory')">📦 Inventory</button>
-  <button class="orders-tab-btn" id="invSubBtnOrders" onclick="switchInvSubTab('orders')">📋 Orders <span id="cartSubBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+  <button class="orders-tab-btn" id="invSubBtnOrders" onclick="switchInvSubTab('orders')">📋 Orders</button>
 </div>
 
 <div id="invSubViewInventory">
@@ -703,7 +703,7 @@
 <div id="invSubViewOrders" class="hidden">
   <div class="orders-tab-nav">
     <button class="orders-tab-btn active" onclick="switchOrdersView('needorder')">Need to Order</button>
-    <button class="orders-tab-btn" onclick="switchOrdersView('cart')">🛒 Cart</button>
+    <button class="orders-tab-btn" onclick="switchOrdersView('cart')">🛒 Cart <span id="cartSubBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" onclick="switchOrdersView('ordered')">Ordered</button>
   </div>
   <div id="ordersNeedView" class="orders-view active">
@@ -3647,7 +3647,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-41';
+var APP_VERSION = '20260514-42';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
