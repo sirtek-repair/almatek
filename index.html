@@ -2561,7 +2561,7 @@ function buildQuoteText() {
     lines.push(label1 + model1Label + tier1Label + ' repair — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
     lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
   }
-  return lines.join('\n');
+  return lines.join('\r\n');
 }
 function copyQuote(btn) {
   var text = buildQuoteText();
@@ -2584,7 +2584,7 @@ function shareLeadCard(leadId, e) {
   lines.push('Status: ' + getStatusLabel(lead.status));
   if (lead.quote) lines.push('Quote: $' + lead.quote);
   if (lead.followUpAt) lines.push('Follow-up: ' + lead.followUpAt);
-  var text = lines.join('\n');
+  var text = lines.join('\r\n');
   if (navigator.share) { navigator.share({ title: lead.name || 'Lead', text: text }).catch(function(){}); }
   else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied ✓'); }); }
   else { showToast('Share not supported'); }
@@ -3078,7 +3078,7 @@ function shareTicketCard(ticketId, e) {
   lines.push('Status: ' + (stageLabels[ticket.status] || ticket.status));
   if (ticket.quote) lines.push('Quote: $' + ticket.quote);
   if (ticket.deposit) lines.push('Deposit paid: $' + ticket.deposit);
-  var text = lines.join('\n');
+  var text = lines.join('\r\n');
   if (navigator.share) { navigator.share({ title: ticket.name || 'Ticket', text: text }).catch(function(){}); }
   else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied ✓'); }); }
   else { showToast('Share not supported'); }
@@ -3629,7 +3629,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260513-38';
+var APP_VERSION = '20260513-39';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
@@ -3833,7 +3833,7 @@ function shareReport() {
     var dep = parseFloat(t.deposit)||0;
     lines.push('• ' + (t.name||'Unnamed') + (t.device ? ' · ' + t.device : '') + ' · $' + (parseFloat(t.quote)||0) + (dep ? ' (dep $'+dep+')' : '') + ' — ' + dateStr);
   });
-  var text = lines.join('\n');
+  var text = lines.join('\r\n');
   if (navigator.share) { navigator.share({ title: 'AlmaTek Reports', text: text }).catch(function(){}); }
   else { navigator.clipboard?.writeText(text).then(function() { var btn = el('rptShareBtn'); var orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(function() { btn.textContent = orig; }, 1800); }); }
 }
