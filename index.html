@@ -1586,9 +1586,10 @@ if (!localStorage.getItem('almatek_script_url')) localStorage.setItem('almatek_s
 var SCHEDULE_CAL_ID = 'da5d00a37971f98d6d6a8cbda2bd5bdb311d3c06ee5bc15f5f5efcbaf683e3fe@group.calendar.google.com';
 var _schedCache = null, _schedCacheAt = 0, _schedTimer = null;
 function _fmtTime(d) { var h=d.getHours(),m=d.getMinutes(),ap=h>=12?'pm':'am'; h=h%12||12; return h+(m?':'+String(m).padStart(2,'0'):'')+ap; }
-function renderScheduleStrip(events) {
+function renderScheduleStrip(events, _dbg) {
   var strip=el('scheduleStrip'), content=el('scheduleStripContent'); if(!strip||!content) return;
   if(!authd){strip.style.display='none';return;}
+  if(_dbg){content.innerHTML='<span style="color:var(--muted);font-size:11px;">sched:'+_dbg+'</span>'; strip.style.display=''; return;}
   var now=new Date(), onNow=[], upcoming=[];
   (events||[]).forEach(function(ev){
     if(ev.allDay) return;
@@ -1616,8 +1617,9 @@ function loadSchedule(force) {
   if(!force && _schedCache && now-_schedCacheAt < 15*60*1000){renderScheduleStrip(_schedCache);return;}
   sheetsCall({action:'getSchedule',calendarId:SCHEDULE_CAL_ID}).then(function(data){
     var evts=(data && Array.isArray(data.events))?data.events:[];
-    _schedCache=evts;_schedCacheAt=Date.now();renderScheduleStrip(evts);
-  }).catch(function(){ renderScheduleStrip([]); });
+    _schedCache=evts;_schedCacheAt=Date.now();
+    renderScheduleStrip(evts, data&&data._err ? data._err : (evts.length===0&&data&&!data._err?'ok-empty':''));
+  }).catch(function(e){ renderScheduleStrip([], 'fetch-error:'+(e&&e.message||'?')); });
 }
 function startScheduleRefresh() {
   if(_schedTimer) return;
@@ -3627,7 +3629,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260513-36';
+var APP_VERSION = '20260513-37';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
