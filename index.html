@@ -1615,8 +1615,9 @@ function loadSchedule(force) {
   var now=Date.now();
   if(!force && _schedCache && now-_schedCacheAt < 15*60*1000){renderScheduleStrip(_schedCache);return;}
   sheetsCall({action:'getSchedule',calendarId:SCHEDULE_CAL_ID}).then(function(data){
-    if(data && Array.isArray(data.events)){_schedCache=data.events;_schedCacheAt=Date.now();renderScheduleStrip(data.events);}
-  }).catch(function(){});
+    var evts=(data && Array.isArray(data.events))?data.events:[];
+    _schedCache=evts;_schedCacheAt=Date.now();renderScheduleStrip(evts);
+  }).catch(function(){ renderScheduleStrip([]); });
 }
 function startScheduleRefresh() {
   if(_schedTimer) return;
@@ -3626,7 +3627,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260513-35';
+var APP_VERSION = '20260513-36';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
