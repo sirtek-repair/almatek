@@ -1,0 +1,365 @@
+// AlmaTek Google Apps Script Backend
+// Deploy as Web App: Execute as Me, Anyone can access
+// Paste the deployment URL into the app under Settings > Script URL
+
+var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+function doGet(e) {
+  var payload = {};
+  try { payload = JSON.parse(e.parameter.payload || '{}'); } catch(err) {}
+  var result = handleAction(payload);
+  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function rowToObj(headers, row) {
+  var obj = {};
+  headers.forEach(function(h, i) {
+    obj[h] = row[i] instanceof Date ? row[i].toISOString() : row[i];
+  });
+  return obj;
+}
+
+function handleAction(p) {
+  switch (p.action) {
+
+    case 'login': {
+      var sheet = getOrCreate('Users', ['name','pass','structure']);
+      var rows = sheet.getDataRange().getValues();
+      var props = PropertiesService.getScriptProperties();
+      var cfApiPass = props.getProperty('cf_api_pass') || '';
+      var scriptUrl = ScriptApp.getService().getUrl();
+      for (var i = 1; i < rows.length; i++) {
+        if (rows[i][1] === p.pass) return {
+          ok: true,
+          name: rows[i][0],
+          structure: rows[i][2] || 'standard',
+          apiPass: cfApiPass,
+          scriptUrl: scriptUrl
+        };
+      }
+      return { ok: false };
+    }
+    case 'getConfig': {
+      var props = PropertiesService.getScriptProperties();
+      return {
+        ok: true,
+        apiPass: props.getProperty('cf_api_pass') || '',
+        scriptUrl: ScriptApp.getService().getUrl()
+      };
+    }
+    case 'getPricing': {
+      try {
+        var pss = SpreadsheetApp.openById('1-ihijopdfiS5QL1Ikr_eGBaZiQZGqhkdn5cTXiBYq6Y');
+        var sheets = pss.getSheets();
+        var pSheet = null;
+        for (var s = 0; s < sheets.length; s++) {
+          if (sheets[s].getSheetId() === 982039705) { pSheet = sheets[s]; break; }
+        }
+        if (!pSheet) pSheet = sheets[0];
+        if (!pSheet) return { ok: false, error: 'Sheet not found' };
+        var rows = pSheet.getDataRange().getValues();
+        if (rows.length < 2) return { ok: false, error: 'No data in sheet' };
+        var headers = rows[0].map(function(h) { return String(h).trim().toLowerCase(); });
+        var modelIdx = headers.indexOf('iphone model');
+        var tierIdx  = headers.indexOf('tier');
+        var priceIdx = headers.indexOf('price');
+        if (modelIdx < 0) modelIdx = 0;
+        if (tierIdx  < 0) tierIdx  = 2;
+        if (priceIdx < 0) priceIdx = 4;
+        var prices = {};
+        var tiersSeen = [];
+        for (var i = 1; i < rows.length; i++) {
+          var model = String(rows[i][modelIdx] || '').trim();
+          var tier  = String(rows[i][tierIdx]  || '').trim().toLowerCase();
+          var cost  = rows[i][priceIdx];
+          if (!model || !tier || cost === '' || cost == null || isNaN(Number(cost)) || Number(cost) <= 0) continue;
+          if (tiersSeen.indexOf(tier) < 0) tiersSeen.push(tier);
+          var tierKey = null;
+          if (tier.indexOf('standard') >= 0 || tier === 'std' || tier === 'lcd') tierKey = 'standard';
+          else if (tier.indexOf('premium') >= 0 || tier === 'oled' || tier === 'oem') tierKey = 'premium';
+          if (!tierKey) continue;
+          if (!prices[model]) prices[model] = {};
+          prices[model][tierKey] = Number(cost);
+        }
+        if (!Object.keys(prices).length) return { ok: false, error: 'No prices found. Tiers: [' + tiersSeen.join(', ') + ']' };
+        return { ok: true, prices: prices };
+      } catch(e) {
+        return { ok: false, error: e.toString() };
+      }
+    }
+    case 'saveConfig': {
+      var props = PropertiesService.getScriptProperties();
+      if (p.apiPass !== undefined) props.setProperty('cf_api_pass', p.apiPass);
+      return { ok: true };
+    }
+    case 'list': {
+      var sheet = getOrCreate('Users', ['name','pass','structure']);
+      var rows = sheet.getDataRange().getValues();
+      var users = [];
+      for (var i = 1; i < rows.length; i++) {
+        if (rows[i][0]) users.push({ name: rows[i][0], structure: rows[i][2] || 'standard' });
+      }
+      return { ok: true, users: users };
+    }
+    case 'add': {
+      var sheet = getOrCreate('Users', ['name','pass','structure']);
+      sheet.appendRow([p.name, p.pass, p.structure || 'standard']);
+      return { ok: true };
+    }
+    case 'delete': {
+      var sheet = getOrCreate('Users', ['name','pass','structure']);
+      var rows = sheet.getDataRange().getValues();
+      for (var i = rows.length - 1; i >= 1; i--) {
+        if (rows[i][0] === p.name) { sheet.deleteRow(i + 1); break; }
+      }
+      return { ok: true };
+    }
+    case 'resetPass': {
+      var sheet = getOrCreate('Users', ['name','pass','structure']);
+      var rows = sheet.getDataRange().getValues();
+      for (var i = 1; i < rows.length; i++) {
+        if (rows[i][0] === p.name) { sheet.getRange(i + 1, 2).setValue(p.newPass); break; }
+      }
+      return { ok: true };
+    }
+
+    case 'getLeads': {
+      var sheet = ss.getSheetByName('Leads');
+      if (!sheet) return { ok: true, leads: [] };
+      var rows = sheet.getDataRange().getValues();
+      if (rows.length <= 1) return { ok: true, leads: [] };
+      var headers = rows[0];
+      var leads = [];
+      for (var i = 1; i < rows.length; i++) {
+        if (!rows[i][0]) continue;
+        var lead = rowToObj(headers, rows[i]);
+        try { lead.notes = JSON.parse(lead.notes || '[]'); } catch(e) { lead.notes = []; }
+        leads.push(lead);
+      }
+      return { ok: true, leads: leads };
+    }
+    case 'createLead': {
+      var sheet = getOrCreate('Leads', [
+        'id','name','phone','email','device','issue','status','tier',
+        'followUpAt','followUpNotes','quote','deposit','assignedTo',
+        'createdBy','createdAt','updatedAt','notes'
+      ]);
+      var l = p.lead || {};
+      var existingRows = sheet.getDataRange().getValues();
+      for (var ei = 1; ei < existingRows.length; ei++) {
+        if (existingRows[ei][0] === l.id) return { ok: true };
+      }
+      sheet.appendRow([
+        l.id, l.name, l.phone, l.email, l.device, l.issue, l.status, l.tier || 'standard',
+        l.followUpAt, l.followUpNotes, l.quote || 0, l.deposit || 0,
+        l.assignedTo, l.createdBy, l.createdAt, l.updatedAt,
+        JSON.stringify(l.notes || [])
+      ]);
+      return { ok: true };
+    }
+    case 'updateLead': {
+      var sheet = getOrCreate('Leads', ['id']);
+      var rows = sheet.getDataRange().getValues();
+      var headers = rows[0];
+      var u = p.updates || {};
+      for (var i = 1; i < rows.length; i++) {
+        if (rows[i][0] === p.leadId) {
+          Object.keys(u).forEach(function(key) {
+            var col = headers.indexOf(key);
+            if (col >= 0) {
+              var val = key === 'notes' ? JSON.stringify(u[key]) : u[key];
+              sheet.getRange(i + 1, col + 1).setValue(val !== undefined ? val : '');
+            }
+          });
+          var updCol = headers.indexOf('updatedAt');
+          if (updCol >= 0) sheet.getRange(i + 1, updCol + 1).setValue(new Date().toISOString());
+          break;
+        }
+      }
+      return { ok: true };
+    }
+    case 'deleteLead': {
+      var sheet = getOrCreate('Leads', ['id']);
+      var rows = sheet.getDataRange().getValues();
+      for (var i = rows.length - 1; i >= 1; i--) {
+        if (rows[i][0] === p.leadId) { sheet.deleteRow(i + 1); break; }
+      }
+      return { ok: true };
+    }
+
+    case 'getTickets': {
+      var sheet = ss.getSheetByName('Tickets');
+      if (!sheet) return { ok: true, tickets: [] };
+      var rows = sheet.getDataRange().getValues();
+      if (rows.length <= 1) return { ok: true, tickets: [] };
+      var headers = rows[0];
+      var tickets = [];
+      for (var i = 1; i < rows.length; i++) {
+        if (!rows[i][0]) continue;
+        var ticket = rowToObj(headers, rows[i]);
+        try { ticket.items = JSON.parse(ticket.items || '[]'); } catch(e) { ticket.items = []; }
+        try { ticket.notes = JSON.parse(ticket.notes || '[]'); } catch(e) { ticket.notes = []; }
+        tickets.push(ticket);
+      }
+      return { ok: true, tickets: tickets };
+    }
+    case 'createTicket': {
+      var sheet = getOrCreate('Tickets', [
+        'id','name','phone','email','device','issue','flow','status',
+        'tier','repairType','repairModel','quote','deposit','mobileFee','mobileFeeMiles',
+        'supplier','orderRef','items','notes','createdBy','createdAt','updatedAt'
+      ]);
+      var t = p.ticket || {};
+      var existingRows = sheet.getDataRange().getValues();
+      for (var ei = 1; ei < existingRows.length; ei++) {
+        if (String(existingRows[ei][0]) === String(t.id)) return { ok: true };
+      }
+      sheet.appendRow([
+        t.id, t.name||'', t.phone||'', t.email||'', t.device||'', t.issue||'',
+        t.flow||'in_stock', t.status||'waiting_for_repair',
+        t.tier||'standard', t.repairType||'', t.repairModel||'',
+        t.quote||0, t.deposit||0, t.mobileFee||0, t.mobileFeeMiles||0,
+        t.supplier||'', t.orderRef||'',
+        JSON.stringify(t.items||[]), JSON.stringify(t.notes||[]),
+        t.createdBy||'', t.createdAt||'', t.updatedAt||''
+      ]);
+      return { ok: true };
+    }
+    case 'updateTicket': {
+      var sheet = ss.getSheetByName('Tickets');
+      if (!sheet) return { ok: true };
+      var rows = sheet.getDataRange().getValues();
+      var headers = rows[0];
+      var u = p.updates || {};
+      for (var i = 1; i < rows.length; i++) {
+        if (String(rows[i][0]) === String(p.ticketId)) {
+          Object.keys(u).forEach(function(key) {
+            var col = headers.indexOf(key);
+            if (col >= 0) {
+              var val = (key === 'items' || key === 'notes') ? JSON.stringify(u[key]) : u[key];
+              sheet.getRange(i + 1, col + 1).setValue(val !== undefined ? val : '');
+            }
+          });
+          var updCol = headers.indexOf('updatedAt');
+          if (updCol >= 0) sheet.getRange(i + 1, updCol + 1).setValue(new Date().toISOString());
+          break;
+        }
+      }
+      return { ok: true };
+    }
+    case 'deleteTicket': {
+      var sheet = ss.getSheetByName('Tickets');
+      if (!sheet) return { ok: true };
+      var rows = sheet.getDataRange().getValues();
+      for (var i = rows.length - 1; i >= 1; i--) {
+        if (String(rows[i][0]) === String(p.ticketId)) { sheet.deleteRow(i + 1); break; }
+      }
+      return { ok: true };
+    }
+
+    case 'logCartOrder': {
+      var sheet = getOrCreate('Part Orders', ['date','placedBy','supplier','item','qty']);
+      var date = p.placedAt
+        ? new Date(p.placedAt).toLocaleString('en-US', { timeZone: 'America/New_York' })
+        : new Date().toLocaleString();
+      (p.items || []).forEach(function(item) {
+        sheet.appendRow([date, p.placedBy || '', p.supplier || '', item.name || '', item.qty || 1]);
+      });
+      return { ok: true };
+    }
+
+    case 'getSchedule':
+      return getSchedule(p.calendarId);
+
+    default:
+      return { error: 'unknown action: ' + p.action };
+  }
+}
+
+function getOrCreate(name, headers) {
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.appendRow(headers);
+    sheet.setFrozenRows(1);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+  }
+  return sheet;
+}
+
+function getSchedule(calendarId) {
+  try {
+    var url = 'https://calendar.google.com/calendar/ical/' + encodeURIComponent(calendarId) + '/public/basic.ics';
+    var resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    if (resp.getResponseCode() !== 200) return { events: [] };
+    return { events: parseIcalToday(resp.getContentText()) };
+  } catch(e) {
+    return { events: [], _err: e.message };
+  }
+}
+
+function parseIcalToday(text) {
+  var shopTz = 'America/New_York';
+  var todayStr = Utilities.formatDate(new Date(), shopTz, 'yyyyMMdd');
+  text = text.replace(/\r\n[ \t]/g, '').replace(/\r\n|\r/g, '\n');
+  var lines = text.split('\n');
+  var events = [];
+  var cur = null;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    if (line === 'BEGIN:VEVENT') { cur = {}; continue; }
+    if (line === 'END:VEVENT') {
+      if (cur && cur.name && cur.start) {
+        events.push({ name: cur.name, start: cur.start, end: cur.end || cur.start, allDay: !!cur.allDay });
+      }
+      cur = null;
+      continue;
+    }
+    if (!cur) continue;
+    var ci = line.indexOf(':');
+    if (ci < 0) continue;
+    var prop = line.substring(0, ci);
+    var val = line.substring(ci + 1);
+    var propName = prop.split(';')[0];
+    var tzM = prop.match(/TZID=([^;:]+)/);
+    var evTz = tzM ? tzM[1] : shopTz;
+    if (propName === 'SUMMARY') {
+      cur.name = val;
+    } else if (propName === 'DTSTART') {
+      if (/^\d{8}$/.test(val)) {
+        cur.allDay = true;
+        if (val === todayStr) {
+          cur.start = val.substr(0,4) + '-' + val.substr(4,2) + '-' + val.substr(6,2) + 'T00:00:00.000Z';
+        }
+      } else {
+        var iso = icalDtToIso(val, evTz);
+        if (iso && Utilities.formatDate(new Date(iso), shopTz, 'yyyyMMdd') === todayStr) {
+          cur.start = iso;
+        }
+      }
+    } else if (propName === 'DTEND') {
+      if (!/^\d{8}$/.test(val)) {
+        var iso2 = icalDtToIso(val, evTz);
+        if (iso2) cur.end = iso2;
+      }
+    }
+  }
+  return events;
+}
+
+function icalDtToIso(val, tz) {
+  var m = val.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z?)$/);
+  if (!m) return null;
+  if (m[7] === 'Z') {
+    return new Date(Date.UTC(+m[1], +m[2]-1, +m[3], +m[4], +m[5], +m[6])).toISOString();
+  }
+  try {
+    return Utilities.parseDate(
+      m[1]+'/'+m[2]+'/'+m[3]+' '+m[4]+':'+m[5]+':'+m[6],
+      tz,
+      'yyyy/MM/dd HH:mm:ss'
+    ).toISOString();
+  } catch(e) {
+    return null;
+  }
+}
