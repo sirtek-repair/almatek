@@ -320,11 +320,11 @@
   @media (min-width: 780px) {
     body { padding: 24px 40px 60px; }
     .container { max-width: 960px; }
-    header { text-align: left; padding: 20px 0 22px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-    header h1 { font-size: 28px; }
-    .header-links { justify-content: flex-start; margin-top: 0; flex-wrap: wrap; }
-    .world-clock { margin-left: auto; }
-    #demoModeLabel { width: 100%; order: 10; }
+    header { text-align: center; padding: 20px 0 22px; position: relative; }
+    header img { display: block; margin: 0 auto 6px; }
+    header h1 { font-size: 30px; }
+    .header-links { justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+    .world-clock { position: absolute; right: 0; top: 24px; }
     #quoteColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; align-items: start; }
     #quoteLeftCol, #quoteRightCol { min-width: 0; }
   }
@@ -3647,7 +3647,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-40';
+var APP_VERSION = '20260514-41';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
