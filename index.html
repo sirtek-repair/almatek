@@ -495,7 +495,7 @@
             </div>
           </div>
         </div>
-        <button id="tierBtn1Man" onclick="selectTier1('manual')" style="margin-top:8px;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:2px 0;font-family:inherit;text-decoration:underline;">Enter cost manually</button>
+        <button id="tierBtn1Man" onclick="selectTier1('manual')" style="margin-top:10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);color:var(--accent);font-size:12px;font-weight:500;cursor:pointer;padding:7px 14px;font-family:inherit;border-radius:8px;letter-spacing:0.02em;display:inline-flex;align-items:center;gap:6px;">✏️ Enter cost manually</button>
         <div id="manualCostRow1" class="hidden" style="margin-top:8px;">
           <input type="number" id="partCostIphone" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
           <p class="hint">Round up to whole dollar</p>
@@ -617,7 +617,7 @@
               </div>
             </div>
           </div>
-          <button id="tierBtn2Man" onclick="selectTier2('manual')" style="margin-top:8px;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:2px 0;font-family:inherit;text-decoration:underline;">Enter cost manually</button>
+          <button id="tierBtn2Man" onclick="selectTier2('manual')" style="margin-top:10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);color:var(--accent);font-size:12px;font-weight:500;cursor:pointer;padding:7px 14px;font-family:inherit;border-radius:8px;letter-spacing:0.02em;display:inline-flex;align-items:center;gap:6px;">✏️ Enter cost manually</button>
           <div id="manualCostRow2" class="hidden" style="margin-top:8px;">
             <input type="number" id="partCostIphone2" placeholder="$0" min="0" step="1" oninput="onCost2Change()" />
             <p class="hint">Round up to whole dollar</p>
@@ -3649,7 +3649,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-43';
+var APP_VERSION = '20260514-44';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
