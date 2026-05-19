@@ -2581,15 +2581,35 @@ function buildQuoteText() {
   }
   return lines.join('\r\n');
 }
+function _quoteToHtml(text) {
+  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  var html = text.split('\r\n\r\n').map(function(para) {
+    return '<p style="margin:0 0 1em;font-family:sans-serif;">' + esc(para).replace(/\r\n/g,'<br>') + '</p>';
+  }).join('');
+  return '<html><body>' + html + '</body></html>';
+}
+function _clipWrite(text, onDone) {
+  if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+    var item = new ClipboardItem({
+      'text/plain': new Blob([text], { type: 'text/plain' }),
+      'text/html':  new Blob([_quoteToHtml(text)], { type: 'text/html' })
+    });
+    navigator.clipboard.write([item]).then(onDone).catch(function() {
+      navigator.clipboard.writeText(text).then(onDone).catch(function(){});
+    });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(onDone).catch(function(){});
+  }
+}
 function copyQuote(btn) {
   var text = buildQuoteText();
-  navigator.clipboard?.writeText(text).then(function() { var orig = btn.innerHTML; btn.innerHTML = '✓ Copied!'; setTimeout(function() { btn.innerHTML = orig; }, 1800); });
+  var orig = btn.innerHTML;
+  _clipWrite(text, function() { btn.innerHTML = '✓ Copied!'; setTimeout(function() { btn.innerHTML = orig; }, 1800); });
 }
 function shareQuote() {
   var text = buildQuoteText();
-  if (navigator.clipboard) { navigator.clipboard.writeText(text).catch(function(){}); }
   if (navigator.share) { navigator.share({ title: 'Quote', text: text }).catch(function(){}); }
-  else { showToast('Copied ✓'); }
+  else { _clipWrite(text, function() { showToast('Copied ✓'); }); }
 }
 
 function shareLeadCard(leadId, e) {
@@ -3649,7 +3669,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-44';
+var APP_VERSION = '20260514-45';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
