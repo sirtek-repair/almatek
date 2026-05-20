@@ -2611,7 +2611,7 @@ function buildQuoteText() {
       lines.push('EXPEDITED SAME-DAY SPECIAL ORDER — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
       lines.push('We\'ll source the part specifically for you and have it completed the same day. Comes with a warranty.');
       lines.push('');
-      lines.push('All options include a warranty' + (mobileFee > 0 ? ' and mobile service' : '') + '. Which works best for you?');
+      lines.push('All options come with a warranty' + (mobileFee > 0 ? ' and include mobile service' : '') + '. Which works best for you?');
     } else {
       lines.push('Good news — we can get your ' + itemLabel + ' done today as a same-day special order.');
       lines.push('');
@@ -2629,10 +2629,10 @@ function buildQuoteText() {
 }
 function _quoteToHtml(text) {
   function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  var html = text.split('\r\n\r\n').map(function(para) {
-    return '<p style="margin:0 0 1em;font-family:sans-serif;">' + esc(para).replace(/\r\n/g,'<br>') + '</p>';
+  var html = text.split(/\r?\n\r?\n/).map(function(para) {
+    return '<p style="margin:0 0 1.1em;font-family:sans-serif;line-height:1.5;">' + esc(para).replace(/\r?\n/g,'<br>') + '</p>';
   }).join('');
-  return '<html><body>' + html + '</body></html>';
+  return '<html><body style="font-family:sans-serif;">' + html + '</body></html>';
 }
 function _clipWrite(text, onDone) {
   if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
@@ -3715,7 +3715,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-47';
+var APP_VERSION = '20260514-48';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
