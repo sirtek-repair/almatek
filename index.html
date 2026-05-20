@@ -2591,12 +2591,33 @@ function buildQuoteText() {
       lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
     }
   } else if (tier1 === 'manual') {
-    // ── Manual cost — expedited same-day special order ─────────
+    // ── Manual cost — show std/prem if available + expedited ───
+    var manPrices = (type1 === 'iphone_screen' && model1) ? (spLookup(model1) || {}) : {};
+    var manHasStd = manPrices.standard != null, manHasPrem = manPrices.premium != null;
     var itemLabel = (type1 === 'iphone_screen' && model1) ? model1 + ' screen repair' : label1 + (model1Label ? ' ' + model1Label : '') + ' repair';
-    lines.push('Good news — we can get your ' + itemLabel + ' done today as a same-day special order.');
-    lines.push('');
-    lines.push('Expedited same-day special order — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
-    lines.push('We\'ll source the part specifically for you and have it completed the same day. Comes with a warranty.');
+    if (manHasStd || manHasPrem) {
+      lines.push('For your ' + model1 + ', we have the following options available:');
+      lines.push('');
+      if (manHasStd) {
+        lines.push('STANDARD — $' + withTax(fullPrice(manPrices.standard,'iphone_screen') + mobileFee) + ' (tax included)');
+        lines.push('LCD screen that looks & functions just like the original. The frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re upgrading soon or keeping your phone under a year.');
+        lines.push('');
+      }
+      if (manHasPrem) {
+        lines.push('PREMIUM — $' + withTax(fullPrice(manPrices.premium,'iphone_screen') + mobileFee) + ' (tax included)');
+        lines.push('Soft OLED screen (OEM-quality) — same exact specs as the original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
+        lines.push('');
+      }
+      lines.push('EXPEDITED SAME-DAY SPECIAL ORDER — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
+      lines.push('We\'ll source the part specifically for you and have it completed the same day. Comes with a warranty.');
+      lines.push('');
+      lines.push('All options include a warranty' + (mobileFee > 0 ? ' and mobile service' : '') + '. Which works best for you?');
+    } else {
+      lines.push('Good news — we can get your ' + itemLabel + ' done today as a same-day special order.');
+      lines.push('');
+      lines.push('Expedited same-day special order — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
+      lines.push('We\'ll source the part specifically for you and have it completed the same day. Comes with a warranty.');
+    }
     lines.push('');
     lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
   } else {
@@ -3694,7 +3715,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-46';
+var APP_VERSION = '20260514-47';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
