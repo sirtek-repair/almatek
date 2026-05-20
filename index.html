@@ -674,6 +674,20 @@
 <header style="text-align:center;padding:16px 0 20px;">
   <img src="line-logo.jpg" width="48" height="48" style="display:block;margin:0 auto 6px;border-radius:10px;" alt="AlmaTek" />
   <h1 style="font-size:26px;font-weight:normal;letter-spacing:0.01em;text-transform:none;font-family:Georgia,serif;">AlmaTek</h1>
+  <div style="display:flex;justify-content:center;margin-top:10px;">
+    <div class="hlink-dropdown" id="suppliersDropdown2" style="display:none;position:relative;">
+      <button class="hlink" onclick="toggleSuppliers2(event)">Parts ▾</button>
+      <div class="hlink-dropdown-menu hidden" id="suppliersMenu2">
+        <a href="tel:+19177909209" class="hlink">Kimi Soho ☎</a>
+        <a href="https://brosphoneparts.com/" target="_blank" class="hlink">Bros Phone Parts (Bklyn) ↗</a>
+        <a href="https://parts4cells.com/" target="_blank" class="hlink">Parts4Cells (Houston) ↗</a>
+        <a href="https://www.mobilesentrix.com" target="_blank" class="hlink">Mobile Sentrix (Virginia) ↗</a>
+        <a href="https://www.ebay.com" target="_blank" class="hlink">eBay ↗</a>
+        <a href="https://www.amazon.com" target="_blank" class="hlink">Amazon ↗</a>
+        <a href="https://www.laptopscreen.com" target="_blank" class="hlink">LaptopScreen.com ↗</a>
+      </div>
+    </div>
+  </div>
 </header>
 </div>
 <div class="orders-tab-nav" style="margin-bottom:16px;">
@@ -2244,14 +2258,16 @@ function updateAuthBtn() {
   var staffSubBtn = el('adminSubBtnStaff'); if (staffSubBtn) staffSubBtn.classList.toggle('hidden', !isOwner);
   var chp = el('chpassBtn'); if (chp) chp.style.display = (authd && !isOwner) ? 'inline' : 'none';
   el('suppliersDropdown').style.display = authd ? 'block' : 'none';
+  if (el('suppliersDropdown2')) el('suppliersDropdown2').style.display = authd ? 'block' : 'none';
   el('supplierDemo').style.display = authd ? 'none' : 'inline';
   document.body.classList.toggle('demo-mode', !authd);
   updateFollowUpBadge();
   updateCartTabBadge();
 }
 
-function closeAllMenus() { el('suppliersMenu')?.classList.add('hidden'); el('contactsMenu')?.classList.add('hidden'); el('contactsMenu3')?.classList.add('hidden'); }
+function closeAllMenus() { ['suppliersMenu','suppliersMenu2','contactsMenu','contactsMenu3'].forEach(function(id){ el(id)?.classList.add('hidden'); }); }
 function toggleSuppliers(e) { e.stopPropagation(); e.preventDefault(); var m = el('suppliersMenu'); var open = !m.classList.contains('hidden'); closeAllMenus(); if (!open) m.classList.remove('hidden'); }
+function toggleSuppliers2(e) { e.stopPropagation(); e.preventDefault(); var m = el('suppliersMenu2'); var open = !m.classList.contains('hidden'); closeAllMenus(); if (!open) m.classList.remove('hidden'); }
 function toggleContacts(e) { e.stopPropagation(); e.preventDefault(); var m = el('contactsMenu'); var open = !m.classList.contains('hidden'); closeAllMenus(); if (!open) m.classList.remove('hidden'); }
 function toggleContacts3(e) { e.stopPropagation(); e.preventDefault(); var m = el('contactsMenu3'); var open = !m.classList.contains('hidden'); closeAllMenus(); if (!open) m.classList.remove('hidden'); }
 function copyContact(btn, addr) { navigator.clipboard?.writeText(addr).then(function() { var orig = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(function() { btn.textContent = orig; }, 1800); }); }
@@ -2553,7 +2569,7 @@ function buildQuoteText() {
     lines.push('You save: $' + savings + ' 🎉');
     lines.push('');
     lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
-  } else if (type1 === 'iphone_screen' && model1 && mode1 === 'select') {
+  } else if (type1 === 'iphone_screen' && model1 && tier1 !== 'manual') {
     // ── iPhone screen — standard / premium choice ─────────────
     var prices = spLookup(model1) || {};
     var hasStd = prices.standard != null, hasPrem = prices.premium != null;
@@ -2574,6 +2590,15 @@ function buildQuoteText() {
       lines.push(model1 + ' — ' + opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(fullPrice(price,'iphone_screen') + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
       lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
     }
+  } else if (tier1 === 'manual') {
+    // ── Manual cost — expedited same-day special order ─────────
+    var itemLabel = (type1 === 'iphone_screen' && model1) ? model1 + ' screen repair' : label1 + (model1Label ? ' ' + model1Label : '') + ' repair';
+    lines.push('Good news — we can get your ' + itemLabel + ' done today as a same-day special order.');
+    lines.push('');
+    lines.push('Expedited same-day special order — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
+    lines.push('We\'ll source the part specifically for you and have it completed the same day. Comes with a warranty.');
+    lines.push('');
+    lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
   } else {
     // ── Single non-screen repair ───────────────────────────────
     lines.push(label1 + model1Label + tier1Label + ' repair — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
@@ -3669,7 +3694,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-45';
+var APP_VERSION = '20260514-46';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
