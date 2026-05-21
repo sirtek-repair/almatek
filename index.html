@@ -1025,8 +1025,8 @@
     </div>
 
     <div class="card" id="settingsTokenSection" style="margin-top:16px;">
-      <div class="staff-section-title">🔑 Inventory Token</div>
-      <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Connects to Airtable inventory. Owner only.</p>
+      <div class="staff-section-title">🔑 Airtable Token</div>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Connects to Airtable inventory. Enter your AUTH_PASS token.</p>
       <div style="display:flex;gap:6px;">
         <input type="password" id="settingsApiToken" placeholder="Token value" autocomplete="off" style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
         <button onclick="saveSettingsToken()" style="padding:9px 14px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
@@ -1181,7 +1181,7 @@
 
 <!-- API Pass Modal -->
 <div id="apiPassModal" class="chpass-overlay hidden">
-  <div class="chpass-box"><h3>🔑 Inventory Token</h3><p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Enter your Inventory Token (AUTH_PASS) to connect to inventory.</p><input type="password" id="apiPassModalInput" placeholder="AUTH_PASS value" autocomplete="off" onkeydown="if(event.key==='Enter') saveApiPassModal()" /><div class="chpass-err" id="apiPassModalErr"></div><div class="chpass-actions" style="margin-top:10px;"><button class="chpass-cancel" onclick="el('apiPassModal').classList.add('hidden')">Cancel</button><button class="chpass-save" onclick="saveApiPassModal()">Save</button></div></div>
+  <div class="chpass-box"><h3>🔑 Airtable Token</h3><p style="font-size:13px;color:var(--muted);margin:0 0 14px;">Enter your Inventory Token (AUTH_PASS) to connect to inventory.</p><input type="password" id="apiPassModalInput" placeholder="AUTH_PASS value" autocomplete="off" onkeydown="if(event.key==='Enter') saveApiPassModal()" /><div class="chpass-err" id="apiPassModalErr"></div><div class="chpass-actions" style="margin-top:10px;"><button class="chpass-cancel" onclick="el('apiPassModal').classList.add('hidden')">Cancel</button><button class="chpass-save" onclick="saveApiPassModal()">Save</button></div></div>
 </div>
 
 <!-- Change Password Modal -->
@@ -3574,7 +3574,7 @@ function saveApiPassModal() {
 }
 
 function pushTokenToScript() {
-  if (!apiPass) { showToast('Set the Inventory Token first (🔑 button)'); return; }
+  if (!apiPass) { showToast('Set the Airtable Token first (🔑 button)'); return; }
   if (!USERS_SCRIPT_URL) { showToast('Connect the Google Script first'); return; }
   sheetsCall({ action: 'saveConfig', apiPass: apiPass }).then(function(r) {
     showToast(r && r.ok ? 'Inventory token saved ✓ — staff can now auto-configure on login' : 'Save failed');
@@ -3634,7 +3634,7 @@ function openSettingsTab() {
   if (USERS_SCRIPT_URL && el('pricingScriptUrl')) el('pricingScriptUrl').value = USERS_SCRIPT_URL;
   el('settingsPassCurrent').value = ''; el('settingsPassNew').value = ''; el('settingsPassConfirm').value = '';
   el('settingsPassErr').textContent = ''; el('settingsScriptErr').textContent = ''; el('settingsTokenErr').textContent = '';
-  var tok = el('settingsTokenSection'); if (tok) tok.style.display = isOwner ? 'block' : 'none';
+  var tok = el('settingsTokenSection'); if (tok) tok.style.display = authd ? 'block' : 'none';
   var chp = el('settingsChangePassSection'); if (chp) chp.style.display = (authd && !isOwner) ? 'block' : 'none';
 }
 function savePricingScriptUrl() {
@@ -3715,7 +3715,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-48';
+var APP_VERSION = '20260514-49';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
