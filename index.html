@@ -452,7 +452,6 @@
       <option value="back_glass_swap">frame swap</option>
       <option value="battery">battery / small parts</option>
       <option value="device">iPad / Android / Laptop</option>
-      <option value="kimi">kimi repair</option>
     </select>
     <div id="factoryScreenBadge" class="hidden" style="margin-top:10px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.04em;"></div>
   </div>
@@ -586,7 +585,6 @@
       <option value="back_glass_swap">frame swap</option>
       <option value="battery">battery / small parts</option>
       <option value="device">iPad / Android / Laptop</option>
-      <option value="kimi">kimi repair</option>
     </select>
 
     <div id="cost2Wrap" class="hidden">
@@ -3716,7 +3714,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-50';
+var APP_VERSION = '20260514-51';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
