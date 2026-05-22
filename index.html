@@ -1240,6 +1240,7 @@ let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2=
 const el = id => document.getElementById(id);
 
 function fullPrice(cost, type) { return cost * 1.2 + LABOR[type]; }
+const TRANSIT_FEE = { kimi: 6 };
 function withTax(price) { return Math.ceil(price * 1.12875); }
 function initGlassPriceTags() {
   var fixed = { 84: 95, 94: 107, 110: 125 };
@@ -1250,11 +1251,11 @@ function initGlassPriceTags() {
 }
 function getPrice1() {
   if (type1 === 'back_glass') { return cost1 > 0 ? cost1 : 0; }
-  return cost1 > 0 ? fullPrice(cost1, type1) : 0;
+  return cost1 > 0 ? fullPrice(cost1, type1) + (TRANSIT_FEE[type1] || 0) : 0;
 }
 function getPrice2() {
   if (type2 === 'back_glass') { return cost2 > 0 ? cost2 : 0; }
-  return cost2 > 0 ? fullPrice(cost2, type2) : 0;
+  return cost2 > 0 ? fullPrice(cost2, type2) + (TRANSIT_FEE[type2] || 0) : 0;
 }
 
 function onRepairChange() {
@@ -3715,7 +3716,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-49';
+var APP_VERSION = '20260514-50';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
