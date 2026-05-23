@@ -812,6 +812,7 @@
     <button class="orders-tab-btn" id="leadSubBtnTickets" onclick="switchLeadSubTab('tickets')">🎫 Tickets <span id="ticketsBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" id="leadSubBtnFollowUp" onclick="switchLeadSubTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" id="leadSubBtnSpecial" onclick="switchLeadSubTab('specialorder')">📦 Special Order <span id="specialOrderBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+    <button class="orders-tab-btn" id="leadSubBtnClosed" onclick="switchLeadSubTab('closed')">🗂 Closed <span id="closedBadge" class="hidden" style="background:#6b7280;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button id="syncBtn" onclick="syncFromSheets()" title="Sync with cloud" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;padding:4px 8px;color:var(--muted);line-height:1;">↻</button>
   </div>
 
@@ -879,6 +880,11 @@
   </div>
   <div id="leadViewSpecialOrder" class="hidden">
     <div id="specialOrderList" style="margin-top:4px;"></div>
+  </div>
+  <div id="leadViewClosed" class="hidden">
+    <div style="padding:8px 0 10px;"><span style="font-size:13px;color:var(--muted);">Closed leads and completed tickets</span></div>
+    <div id="closedLeadsList"></div>
+    <div id="closedTicketsList"></div>
   </div>
 
   <div id="leadDetailModal" class="chpass-overlay hidden" onclick="closeLeadDetail()">
@@ -1588,18 +1594,21 @@ function switchTicketSubView(view) {
 function switchLeadSubTab(tab) {
   closeAllMenus();
   leadSubTab = tab;
-  var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup', isSpecial = tab === 'specialorder';
+  var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup', isSpecial = tab === 'specialorder', isClosed = tab === 'closed';
   el('leadViewLeads').classList.toggle('hidden', !isLeads);
   el('leadViewTickets').classList.toggle('hidden', !isTickets);
   el('leadViewFollowUp').classList.toggle('hidden', !isFollowUp);
   el('leadViewSpecialOrder').classList.toggle('hidden', !isSpecial);
+  el('leadViewClosed').classList.toggle('hidden', !isClosed);
   el('leadSubBtnLeads').classList.toggle('active', isLeads);
   el('leadSubBtnTickets').classList.toggle('active', isTickets);
   el('leadSubBtnFollowUp').classList.toggle('active', isFollowUp);
   el('leadSubBtnSpecial').classList.toggle('active', isSpecial);
+  el('leadSubBtnClosed').classList.toggle('active', isClosed);
   var newLeadBtn = el('newLeadBtn'); if (newLeadBtn) newLeadBtn.style.display = isLeads ? '' : 'none';
   if (isFollowUp) renderFollowUpTab();
   else if (isSpecial) renderSpecialOrdersList();
+  else if (isClosed) renderClosedTab();
   else if (isTickets) { if (ticketSubView === 'closed') renderPickedUpList(); else renderTicketsList(); }
   else if (typeof renderLeadsList === 'function') renderLeadsList();
 }
@@ -2509,7 +2518,7 @@ function getStatusColor(s) { var colors = { new:'#3b82f6', contacted:'#10b981', 
 function renderLeadsList() {
   if (!authd) { el('leadsList').innerHTML = '<div class="demo-inv-note">Sample Data · Log in to see real data</div>' + DEMO_LEADS.map(function(l) { var badge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>'; var dateStr = new Date(l.createdAt).toLocaleDateString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric'}); return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name cx-name">' + l.name + '</div><div class="inv-item-model">' + l.phone + (l.device?' · '+l.device:'') + '</div></div>' + badge + '</div>' + (l.issue?'<div class="inv-item-meta">'+l.issue.substring(0,60)+'</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + '</div></div>'; }).join(''); return; }
   var search = (el('leadSearch')?.value || '').toLowerCase();
-  var filtered = leadsStorage.filter(function(l) { if (l.status === 'converted') return false; var match = !search || (l.name||'').toLowerCase().includes(search) || (l.phone||'').includes(search); return match && (leadFilterStatus === 'all' || l.status === leadFilterStatus); });
+  var filtered = leadsStorage.filter(function(l) { if (l.status === 'converted' || l.status === 'closed_lost') return false; var match = !search || (l.name||'').toLowerCase().includes(search) || (l.phone||'').includes(search); return match && (leadFilterStatus === 'all' || l.status === leadFilterStatus); });
   filtered.sort(function(a,b) { return new Date(b.createdAt || 0) - new Date(a.createdAt || 0); });
   var selectBtnLabel = leadSelectMode ? '✕ Cancel Select' : '☐ Select';
   var selectBar = '<div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><button onclick="toggleLeadSelectMode()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">' + selectBtnLabel + '</button></div>';
@@ -2929,9 +2938,55 @@ function updateFollowUpBadge() {
 }
 function updateLeadsBadge() {
   var badge = el('leadsBadge'); if (!badge) return;
-  var count = leadsStorage.filter(function(l) { return l.status !== 'converted'; }).length;
+  var count = leadsStorage.filter(function(l) { return l.status !== 'converted' && l.status !== 'closed_lost'; }).length;
   badge.textContent = count;
   badge.classList.toggle('hidden', count === 0);
+  updateClosedBadge();
+}
+function updateClosedBadge() {
+  var badge = el('closedBadge'); if (!badge) return;
+  var closedLeads = leadsStorage.filter(function(l) { return l.status === 'closed_lost'; }).length;
+  var closedTickets = ticketsStorage.filter(function(t) { return t.status === 'completed'; }).length;
+  var count = closedLeads + closedTickets;
+  badge.textContent = count;
+  badge.classList.toggle('hidden', count === 0);
+}
+function renderClosedTab() {
+  var leadsEl = el('closedLeadsList'), ticketsEl = el('closedTicketsList'); if (!leadsEl || !ticketsEl) return;
+  var closedLeads = leadsStorage.filter(function(l) { return l.status === 'closed_lost'; });
+  closedLeads.sort(function(a,b) { return new Date(b.closedAt || b.updatedAt || 0) - new Date(a.closedAt || a.updatedAt || 0); });
+  if (closedLeads.length) {
+    leadsEl.innerHTML = '<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;padding:4px 0 8px;">Closed Leads</div>' +
+      closedLeads.map(function(l) {
+        var dateStr = (l.closedAt || l.updatedAt) ? new Date(l.closedAt || l.updatedAt).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric'}) : '';
+        var phoneLine = (l.phone||'') + (l.device ? ' · ' + l.device : '');
+        return '<div class="inv-item" onclick="openLeadDetail(\'' + l.id + '\')" style="cursor:pointer;opacity:0.8;">' +
+          '<div class="inv-item-top"><div><div class="inv-item-name cx-name">' + (l.name||'Unnamed') + '</div>' +
+          '<div class="inv-item-model">' + phoneLine + '</div></div>' +
+          '<span class="stock-badge" style="background:#6b728020;color:#6b7280;">Closed</span></div>' +
+          (l.issue?'<div class="inv-item-meta">'+l.issue.substring(0,60)+'</div>':'') +
+          '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Closed ' + dateStr + '</div></div>';
+      }).join('');
+  } else {
+    leadsEl.innerHTML = '';
+  }
+  var closedTickets = ticketsStorage.filter(function(t) { return t.status === 'completed'; });
+  closedTickets.sort(function(a,b) { return new Date(b.closedAt || b.updatedAt || 0) - new Date(a.closedAt || a.updatedAt || 0); });
+  if (closedTickets.length) {
+    ticketsEl.innerHTML = '<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;padding:12px 0 8px;">Completed Tickets</div>' +
+      closedTickets.map(function(t) {
+        var dateStr = t.closedAt ? new Date(t.closedAt).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric'}) : '';
+        return '<div class="inv-item" onclick="openTicketDetail(\'' + t.id + '\')" style="cursor:pointer;opacity:0.8;">' +
+          '<div class="inv-item-top"><div><div class="inv-item-name cx-name">' + (t.name||'Unnamed') + '</div>' +
+          '<div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div>' +
+          '<span style="font-size:14px;font-weight:700;color:#10b981;">' + (t.quote ? '$'+t.quote : '') + '</span></div>' +
+          (t.issue?'<div class="inv-item-meta">'+t.issue.substring(0,60)+'</div>':'') +
+          '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Picked up ' + dateStr + '</div></div>';
+      }).join('');
+  } else {
+    ticketsEl.innerHTML = (!closedLeads.length) ? '<div class="orders-empty-state">No closed items yet</div>' : '';
+  }
+  updateClosedBadge();
 }
 
 function renderPickedUpList() {
@@ -3101,6 +3156,7 @@ function updateTicketsBadge() {
   badge.textContent = active.length;
   badge.classList.toggle('hidden', active.length === 0);
   updateSpecialOrderBadge();
+  updateClosedBadge();
 }
 function updateSpecialOrderBadge() {
   var badge = el('specialOrderBadge'); if (!badge) return;
@@ -3716,7 +3772,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-53';
+var APP_VERSION = '20260523-54';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
