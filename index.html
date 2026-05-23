@@ -1673,7 +1673,7 @@ function sheetsCall(payload) {
 
 let allInvRecords = [], activeFilter = 'all', invLoaded = false;
 function selName(v) { return v ? (typeof v === 'object' ? (v.name || '') : v) : ''; }
-var INV_CACHE_TTL = 10 * 60 * 1000, ORDERS_CACHE_TTL = 5 * 60 * 1000;
+var INV_CACHE_TTL = 60 * 60 * 1000, ORDERS_CACHE_TTL = 30 * 60 * 1000;
 function getCache(key) { try { var raw = localStorage.getItem(key); if (!raw) return null; var obj = JSON.parse(raw); if (Date.now() - obj.ts > (key.includes('orders') ? ORDERS_CACHE_TTL : INV_CACHE_TTL)) { localStorage.removeItem(key); return null; } return obj.data; } catch(e) { return null; } }
 function setCache(key, data) { try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {} }
 function clearCache(key) { try { localStorage.removeItem(key); } catch(e) {} }
@@ -3716,7 +3716,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260514-52';
+var APP_VERSION = '20260514-53';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
