@@ -1058,12 +1058,13 @@
       <button onclick="pushTokenToScript()" style="margin-top:8px;width:100%;padding:9px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:var(--green);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">☁ Save Token to Script</button>
       <div id="settingsTokenErr" class="chpass-err" style="margin-top:6px;"></div>
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:6px;">ReviewAskr Table ID</div>
-        <div style="display:flex;gap:6px;">
-          <input type="text" id="settingsReviewTbl" placeholder="tbl…" autocomplete="off" style="flex:1;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;font-family:monospace;" />
-          <button onclick="saveReviewTblId()" style="padding:8px 14px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:6px;">ReviewAskr Table</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px;">
+          <input type="text" id="settingsReviewTbl" placeholder="tbl… (auto-filled after create)" autocomplete="off" style="flex:1;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:monospace;outline:none;" />
+          <button onclick="saveReviewTblId()" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
         </div>
-        <p style="font-size:11px;color:var(--muted);margin:6px 0 0;line-height:1.5;">Create a table in your Airtable base with fields: Name, Phone, Device, TicketId, Status, ContactCount, AddedAt, CapturedAt, AddedBy. Paste the table ID (tbl…) here to sync ReviewAskr across all staff devices.</p>
+        <button id="createReviewTblBtn" onclick="createReviewAskrTable()" style="width:100%;padding:9px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);color:#f59e0b;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">⭐ Create ReviewAskr Table in Airtable</button>
+        <p style="font-size:11px;color:var(--muted);margin:6px 0 0;line-height:1.5;">Creates the table and all fields automatically. Requires Airtable token above to be set.</p>
       </div>
     </div>
 
@@ -3082,6 +3083,43 @@ function saveReviewTblId() {
   showToast(val ? 'ReviewAskr table saved ✓' : 'ReviewAskr table ID cleared');
   if (val && authd) fetchReviewAskrFromAT();
 }
+function createReviewAskrTable() {
+  if (!apiPass) { showToast('Set the Airtable token first'); return; }
+  var btn = el('createReviewTblBtn');
+  if (btn) { btn.textContent = 'Creating…'; btn.disabled = true; }
+  atFetch('meta/bases/' + AT_BASE + '/tables', {
+    method: 'POST',
+    body: JSON.stringify({
+      name: 'ReviewAskr',
+      fields: [
+        { name: 'Name', type: 'singleLineText' },
+        { name: 'Phone', type: 'singleLineText' },
+        { name: 'Device', type: 'singleLineText' },
+        { name: 'TicketId', type: 'singleLineText' },
+        { name: 'Status', type: 'singleLineText' },
+        { name: 'ContactCount', type: 'number', options: { precision: 0 } },
+        { name: 'AddedAt', type: 'singleLineText' },
+        { name: 'CapturedAt', type: 'singleLineText' },
+        { name: 'AddedBy', type: 'singleLineText' }
+      ]
+    })
+  }).then(function(data) {
+    if (btn) { btn.textContent = '⭐ Create ReviewAskr Table in Airtable'; btn.disabled = false; }
+    if (data && data.id) {
+      AT_REVIEW_TBL = data.id;
+      localStorage.setItem('almatek_review_tbl', data.id);
+      var rtbl = el('settingsReviewTbl'); if (rtbl) rtbl.value = data.id;
+      if (btn) { btn.textContent = '✓ Table Created'; btn.style.background = 'rgba(16,185,129,0.12)'; btn.style.borderColor = 'rgba(16,185,129,0.4)'; btn.style.color = '#10b981'; }
+      showToast('ReviewAskr table created ✓');
+    } else {
+      var msg = (data && data.error) ? (data.error.message || JSON.stringify(data.error)) : 'Unknown error';
+      showToast('Error: ' + msg);
+    }
+  }).catch(function() {
+    if (btn) { btn.textContent = '⭐ Create ReviewAskr Table in Airtable'; btn.disabled = false; }
+    showToast('Network error — check token and try again');
+  });
+}
 function _raFields(r) {
   return { Name: r.name || '', Phone: r.phone || '', Device: r.device || '', TicketId: r.ticketId || '', Status: r.status || 'pending', ContactCount: r.contactCount || 0, AddedAt: r.addedAt || '', CapturedAt: r.capturedAt || '', AddedBy: r.addedBy || '' };
 }
@@ -3968,7 +4006,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260523-59';
+var APP_VERSION = '20260523-60';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
