@@ -1652,7 +1652,7 @@ function switchLeadSubTab(tab) {
 // Worker + Airtable config
 var WORKER_URL = 'https://almatek.sirtek-repair.workers.dev';
 const AT_BASE = 'appDFaflvCWvIGhZB', AT_INV = 'tblGqxylJqQjAgJ40', AT_ORDERS = 'tbli8pFcvU1mV5O6B', AT_SOLD = 'tblTw2ZVlJABAkJoo', AT_LEADS_TBL = 'tblDmh7FfklhbHI2s', AT_TICKETS_TBL = 'tblrKmv6arnS9HNp6';
-var AT_REVIEW_TBL = localStorage.getItem('almatek_review_tbl') || '';
+var AT_REVIEW_TBL = localStorage.getItem('almatek_review_tbl') || 'tblNTzV5bsBNgbkLU';
 const OWNER_PASS_HASH = 'f60a3e2e8ee48ddcc27f5e2089da6588067de28ea9a1d0c124cfdab30f062d48';
 if (localStorage.getItem('almatek_auth_v') !== '2') { localStorage.removeItem('almatek_pass'); localStorage.removeItem('almatek_is_owner'); localStorage.setItem('almatek_auth_v', '2'); }
 var authPass = localStorage.getItem('almatek_pass') || '', apiPass = localStorage.getItem('almatek_api_pass') || '', isOwner = localStorage.getItem('almatek_is_owner') === 'true', currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
@@ -4012,7 +4012,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260525-61';
+var APP_VERSION = '20260525-62';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
