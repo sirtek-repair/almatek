@@ -1071,13 +1071,19 @@
       <button onclick="resetScriptConnection()" style="width:100%;padding:9px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Reset Connection</button>
     </div>
 
-    <div class="card" id="settingsChangePassSection" style="margin-top:16px;margin-bottom:24px;">
+    <div class="card" id="settingsChangePassSection" style="margin-top:16px;">
       <div class="staff-section-title">Change Password</div>
       <input type="password" id="settingsPassCurrent" placeholder="Current password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:10px;" />
       <input type="password" id="settingsPassNew" placeholder="New password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:8px;" />
       <input type="password" id="settingsPassConfirm" placeholder="Confirm new password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:8px;" onkeydown="if(event.key==='Enter') saveSettingsPassword()" />
       <button onclick="saveSettingsPassword()" style="margin-top:10px;width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Update Password</button>
       <div id="settingsPassErr" class="chpass-err" style="margin-top:6px;"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px;margin-bottom:24px;">
+      <div class="staff-section-title">Session</div>
+      <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Logged in as <strong id="settingsCurrentUser" style="color:var(--text);">—</strong></p>
+      <button onclick="onAuthBtnClick()" style="width:100%;padding:10px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);color:#ef4444;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Log Out</button>
     </div>
   </div>
 
@@ -2116,9 +2122,10 @@ var authd = !!(authPass || isOwner);
 function onAuthBtnClick() {
   if (authd) {
     if (confirm('Log out?')) {
-      localStorage.removeItem('almatek_pass'); localStorage.removeItem('almatek_current_user'); localStorage.removeItem('almatek_is_owner');
-      authPass = ''; authd = false; isOwner = false; currentUser = '';
+      localStorage.removeItem('almatek_pass'); localStorage.removeItem('almatek_current_user'); localStorage.removeItem('almatek_is_owner'); localStorage.removeItem('almatek_user_structure');
+      authPass = ''; authd = false; isOwner = false; currentUser = ''; currentUserStructure = 'standard';
       updateAuthBtn();
+      switchTab('quote');
     }
   } else { el('authInput').value = ''; el('authError').textContent = ''; el('authOverlay').classList.remove('hidden'); setTimeout(function() { el('authInput').focus(); }, 100); }
 }
@@ -3825,6 +3832,7 @@ function openSettingsTab() {
   el('settingsPassErr').textContent = ''; el('settingsScriptErr').textContent = ''; el('settingsTokenErr').textContent = '';
   var tok = el('settingsTokenSection'); if (tok) tok.style.display = authd ? 'block' : 'none';
   var chp = el('settingsChangePassSection'); if (chp) chp.style.display = (authd && !isOwner) ? 'block' : 'none';
+  var cu = el('settingsCurrentUser'); if (cu) cu.textContent = currentUser ? (currentUser + (isOwner ? ' (Owner)' : ' (Staff)')) : (isOwner ? 'Owner' : 'Staff');
 }
 function savePricingScriptUrl() {
   var url = (el('pricingScriptUrl').value || '').trim();
@@ -3904,7 +3912,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260523-57';
+var APP_VERSION = '20260523-58';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
