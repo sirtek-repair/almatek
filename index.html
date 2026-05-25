@@ -813,6 +813,7 @@
     <button class="orders-tab-btn" id="leadSubBtnFollowUp" onclick="switchLeadSubTab('followup')">📅 Follow-up <span id="followUpBadge" class="hidden" style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" id="leadSubBtnSpecial" onclick="switchLeadSubTab('specialorder')">📦 Special Order <span id="specialOrderBadge" class="hidden" style="background:#3b82f6;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button class="orders-tab-btn" id="leadSubBtnClosed" onclick="switchLeadSubTab('closed')">🗂 Closed <span id="closedBadge" class="hidden" style="background:#6b7280;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
+    <button class="orders-tab-btn" id="leadSubBtnReview" onclick="switchLeadSubTab('review')">⭐ ReviewAskr <span id="reviewAskrBadge" class="hidden" style="background:#f59e0b;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700;margin-left:2px;"></span></button>
     <button id="syncBtn" onclick="syncFromSheets()" title="Sync with cloud" style="margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;padding:4px 8px;color:var(--muted);line-height:1;">↻</button>
   </div>
 
@@ -885,6 +886,18 @@
     <div style="padding:8px 0 10px;"><span style="font-size:13px;color:var(--muted);">Closed leads and completed tickets</span></div>
     <div id="closedLeadsList"></div>
     <div id="closedTicketsList"></div>
+  </div>
+  <div id="leadViewReview" class="hidden">
+    <div style="display:flex;align-items:center;gap:6px;padding:8px 0 6px;">
+      <button class="orders-tab-btn active" id="reviewSubBtnPending" onclick="switchReviewSubTab('pending')">Pending</button>
+      <button class="orders-tab-btn" id="reviewSubBtnCaptured" onclick="switchReviewSubTab('captured')">⭐ Captured</button>
+    </div>
+    <div id="reviewSubViewPending">
+      <div id="reviewPendingList"></div>
+    </div>
+    <div id="reviewSubViewCaptured" class="hidden">
+      <div id="reviewCapturedList"></div>
+    </div>
   </div>
 
   <div id="leadDetailModal" class="chpass-overlay hidden" onclick="closeLeadDetail()">
@@ -985,7 +998,10 @@
         <button onclick="addTicketNote()" style="width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Add Note</button>
       </div>
     </div>
-    <div style="display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;">
+    <div style="padding:0 16px 8px;flex-shrink:0;">
+      <button onclick="addToReviewAskr(currentTicketId)" style="width:100%;padding:9px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);color:#f59e0b;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">⭐ Add to ReviewAskr</button>
+    </div>
+    <div style="display:flex;gap:8px;padding:0 16px 12px;border-top:none;flex-shrink:0;">
       <button onclick="revertTicketToLead(currentTicketId)" style="flex:1;padding:8px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">↩ Revert to Lead</button>
       <button onclick="deleteTicket(currentTicketId)" style="flex:1;padding:8px;background:none;border:1px solid #ef4444;color:#ef4444;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">🗑️ Delete</button>
     </div>
@@ -1594,21 +1610,24 @@ function switchTicketSubView(view) {
 function switchLeadSubTab(tab) {
   closeAllMenus();
   leadSubTab = tab;
-  var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup', isSpecial = tab === 'specialorder', isClosed = tab === 'closed';
+  var isLeads = tab === 'leads', isTickets = tab === 'tickets', isFollowUp = tab === 'followup', isSpecial = tab === 'specialorder', isClosed = tab === 'closed', isReview = tab === 'review';
   el('leadViewLeads').classList.toggle('hidden', !isLeads);
   el('leadViewTickets').classList.toggle('hidden', !isTickets);
   el('leadViewFollowUp').classList.toggle('hidden', !isFollowUp);
   el('leadViewSpecialOrder').classList.toggle('hidden', !isSpecial);
   el('leadViewClosed').classList.toggle('hidden', !isClosed);
+  el('leadViewReview').classList.toggle('hidden', !isReview);
   el('leadSubBtnLeads').classList.toggle('active', isLeads);
   el('leadSubBtnTickets').classList.toggle('active', isTickets);
   el('leadSubBtnFollowUp').classList.toggle('active', isFollowUp);
   el('leadSubBtnSpecial').classList.toggle('active', isSpecial);
   el('leadSubBtnClosed').classList.toggle('active', isClosed);
+  el('leadSubBtnReview').classList.toggle('active', isReview);
   var newLeadBtn = el('newLeadBtn'); if (newLeadBtn) newLeadBtn.style.display = isLeads ? '' : 'none';
   if (isFollowUp) renderFollowUpTab();
   else if (isSpecial) renderSpecialOrdersList();
   else if (isClosed) renderClosedTab();
+  else if (isReview) switchReviewSubTab(reviewSubTab || 'pending');
   else if (isTickets) { if (ticketSubView === 'closed') renderPickedUpList(); else renderTicketsList(); }
   else if (typeof renderLeadsList === 'function') renderLeadsList();
 }
@@ -3005,6 +3024,94 @@ function renderPickedUpList() {
   }).join('');
 }
 
+// ── ReviewAskr ────────────────────────────────────────────────────────────────
+var reviewAskrStorage = [], reviewSubTab = 'pending';
+const REVIEW_LINK_URL = 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D';
+function loadReviewAskr() { try { reviewAskrStorage = JSON.parse(localStorage.getItem('almatek_reviewaskr') || '[]'); } catch(e) { reviewAskrStorage = []; } updateReviewAskrBadge(); }
+function saveReviewAskr() { localStorage.setItem('almatek_reviewaskr', JSON.stringify(reviewAskrStorage)); }
+function updateReviewAskrBadge() {
+  var badge = el('reviewAskrBadge'); if (!badge) return;
+  var count = reviewAskrStorage.filter(function(r) { return r.status === 'pending'; }).length;
+  badge.textContent = count;
+  badge.classList.toggle('hidden', count === 0);
+}
+function addToReviewAskr(ticketId) {
+  var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
+  var exists = reviewAskrStorage.find(function(r) { return r.ticketId === ticketId; });
+  if (exists) { showToast('Already in ReviewAskr'); switchLeadSubTab('review'); closeTicketDetail(); return; }
+  reviewAskrStorage.push({ id: 'ra_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), name: ticket.name, phone: ticket.phone, device: ticket.device, ticketId: ticket.id, addedAt: new Date().toISOString(), addedBy: currentUser || 'staff', contactCount: 0, lastContactedAt: null, status: 'pending', capturedAt: null });
+  saveReviewAskr(); updateReviewAskrBadge(); closeTicketDetail(); switchLeadSubTab('review'); showToast('Added to ReviewAskr ✓');
+}
+function reviewContactBump(id) {
+  var r = reviewAskrStorage.find(function(x) { return x.id === id; }); if (!r) return;
+  r.contactCount = (r.contactCount || 0) + 1;
+  r.lastContactedAt = new Date().toISOString();
+  saveReviewAskr(); renderReviewAskrPending(); showToast('Contacted +1 ✓');
+}
+function reviewMarkCaptured(id) {
+  var r = reviewAskrStorage.find(function(x) { return x.id === id; }); if (!r) return;
+  r.status = 'captured'; r.capturedAt = new Date().toISOString();
+  saveReviewAskr(); updateReviewAskrBadge(); renderReviewAskrPending(); showToast('Review captured! ⭐');
+}
+function reviewRemove(id) {
+  if (!confirm('Remove from ReviewAskr?')) return;
+  reviewAskrStorage = reviewAskrStorage.filter(function(r) { return r.id !== id; });
+  saveReviewAskr(); updateReviewAskrBadge(); renderReviewAskrPending(); showToast('Removed');
+}
+function reviewCopyLink() {
+  navigator.clipboard.writeText(REVIEW_LINK_URL).then(function() { showToast('Review link copied! 🔗'); }).catch(function() { showToast('Copy failed — try manually'); });
+}
+function switchReviewSubTab(tab) {
+  reviewSubTab = tab;
+  var isPending = tab === 'pending';
+  el('reviewSubBtnPending').classList.toggle('active', isPending);
+  el('reviewSubBtnCaptured').classList.toggle('active', !isPending);
+  el('reviewSubViewPending').classList.toggle('hidden', !isPending);
+  el('reviewSubViewCaptured').classList.toggle('hidden', isPending);
+  if (isPending) renderReviewAskrPending(); else renderReviewAskrCaptured();
+}
+function renderReviewAskrPending() {
+  var list = el('reviewPendingList'); if (!list) return;
+  var pending = reviewAskrStorage.filter(function(r) { return r.status === 'pending'; });
+  pending.sort(function(a,b) { return new Date(a.addedAt) - new Date(b.addedAt); });
+  if (!pending.length) { list.innerHTML = '<div class="orders-empty-state">No pending review requests<br><span style="font-size:12px;color:var(--muted);">Add customers from a ticket using ⭐ Add to ReviewAskr</span></div>'; return; }
+  list.innerHTML = pending.map(function(r) {
+    var contactStr = r.contactCount > 0 ? (r.contactCount + 'x contacted') : 'Not yet contacted';
+    var contactColor = r.contactCount > 0 ? '#10b981' : 'var(--muted)';
+    var lastStr = r.lastContactedAt ? (' · ' + new Date(r.lastContactedAt).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric'})) : '';
+    var addedStr = new Date(r.addedAt).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric'});
+    return '<div class="inv-item">' +
+      '<div class="inv-item-top"><div><div class="inv-item-name cx-name">' + (r.name||'Unnamed') + '</div>' +
+      '<div class="inv-item-model">' + (r.phone||'') + (r.device ? ' · ' + r.device : '') + '</div></div>' +
+      '<span style="font-size:11px;font-weight:600;color:' + contactColor + ';">' + contactStr + lastStr + '</span></div>' +
+      '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + addedStr + '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;">' +
+      '<button onclick="reviewCopyLink()" style="padding:7px 4px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">🔗 Copy Link</button>' +
+      '<button onclick="reviewContactBump(\'' + r.id + '\')" style="padding:7px 4px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📞 Contacted</button>' +
+      '<button onclick="reviewMarkCaptured(\'' + r.id + '\')" style="padding:7px 4px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">⭐ Captured!</button>' +
+      '</div>' +
+      '<div style="margin-top:6px;text-align:right;"><button onclick="reviewRemove(\'' + r.id + '\')" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:2px 4px;">✕ Remove</button></div>' +
+      '</div>';
+  }).join('');
+}
+function renderReviewAskrCaptured() {
+  var list = el('reviewCapturedList'); if (!list) return;
+  var captured = reviewAskrStorage.filter(function(r) { return r.status === 'captured'; });
+  captured.sort(function(a,b) { return new Date(b.capturedAt) - new Date(a.capturedAt); });
+  if (!captured.length) { list.innerHTML = '<div class="orders-empty-state">No reviews captured yet</div>'; return; }
+  list.innerHTML = captured.map(function(r) {
+    var capturedStr = r.capturedAt ? new Date(r.capturedAt).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric'}) : '';
+    return '<div class="inv-item" style="opacity:0.85;">' +
+      '<div class="inv-item-top"><div><div class="inv-item-name cx-name">' + (r.name||'Unnamed') + '</div>' +
+      '<div class="inv-item-model">' + (r.phone||'') + (r.device ? ' · ' + r.device : '') + '</div></div>' +
+      '<span style="font-size:22px;line-height:1;">⭐</span></div>' +
+      (r.contactCount ? '<div class="inv-item-meta">Contacted ' + r.contactCount + 'x before capture</div>' : '') +
+      '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Captured ' + capturedStr + '</div>' +
+      '</div>';
+  }).join('');
+}
+loadReviewAskr();
+
 function renderFollowUpTab() {
   var list = el('followUpList'); if (!list) return;
   var info = el('followUpSyncInfo');
@@ -3772,7 +3879,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260523-55';
+var APP_VERSION = '20260523-56';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
