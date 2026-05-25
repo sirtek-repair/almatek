@@ -1064,7 +1064,7 @@
           <button onclick="saveReviewTblId()" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
         </div>
         <button id="createReviewTblBtn" onclick="createReviewAskrTable()" style="width:100%;padding:9px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);color:#f59e0b;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">⭐ Create ReviewAskr Table in Airtable</button>
-        <p style="font-size:11px;color:var(--muted);margin:6px 0 0;line-height:1.5;">Creates the table and all fields automatically. Requires Airtable token above to be set.</p>
+        <p style="font-size:11px;color:var(--muted);margin:6px 0 0;line-height:1.5;">Creates the table and all fields automatically. Token must have <strong style="color:var(--text);">schema:bases:write</strong> scope (update at airtable.com/create/tokens).</p>
       </div>
     </div>
 
@@ -3112,8 +3112,14 @@ function createReviewAskrTable() {
       if (btn) { btn.textContent = '✓ Table Created'; btn.style.background = 'rgba(16,185,129,0.12)'; btn.style.borderColor = 'rgba(16,185,129,0.4)'; btn.style.color = '#10b981'; }
       showToast('ReviewAskr table created ✓');
     } else {
-      var msg = (data && data.error) ? (data.error.message || JSON.stringify(data.error)) : 'Unknown error';
-      showToast('Error: ' + msg);
+      var errType = (data && data.error && data.error.type) ? data.error.type : '';
+      var errMsg = (data && data.error) ? (data.error.message || JSON.stringify(data.error)) : 'Unknown error';
+      var isPermErr = errType === 'INVALID_PERMISSIONS' || errType === 'NOT_AUTHORIZED' || (errMsg && errMsg.toLowerCase().includes('permission'));
+      if (isPermErr) {
+        showToast('Token needs "schema:bases:write" scope — update it at airtable.com/create/tokens', 6000);
+      } else {
+        showToast('Error: ' + errMsg);
+      }
     }
   }).catch(function() {
     if (btn) { btn.textContent = '⭐ Create ReviewAskr Table in Airtable'; btn.disabled = false; }
@@ -4006,7 +4012,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260523-60';
+var APP_VERSION = '20260525-61';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
