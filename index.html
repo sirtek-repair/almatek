@@ -1038,7 +1038,7 @@
 
   <div id="profileSubViewSettings" class="hidden">
     <div class="card">
-      <div class="staff-section-title">Staff Script</div>
+      <div class="staff-section-title">Database Script</div>
       <p style="font-size:12px;color:var(--muted);margin:4px 0 12px;">Script URL for data sync. Share this link with staff to connect their app.</p>
       <input type="url" id="settingsScriptUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
       <div style="display:flex;gap:6px;margin-top:8px;">
@@ -1057,6 +1057,14 @@
       </div>
       <button onclick="pushTokenToScript()" style="margin-top:8px;width:100%;padding:9px;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:var(--green);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">☁ Save Token to Script</button>
       <div id="settingsTokenErr" class="chpass-err" style="margin-top:6px;"></div>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:6px;">ReviewAskr Table ID</div>
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="settingsReviewTbl" placeholder="tbl…" autocomplete="off" style="flex:1;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;font-family:monospace;" />
+          <button onclick="saveReviewTblId()" style="padding:8px 14px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin:6px 0 0;line-height:1.5;">Create a table in your Airtable base with fields: Name, Phone, Device, TicketId, Status, ContactCount, AddedAt, CapturedAt, AddedBy. Paste the table ID (tbl…) here to sync ReviewAskr across all staff devices.</p>
+      </div>
     </div>
 
     <div class="card" style="margin-top:16px;">
@@ -1643,6 +1651,7 @@ function switchLeadSubTab(tab) {
 // Worker + Airtable config
 var WORKER_URL = 'https://almatek.sirtek-repair.workers.dev';
 const AT_BASE = 'appDFaflvCWvIGhZB', AT_INV = 'tblGqxylJqQjAgJ40', AT_ORDERS = 'tbli8pFcvU1mV5O6B', AT_SOLD = 'tblTw2ZVlJABAkJoo', AT_LEADS_TBL = 'tblDmh7FfklhbHI2s', AT_TICKETS_TBL = 'tblrKmv6arnS9HNp6';
+var AT_REVIEW_TBL = localStorage.getItem('almatek_review_tbl') || '';
 const OWNER_PASS_HASH = 'f60a3e2e8ee48ddcc27f5e2089da6588067de28ea9a1d0c124cfdab30f062d48';
 if (localStorage.getItem('almatek_auth_v') !== '2') { localStorage.removeItem('almatek_pass'); localStorage.removeItem('almatek_is_owner'); localStorage.setItem('almatek_auth_v', '2'); }
 var authPass = localStorage.getItem('almatek_pass') || '', apiPass = localStorage.getItem('almatek_api_pass') || '', isOwner = localStorage.getItem('almatek_is_owner') === 'true', currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
@@ -2209,6 +2218,7 @@ function tryAuth() {
         authPass = '_auth_'; authd = true; isOwner = true; currentUser = 'Sir'; localStorage.setItem('almatek_current_user', 'Sir');
         el('authOverlay').classList.add('hidden');
         updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
+        if (AT_REVIEW_TBL && apiPass) fetchReviewAskrFromAT();
         if (USERS_SCRIPT_URL) {
           sheetsCall({ action: 'getConfig' }).then(function(cfg) {
             if (cfg && cfg.ok) applyLoginConfig(cfg);
@@ -2291,6 +2301,7 @@ function onStaffLoginSuccess(pass, name, structure, data) {
   authd = true; isOwner = false; localStorage.setItem('almatek_is_owner', 'false');
   el('authOverlay').classList.add('hidden');
   updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
+  if (AT_REVIEW_TBL && apiPass) fetchReviewAskrFromAT();
   if (!apiPass && USERS_SCRIPT_URL) {
     sheetsCall({ action: 'getConfig' }).then(function(cfg) {
       if (cfg && cfg.ok) applyLoginConfig(cfg);
@@ -3059,8 +3070,49 @@ function renderPickedUpList() {
 // ── ReviewAskr ────────────────────────────────────────────────────────────────
 var reviewAskrStorage = [], reviewSubTab = 'pending';
 const REVIEW_LINK_URL = 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D';
-function loadReviewAskr() { try { reviewAskrStorage = JSON.parse(localStorage.getItem('almatek_reviewaskr') || '[]'); } catch(e) { reviewAskrStorage = []; } updateReviewAskrBadge(); }
+function loadReviewAskr() {
+  try { reviewAskrStorage = JSON.parse(localStorage.getItem('almatek_reviewaskr') || '[]'); } catch(e) { reviewAskrStorage = []; }
+  updateReviewAskrBadge();
+  if (authd && AT_REVIEW_TBL) fetchReviewAskrFromAT();
+}
 function saveReviewAskr() { localStorage.setItem('almatek_reviewaskr', JSON.stringify(reviewAskrStorage)); }
+function saveReviewTblId() {
+  var val = (el('settingsReviewTbl').value || '').trim();
+  AT_REVIEW_TBL = val; localStorage.setItem('almatek_review_tbl', val);
+  showToast(val ? 'ReviewAskr table saved ✓' : 'ReviewAskr table ID cleared');
+  if (val && authd) fetchReviewAskrFromAT();
+}
+function _raFields(r) {
+  return { Name: r.name || '', Phone: r.phone || '', Device: r.device || '', TicketId: r.ticketId || '', Status: r.status || 'pending', ContactCount: r.contactCount || 0, AddedAt: r.addedAt || '', CapturedAt: r.capturedAt || '', AddedBy: r.addedBy || '' };
+}
+function fetchReviewAskrFromAT() {
+  if (!AT_REVIEW_TBL || !apiPass) return;
+  atFetch(AT_BASE + '/' + AT_REVIEW_TBL + '?pageSize=100').then(function(data) {
+    if (data.error || !data.records) return;
+    var merged = data.records.map(function(rec) {
+      var f = rec.fields;
+      return { id: 'ra_at_' + rec.id, _atId: rec.id, name: f['Name'] || '', phone: f['Phone'] || '', device: f['Device'] || '', ticketId: f['TicketId'] || '', status: f['Status'] || 'pending', contactCount: parseInt(f['ContactCount']) || 0, addedAt: f['AddedAt'] || rec.createdTime || '', capturedAt: f['CapturedAt'] || '', addedBy: f['AddedBy'] || '' };
+    });
+    reviewAskrStorage = merged;
+    saveReviewAskr(); updateReviewAskrBadge();
+    if (leadSubTab === 'review') switchReviewSubTab(reviewSubTab || 'pending');
+  });
+}
+function syncReviewEntry(r) {
+  if (!AT_REVIEW_TBL || !apiPass) return;
+  var fields = _raFields(r);
+  if (r._atId) {
+    atFetch(AT_BASE + '/' + AT_REVIEW_TBL + '/' + r._atId, { method: 'PATCH', body: JSON.stringify({ fields: fields }) });
+  } else {
+    atFetch(AT_BASE + '/' + AT_REVIEW_TBL, { method: 'POST', body: JSON.stringify({ fields: fields }) }).then(function(data) {
+      if (data.id) { r._atId = data.id; r.id = 'ra_at_' + data.id; saveReviewAskr(); }
+    });
+  }
+}
+function deleteReviewEntry(r) {
+  if (!AT_REVIEW_TBL || !apiPass || !r._atId) return;
+  atFetch(AT_BASE + '/' + AT_REVIEW_TBL + '/' + r._atId, { method: 'DELETE' });
+}
 function updateReviewAskrBadge() {
   var badge = el('reviewAskrBadge'); if (!badge) return;
   var count = reviewAskrStorage.filter(function(r) { return r.status === 'pending'; }).length;
@@ -3071,23 +3123,26 @@ function addToReviewAskr(ticketId) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
   var exists = reviewAskrStorage.find(function(r) { return r.ticketId === ticketId; });
   if (exists) { showToast('Already in ReviewAskr'); switchLeadSubTab('review'); closeTicketDetail(); return; }
-  reviewAskrStorage.push({ id: 'ra_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), name: ticket.name, phone: ticket.phone, device: ticket.device, ticketId: ticket.id, addedAt: new Date().toISOString(), addedBy: currentUser || 'staff', contactCount: 0, lastContactedAt: null, status: 'pending', capturedAt: null });
-  saveReviewAskr(); updateReviewAskrBadge(); closeTicketDetail(); switchLeadSubTab('review'); showToast('Added to ReviewAskr ✓');
+  var entry = { id: 'ra_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), name: ticket.name, phone: ticket.phone, device: ticket.device, ticketId: ticket.id, addedAt: new Date().toISOString(), addedBy: currentUser || 'staff', contactCount: 0, lastContactedAt: null, status: 'pending', capturedAt: null };
+  reviewAskrStorage.push(entry);
+  saveReviewAskr(); syncReviewEntry(entry); updateReviewAskrBadge(); closeTicketDetail(); switchLeadSubTab('review'); showToast('Added to ReviewAskr ✓');
 }
 function reviewContactBump(id) {
   var r = reviewAskrStorage.find(function(x) { return x.id === id; }); if (!r) return;
   r.contactCount = (r.contactCount || 0) + 1;
   r.lastContactedAt = new Date().toISOString();
-  saveReviewAskr(); renderReviewAskrPending(); showToast('Contacted +1 ✓');
+  saveReviewAskr(); syncReviewEntry(r); renderReviewAskrPending(); showToast('Contacted +1 ✓');
 }
 function reviewMarkCaptured(id) {
   var r = reviewAskrStorage.find(function(x) { return x.id === id; }); if (!r) return;
   r.status = 'captured'; r.capturedAt = new Date().toISOString();
-  saveReviewAskr(); updateReviewAskrBadge(); renderReviewAskrPending(); showToast('Review captured! ⭐');
+  saveReviewAskr(); syncReviewEntry(r); updateReviewAskrBadge(); renderReviewAskrPending(); showToast('Review captured! ⭐');
 }
 function reviewRemove(id) {
   if (!confirm('Remove from ReviewAskr?')) return;
-  reviewAskrStorage = reviewAskrStorage.filter(function(r) { return r.id !== id; });
+  var r = reviewAskrStorage.find(function(x) { return x.id === id; });
+  if (r) deleteReviewEntry(r);
+  reviewAskrStorage = reviewAskrStorage.filter(function(x) { return x.id !== id; });
   saveReviewAskr(); updateReviewAskrBadge(); renderReviewAskrPending(); showToast('Removed');
 }
 function reviewCopyLink() {
@@ -3833,6 +3888,7 @@ function openSettingsTab() {
   var tok = el('settingsTokenSection'); if (tok) tok.style.display = authd ? 'block' : 'none';
   var chp = el('settingsChangePassSection'); if (chp) chp.style.display = (authd && !isOwner) ? 'block' : 'none';
   var cu = el('settingsCurrentUser'); if (cu) cu.textContent = currentUser ? (currentUser + (isOwner ? ' (Owner)' : ' (Staff)')) : (isOwner ? 'Owner' : 'Staff');
+  var rtbl = el('settingsReviewTbl'); if (rtbl) rtbl.value = AT_REVIEW_TBL || '';
 }
 function savePricingScriptUrl() {
   var url = (el('pricingScriptUrl').value || '').trim();
@@ -3912,7 +3968,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260523-58';
+var APP_VERSION = '20260523-59';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
