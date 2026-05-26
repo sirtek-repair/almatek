@@ -3496,11 +3496,14 @@ function openTicketDetail(ticketId) {
   html += '<button type="button" onclick="setTicketTier(\'standard\',\'' + ticket.id + '\')" style="' + stdStyle + '">Standard</button>';
   html += '<button type="button" onclick="setTicketTier(\'premium\',\'' + ticket.id + '\')" style="' + premStyle + '">⭐ Premium</button></div>';
   // Customer info
+  var tInStyle = 'flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;font-weight:600;font-family:inherit;';
+  var tSaveBtnStyle = 'padding:5px 10px;background:var(--accent);border:none;color:#fff;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;';
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">';
   html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Phone</div><div style="font-size:14px;font-weight:600;">' + (ticket.phone||'—') + '</div></div>';
-  html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Device</div><div style="font-size:14px;font-weight:600;">' + (ticket.device||'—') + '</div></div></div>';
+  html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">DEVICE</div><div style="display:flex;gap:6px;align-items:center;"><input type="text" id="ticketDeviceEdit" value="' + escQ(ticket.device||'') + '" style="' + tInStyle + '" /><button onclick="saveTicketField(\'' + ticket.id + '\',\'device\',\'ticketDeviceEdit\')" style="' + tSaveBtnStyle + '">Save</button></div></div>';
+  html += '</div>';
   if (ticket.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + ticket.email + '</div></div>';
-  if (ticket.issue) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Issue</div><div style="font-size:13px;">' + ticket.issue + '</div></div>';
+  html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ISSUE</div><textarea id="ticketIssueEdit" rows="2" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;outline:none;" onfocus="this.style.borderColor=\'var(--accent)\'" onblur="this.style.borderColor=\'var(--border)\'">' + (ticket.issue||'').replace(/</g,'&lt;') + '</textarea><button onclick="saveTicketField(\'' + ticket.id + '\',\'issue\',\'ticketIssueEdit\')" style="margin-top:6px;padding:6px 14px;background:var(--accent);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Save</button></div>';
   if (ticket.address) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">📍 Address</div><div style="font-size:13px;">' + ticket.address + '</div></div>';
   // Stepper
   var stepperHtml = stages.map(function(s, i) {
@@ -3583,6 +3586,13 @@ function openTicketDetail(ticketId) {
 }
 
 function closeTicketDetail() { el('ticketDetailModal').classList.add('hidden'); currentTicketId = null; if (el('ticketNoteText')) el('ticketNoteText').value = ''; }
+function saveTicketField(ticketId, field, inputId) {
+  var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
+  var val = (el(inputId) ? el(inputId).value : '').trim();
+  ticket[field] = val; ticket.updatedAt = new Date().toISOString();
+  saveTicketsToStorage(); syncTicket(ticket);
+  renderTicketsList(); openTicketDetail(ticketId); showToast('Saved ✓');
+}
 
 function advanceTicketStatus(ticketId) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
@@ -4012,7 +4022,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260525-62';
+var APP_VERSION = '20260525-63';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
