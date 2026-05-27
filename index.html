@@ -1826,7 +1826,7 @@ function switchOrdersView(view) {
   if (btns[2]) btns[2].classList.toggle('active', view === 'ordered');
   if (view === 'needorder') renderNeedOrderList();
   else if (view === 'cart') renderCartTab();
-  else if (view === 'ordered') { ordersLoading2 = false; clearCache('almatek_orders_cache'); loadOrderRecords(); }
+  else if (view === 'ordered') { ordersLoading2 = false; loadOrderRecords(); }
 }
 
 function loadOrderRecords() {
@@ -1998,15 +1998,31 @@ function setOrderedFilter(f, btn) {
 }
 function updateOrderedPendingBadge() {
   var badge = el('orderedPendingBadge'); if (!badge) return;
-  var count = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; }).length;
+  var count = allOrderRecords.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE'] && !r.fields['Status'] && !r.fields['status'] && !r._received; }).length;
   badge.textContent = count;
   badge.classList.toggle('hidden', count === 0);
+}
+function getOrderedItemName(r) {
+  // Try the hardcoded field ID first
+  var name = r.fields['fldF0TJARgHugOh83'];
+  if (name && typeof name === 'string') return name;
+  // Scan fields for a linked record array, cross-ref with allInvRecords
+  var fields = r.fields;
+  for (var fld in fields) {
+    var val = fields[fld];
+    if (Array.isArray(val) && val.length && typeof val[0] === 'string' && val[0].startsWith('rec')) {
+      var invRec = allInvRecords.find(function(ir) { return ir.id === val[0]; });
+      if (invRec) return invRec.fields['fldWzYeFcqm0qnxD8'] || '—';
+    }
+  }
+  // Fallback: try common field names (in case fetch returns by name)
+  return r.fields['Name'] || r.fields['name'] || r.fields['Item Name'] || '—';
 }
 function renderOrderedList() {
   var listEl = el('ordersOrderedList'); if (!listEl) return;
   updateOrderedPendingBadge();
   var records = allOrderRecords.slice();
-  if (orderedFilter === 'pending') records = records.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE']; });
+  if (orderedFilter === 'pending') records = records.filter(function(r) { return !r.fields['fldwGKyfgOuue1eyE'] && !r.fields['Status'] && !r.fields['status'] && !r._received; });
   if (!records.length) {
     listEl.innerHTML = '<div class="orders-empty-state">' + (orderedFilter === 'pending' ? 'No pending orders — all received ✓' : 'No orders yet') + '</div>';
     return;
@@ -2015,12 +2031,13 @@ function renderOrderedList() {
     return new Date(b.fields['fldeHBNhXCrqAJrjp'] || b.createdTime || 0) - new Date(a.fields['fldeHBNhXCrqAJrjp'] || a.createdTime || 0);
   });
   listEl.innerHTML = records.map(function(r) {
-    var name = r.fields['fldF0TJARgHugOh83'] || '—';
-    var qty = r.fields['fldbKVKkNgZtShHwh'] || 1;
-    var supplier = r.fields['fldVq43gyw9HVLYNI'] ? (r.fields['fldVq43gyw9HVLYNI'].name || r.fields['fldVq43gyw9HVLYNI']) : '';
-    var rawDate = r.fields['fldeHBNhXCrqAJrjp'] || r.createdTime;
+    var name = getOrderedItemName(r);
+    var qty = r.fields['fldbKVKkNgZtShHwh'] || r.fields['QTY'] || r.fields['Qty'] || 1;
+    var sup = r.fields['fldVq43gyw9HVLYNI'] || r.fields['supplier'] || r.fields['Supplier'] || '';
+    var supplier = sup && typeof sup === 'object' ? (sup.name || '') : (sup || '');
+    var rawDate = r.fields['fldeHBNhXCrqAJrjp'] || r.fields['date recieved'] || r.createdTime;
     var date = rawDate ? new Date(rawDate).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric'}) : '';
-    var isReceived = !!r.fields['fldwGKyfgOuue1eyE'];
+    var isReceived = !!(r.fields['fldwGKyfgOuue1eyE'] || r.fields['Status'] || r.fields['status'] || r._received);
     var action = isReceived
       ? '<span class="order-status received">✓ Received</span>'
       : '<div style="display:flex;align-items:center;gap:6px;"><input type="number" min="1" value="' + qty + '" id="rcvQty_' + r.id + '" style="width:52px;padding:4px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;text-align:center;" /><button class="order-item-btn receive" onclick="receiveOrder(\'' + r.id + '\')">✓ Receive</button></div>';
@@ -2032,10 +2049,14 @@ function receiveOrder(orderId) {
   var qtyEl = el('rcvQty_' + orderId);
   var qty = qtyEl ? (parseInt(qtyEl.value) || 1) : 1;
   if (!confirm('Mark ' + qty + ' unit(s) as received into inventory?')) return;
-  atFetch(AT_BASE + '/' + AT_ORDERS + '/' + orderId, { method: 'PATCH', body: JSON.stringify({ fields: { 'fldwGKyfgOuue1eyE': 'inv received' } }) }).then(function(data) {
-    if (data.error) { showToast('Error — could not mark received'); return; }
+  atFetch(AT_BASE + '/' + AT_ORDERS + '/' + orderId, { method: 'PATCH', body: JSON.stringify({ fields: { 'fldwGKyfgOuue1eyE': 'inv received' }, typecast: true }) }).then(function(data) {
+    if (data.error) {
+      var errMsg = (data.error && data.error.message) ? data.error.message : (typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+      showToast('Receive error: ' + errMsg, 5000);
+      return;
+    }
     showToast('Received into inventory ✓');
-    allOrderRecords = allOrderRecords.map(function(r) { return r.id === orderId ? Object.assign({}, r, { fields: Object.assign({}, r.fields, { 'fldwGKyfgOuue1eyE': { name: 'inv received' } }) }) : r; });
+    allOrderRecords = allOrderRecords.map(function(r) { return r.id === orderId ? Object.assign({}, r, { _received: true, fields: Object.assign({}, r.fields, { 'fldwGKyfgOuue1eyE': 'inv received' }) }) : r; });
     setCache('almatek_orders_cache', allOrderRecords);
     clearCache('almatek_inv_cache');
     invLoaded = false; allInvRecords = [];
@@ -4022,7 +4043,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260525-63';
+var APP_VERSION = '20260527-64';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
