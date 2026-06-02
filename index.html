@@ -1311,7 +1311,7 @@ let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2=
 const el = id => document.getElementById(id);
 
 function fullPrice(cost, type) { return cost * 1.2 + LABOR[type]; }
-const TRANSIT_FEE = { kimi: 6, skymobile: 20 };
+const TRANSIT_FEE = { kimi: 6, skymobile: 25 };
 function withTax(price) { return Math.ceil(price * 1.12875); }
 function initGlassPriceTags() {
   var fixed = { 84: 95, 94: 107, 110: 125 };
@@ -4110,7 +4110,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260527-66';
+var APP_VERSION = '20260527-67';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
