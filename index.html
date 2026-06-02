@@ -452,7 +452,10 @@
       <option value="back_glass_swap">frame swap</option>
       <option value="battery">battery / small parts</option>
       <option value="device">iPad / Android / Laptop</option>
-      <option value="kimi">kimi repair</option>
+      <optgroup label="B2B Repairs">
+        <option value="kimi">Kimi Repair</option>
+        <option value="skymobile">SkyMobile Repair</option>
+      </optgroup>
     </select>
     <div id="factoryScreenBadge" class="hidden" style="margin-top:10px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.04em;"></div>
   </div>
@@ -586,7 +589,10 @@
       <option value="back_glass_swap">frame swap</option>
       <option value="battery">battery / small parts</option>
       <option value="device">iPad / Android / Laptop</option>
-      <option value="kimi">kimi repair</option>
+      <optgroup label="B2B Repairs">
+        <option value="kimi">Kimi Repair</option>
+        <option value="skymobile">SkyMobile Repair</option>
+      </optgroup>
     </select>
 
     <div id="cost2Wrap" class="hidden">
@@ -1257,8 +1263,8 @@
 <div class="inv-toast" id="invToast"></div>
 
 <script>
-const LABOR = { iphone_screen:70, back_glass:80, back_glass_swap:100, battery:60, ipad:75, kimi:35, android:85, laptop:85 };
-const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', kimi:'Kimi Repair', android:'Android Repair', laptop:'MacBook / Laptop' };
+const LABOR = { iphone_screen:70, back_glass:80, back_glass_swap:100, battery:60, ipad:75, kimi:35, skymobile:75, android:85, laptop:85 };
+const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android Repair', laptop:'MacBook / Laptop' };
 const SHARE_ICON = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
 
 const FACTORY_SCREEN_TYPE = {
@@ -1305,7 +1311,7 @@ let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2=
 const el = id => document.getElementById(id);
 
 function fullPrice(cost, type) { return cost * 1.2 + LABOR[type]; }
-const TRANSIT_FEE = { kimi: 6 };
+const TRANSIT_FEE = { kimi: 6, skymobile: 20 };
 function withTax(price) { return Math.ceil(price * 1.12875); }
 function initGlassPriceTags() {
   var fixed = { 84: 95, 94: 107, 110: 125 };
@@ -1316,10 +1322,12 @@ function initGlassPriceTags() {
 }
 function getPrice1() {
   if (type1 === 'back_glass') { return cost1 > 0 ? cost1 : 0; }
+  if (type1 === 'skymobile') { return cost1 > 0 ? cost1 + TRANSIT_FEE.skymobile + LABOR.skymobile : 0; }
   return cost1 > 0 ? fullPrice(cost1, type1) + (TRANSIT_FEE[type1] || 0) : 0;
 }
 function getPrice2() {
   if (type2 === 'back_glass') { return cost2 > 0 ? cost2 : 0; }
+  if (type2 === 'skymobile') { return cost2 > 0 ? cost2 + TRANSIT_FEE.skymobile + LABOR.skymobile : 0; }
   return cost2 > 0 ? fullPrice(cost2, type2) + (TRANSIT_FEE[type2] || 0) : 0;
 }
 
@@ -1427,7 +1435,7 @@ function tryRenderQuote() {
 }
 function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
 
-var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', ipad:'iPad', kimi:'Kimi Repair', android:'Android', laptop:'Laptop' };
+var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', ipad:'iPad', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android', laptop:'Laptop' };
 
 var attFlow = 'in_stock';
 function setTicketFlow(flow) {
@@ -2661,8 +2669,8 @@ function pushTicketAuditNote(ticket, msg) { ticket.notes.push({ text: fmtNotePre
 function buildQuoteText() {
   var p1 = getPrice1(), p2 = secondOpen ? getPrice2() : 0;
   var hasSecond = secondOpen && p2 > 0;
-  var label1 = type1 === 'kimi' ? 'Device' : (ATL_TYPE_LABELS[type1] || type1);
-  var label2 = type2 === 'kimi' ? 'Device' : (ATL_TYPE_LABELS[type2] || type2);
+  var label1 = (type1 === 'kimi' || type1 === 'skymobile') ? 'Device' : (ATL_TYPE_LABELS[type1] || type1);
+  var label2 = (type2 === 'kimi' || type2 === 'skymobile') ? 'Device' : (ATL_TYPE_LABELS[type2] || type2);
   var model1Label = model1 ? ' (' + model1 + ')' : '';
   var model2Label = model2 ? ' (' + model2 + ')' : '';
   var tier1Label = tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '';
@@ -4102,7 +4110,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260527-65';
+var APP_VERSION = '20260527-66';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
