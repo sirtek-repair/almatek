@@ -904,6 +904,7 @@
     <div style="display:flex;align-items:center;gap:6px;padding:8px 0 6px;">
       <button class="orders-tab-btn active" id="reviewSubBtnPending" onclick="switchReviewSubTab('pending')">Pending</button>
       <button class="orders-tab-btn" id="reviewSubBtnCaptured" onclick="switchReviewSubTab('captured')">⭐ Captured</button>
+      <button onclick="window.open(REVIEW_LINK_URL,'_blank')" style="margin-left:auto;padding:5px 12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">🔗 Review Link</button>
     </div>
     <div id="reviewSubViewPending">
       <div id="reviewPendingList"></div>
@@ -3191,7 +3192,7 @@ function fetchReviewAskrFromAT() {
     if (data.error || !data.records) return;
     var merged = data.records.map(function(rec) {
       var f = rec.fields;
-      return { id: 'ra_at_' + rec.id, _atId: rec.id, name: f['Name'] || '', phone: f['Phone'] || '', device: f['Device'] || '', ticketId: f['TicketId'] || '', status: f['Status'] || 'pending', contactCount: parseInt(f['ContactCount']) || 0, addedAt: f['AddedAt'] || rec.createdTime || '', capturedAt: f['CapturedAt'] || '', addedBy: f['AddedBy'] || '' };
+      return { id: 'ra_at_' + rec.id, _atId: rec.id, name: f['Name'] || '', phone: f['Phone'] || '', device: f['Device'] || '', ticketId: f['TicketId'] || '', status: f['Status'] || 'pending', contactCount: parseInt(f['ContactCount']) || 0, smsCount: parseInt(f['SmsCount']) || 0, emailCount: parseInt(f['EmailCount']) || 0, addedAt: f['AddedAt'] || rec.createdTime || '', capturedAt: f['CapturedAt'] || '', addedBy: f['AddedBy'] || '' };
     });
     reviewAskrStorage = merged;
     saveReviewAskr(); updateReviewAskrBadge();
@@ -3223,15 +3224,23 @@ function addToReviewAskr(ticketId) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
   var exists = reviewAskrStorage.find(function(r) { return r.ticketId === ticketId; });
   if (exists) { showToast('Already in ReviewAskr'); switchLeadSubTab('review'); closeTicketDetail(); return; }
-  var entry = { id: 'ra_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), name: ticket.name, phone: ticket.phone, device: ticket.device, ticketId: ticket.id, addedAt: new Date().toISOString(), addedBy: currentUser || 'staff', contactCount: 0, lastContactedAt: null, status: 'pending', capturedAt: null };
+  var entry = { id: 'ra_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), name: ticket.name, phone: ticket.phone, device: ticket.device, ticketId: ticket.id, addedAt: new Date().toISOString(), addedBy: currentUser || 'staff', contactCount: 0, smsCount: 0, emailCount: 0, lastContactedAt: null, status: 'pending', capturedAt: null };
   reviewAskrStorage.push(entry);
   saveReviewAskr(); syncReviewEntry(entry); updateReviewAskrBadge(); closeTicketDetail(); switchLeadSubTab('review'); showToast('Added to ReviewAskr ✓');
 }
-function reviewContactBump(id) {
+function reviewContactBumpSms(id) {
   var r = reviewAskrStorage.find(function(x) { return x.id === id; }); if (!r) return;
-  r.contactCount = (r.contactCount || 0) + 1;
+  r.smsCount = (r.smsCount || 0) + 1;
+  r.contactCount = (r.smsCount || 0) + (r.emailCount || 0);
   r.lastContactedAt = new Date().toISOString();
-  saveReviewAskr(); syncReviewEntry(r); renderReviewAskrPending(); showToast('Contacted +1 ✓');
+  saveReviewAskr(); syncReviewEntry(r); renderReviewAskrPending(); showToast('SMS logged ✓');
+}
+function reviewContactBumpEmail(id) {
+  var r = reviewAskrStorage.find(function(x) { return x.id === id; }); if (!r) return;
+  r.emailCount = (r.emailCount || 0) + 1;
+  r.contactCount = (r.smsCount || 0) + (r.emailCount || 0);
+  r.lastContactedAt = new Date().toISOString();
+  saveReviewAskr(); syncReviewEntry(r); renderReviewAskrPending(); showToast('Email logged ✓');
 }
 function reviewMarkCaptured(id) {
   var r = reviewAskrStorage.find(function(x) { return x.id === id; }); if (!r) return;
@@ -3296,28 +3305,35 @@ function renderReviewAskrPending() {
   var pending = reviewAskrStorage.filter(function(r) { return r.status === 'pending'; });
   pending.sort(function(a,b) { return new Date(a.addedAt) - new Date(b.addedAt); });
   if (!pending.length) { list.innerHTML = '<div class="orders-empty-state">No pending review requests<br><span style="font-size:12px;color:var(--muted);">Add customers from a ticket using ⭐ Add to ReviewAskr</span></div>'; return; }
+  var btnBase = 'padding:7px 4px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;';
+  var btnNeutral = btnBase + 'background:var(--surface2);border:1px solid var(--border);color:var(--text);';
+  var btnGreen = btnBase + 'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;';
   list.innerHTML = pending.map(function(r) {
-    var contactStr = r.contactCount > 0 ? (r.contactCount + 'x contacted') : 'Not yet contacted';
-    var contactColor = r.contactCount > 0 ? '#10b981' : 'var(--muted)';
-    var lastStr = r.lastContactedAt ? (' · ' + new Date(r.lastContactedAt).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric'})) : '';
+    var sms = r.smsCount || 0, email = r.emailCount || 0, total = sms + email;
+    var contactStr = total > 0 ? ('📱×' + sms + '  📧×' + email + '  ·  ' + total + ' total') : 'Not yet contacted';
+    var contactColor = total > 0 ? '#10b981' : 'var(--muted)';
     var addedStr = new Date(r.addedAt).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric'});
+    var smsBtnLabel = '📱 SMS' + (sms > 0 ? ' ×' + sms : '');
+    var emailBtnLabel = '📧 Email' + (email > 0 ? ' ×' + email : '');
+    var btnSmsLog = 'padding:7px 4px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:var(--accent);';
+    var btnEmailLog = 'padding:7px 4px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:#8b5cf6;';
     return '<div class="inv-item">' +
       '<div class="inv-item-top"><div><div class="inv-item-name cx-name">' + (r.name||'Unnamed') + '</div>' +
       '<div class="inv-item-model">' + (r.phone||'') + (r.device ? ' · ' + r.device : '') + '</div></div>' +
-      '<span style="font-size:11px;font-weight:600;color:' + contactColor + ';">' + contactStr + lastStr + '</span></div>' +
+      '<span style="font-size:11px;font-weight:600;color:' + contactColor + ';">' + contactStr + '</span></div>' +
       '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + addedStr + '</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">' +
-      '<button onclick="reviewCopySms(\'' + r.id + '\')" style="padding:7px 4px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📱 Copy SMS</button>' +
-      '<button onclick="reviewShareSms(\'' + r.id + '\')" style="padding:7px 4px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share SMS</button>' +
+      '<button onclick="reviewCopySms(\'' + r.id + '\')" style="' + btnNeutral + '">📱 Copy SMS</button>' +
+      '<button onclick="reviewShareSms(\'' + r.id + '\')" style="' + btnNeutral + '">📤 Share SMS</button>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;">' +
-      '<button onclick="reviewCopyEmail(\'' + r.id + '\')" style="padding:7px 4px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📧 Copy Email</button>' +
-      '<button onclick="reviewShareEmail(\'' + r.id + '\')" style="padding:7px 4px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📤 Share Email</button>' +
+      '<button onclick="reviewCopyEmail(\'' + r.id + '\')" style="' + btnNeutral + '">📧 Copy Email</button>' +
+      '<button onclick="reviewShareEmail(\'' + r.id + '\')" style="' + btnNeutral + '">📤 Share Email</button>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px;">' +
-      '<button onclick="reviewCopyLink()" style="padding:7px 4px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">🔗 Link</button>' +
-      '<button onclick="reviewContactBump(\'' + r.id + '\')" style="padding:7px 4px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📞 Contacted</button>' +
-      '<button onclick="reviewMarkCaptured(\'' + r.id + '\')" style="padding:7px 4px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">⭐ Captured!</button>' +
+      '<button onclick="reviewContactBumpSms(\'' + r.id + '\')" style="' + btnSmsLog + '">' + smsBtnLabel + '</button>' +
+      '<button onclick="reviewContactBumpEmail(\'' + r.id + '\')" style="' + btnEmailLog + '">' + emailBtnLabel + '</button>' +
+      '<button onclick="reviewMarkCaptured(\'' + r.id + '\')" style="' + btnGreen + '">⭐ Captured!</button>' +
       '</div>' +
       '<div style="margin-top:6px;text-align:right;"><button onclick="reviewRemove(\'' + r.id + '\')" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:2px 4px;">✕ Remove</button></div>' +
       '</div>';
@@ -3334,7 +3350,7 @@ function renderReviewAskrCaptured() {
       '<div class="inv-item-top"><div><div class="inv-item-name cx-name">' + (r.name||'Unnamed') + '</div>' +
       '<div class="inv-item-model">' + (r.phone||'') + (r.device ? ' · ' + r.device : '') + '</div></div>' +
       '<span style="font-size:22px;line-height:1;">⭐</span></div>' +
-      (r.contactCount ? '<div class="inv-item-meta">Contacted ' + r.contactCount + 'x before capture</div>' : '') +
+      (r.contactCount ? '<div class="inv-item-meta">Contacted ' + r.contactCount + 'x before capture' + ((r.smsCount||0) || (r.emailCount||0) ? ' (📱×' + (r.smsCount||0) + ' 📧×' + (r.emailCount||0) + ')' : '') + '</div>' : '') +
       '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Captured ' + capturedStr + '</div>' +
       '</div>';
   }).join('');
@@ -4152,7 +4168,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260527-71';
+var APP_VERSION = '20260527-72';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
