@@ -3248,6 +3248,18 @@ function reviewRemove(id) {
 function reviewCopyLink() {
   navigator.clipboard.writeText(REVIEW_LINK_URL).then(function() { showToast('Review link copied! 🔗'); }).catch(function() { showToast('Copy failed — try manually'); });
 }
+function reviewCopySms(id) {
+  var r = reviewAskrStorage.find(function(x) { return x.id === id; });
+  var msg = 'Loved your repair experience? Make our day by writing a Google review here: \n' + REVIEW_LINK_URL + '\n\nhere\'s our website! repairedcollective.com';
+  navigator.clipboard.writeText(msg).then(function() { showToast('SMS copied! 📱'); }).catch(function() { showToast('Copy failed'); });
+}
+function reviewCopyEmail(id) {
+  var r = reviewAskrStorage.find(function(x) { return x.id === id; });
+  var name = (r && r.name) ? r.name.split(' ')[0] : 'there';
+  var device = (r && r.device) ? r.device : 'your device';
+  var body = 'Subject: About your repair…\n\nHey ' + name + ',\n\nHow\'s your ' + device + ' ?\n\nStill behaving?\n\nIf you ever have issues with your repair let us know.\n\nWe\'re here to help.\n\nAnd speaking of help, we\'d love yours.\n\nIf you have a free minute we\'d be honored if you left us a Google review.\n\nThrilled actually.\n\nBecause in doing so you\'re helping a small business reach more people like you.\n\nAnd we happen to like people… call us crazy ;)\n\nCan\'t wait to hear what you have to say.\n\n' + REVIEW_LINK_URL;
+  navigator.clipboard.writeText(body).then(function() { showToast('Email copied! 📧'); }).catch(function() { showToast('Copy failed'); });
+}
 function switchReviewSubTab(tab) {
   reviewSubTab = tab;
   var isPending = tab === 'pending';
@@ -3272,8 +3284,12 @@ function renderReviewAskrPending() {
       '<div class="inv-item-model">' + (r.phone||'') + (r.device ? ' · ' + r.device : '') + '</div></div>' +
       '<span style="font-size:11px;font-weight:600;color:' + contactColor + ';">' + contactStr + lastStr + '</span></div>' +
       '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + addedStr + '</div>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;">' +
-      '<button onclick="reviewCopyLink()" style="padding:7px 4px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">🔗 Copy Link</button>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">' +
+      '<button onclick="reviewCopySms(\'' + r.id + '\')" style="padding:7px 4px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📱 Copy SMS</button>' +
+      '<button onclick="reviewCopyEmail(\'' + r.id + '\')" style="padding:7px 4px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📧 Copy Email</button>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px;">' +
+      '<button onclick="reviewCopyLink()" style="padding:7px 4px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">🔗 Link</button>' +
       '<button onclick="reviewContactBump(\'' + r.id + '\')" style="padding:7px 4px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📞 Contacted</button>' +
       '<button onclick="reviewMarkCaptured(\'' + r.id + '\')" style="padding:7px 4px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">⭐ Captured!</button>' +
       '</div>' +
@@ -4110,7 +4126,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260527-67';
+var APP_VERSION = '20260527-68';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
