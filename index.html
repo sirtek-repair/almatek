@@ -3250,7 +3250,8 @@ function reviewCopyLink() {
 }
 function reviewCopySms(id) {
   var r = reviewAskrStorage.find(function(x) { return x.id === id; });
-  var msg = 'Loved your repair experience? Make our day by writing a Google review here: \n' + REVIEW_LINK_URL + '\n\nhere\'s our website! repairedcollective.com';
+  var name = (r && r.name) ? r.name.split(' ')[0] : '';
+  var msg = (name ? 'Hey ' + name + ',\n\n' : '') + 'Loved your repair experience? Make our day by writing a Google review here: \n' + REVIEW_LINK_URL + '\n\nhere\'s our website! repairedcollective.com';
   navigator.clipboard.writeText(msg).then(function() { showToast('SMS copied! 📱'); }).catch(function() { showToast('Copy failed'); });
 }
 function reviewCopyEmail(id) {
@@ -4126,7 +4127,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260527-68';
+var APP_VERSION = '20260527-69';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
