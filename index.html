@@ -1078,7 +1078,8 @@
           <button onclick="saveReviewTblId()" style="padding:8px 14px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
         </div>
         <button id="createReviewTblBtn" onclick="createReviewAskrTable()" style="width:100%;padding:9px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);color:#f59e0b;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">⭐ Create ReviewAskr Table in Airtable</button>
-        <p style="font-size:11px;color:var(--muted);margin:6px 0 0;line-height:1.5;">Creates the table and all fields automatically. Token must have <strong style="color:var(--text);">schema:bases:write</strong> scope (update at airtable.com/create/tokens).</p>
+        <button id="migrateReviewTblBtn" onclick="migrateReviewAskrFields()" style="width:100%;margin-top:6px;padding:9px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">＋ Add Contact Tracking Fields to Existing Table</button>
+        <p style="font-size:11px;color:var(--muted);margin:6px 0 0;line-height:1.5;">Creates the table and all fields automatically. Token must have <strong style="color:var(--text);">schema:bases:write</strong> scope (update at airtable.com/create/tokens). Use the second button if your table already exists but is missing SMS/Email/Call tracking fields.</p>
       </div>
     </div>
 
@@ -3157,6 +3158,9 @@ function createReviewAskrTable() {
         { name: 'TicketId', type: 'singleLineText' },
         { name: 'Status', type: 'singleLineText' },
         { name: 'ContactCount', type: 'number', options: { precision: 0 } },
+        { name: 'SmsCount', type: 'number', options: { precision: 0 } },
+        { name: 'EmailCount', type: 'number', options: { precision: 0 } },
+        { name: 'CallCount', type: 'number', options: { precision: 0 } },
         { name: 'AddedAt', type: 'singleLineText' },
         { name: 'CapturedAt', type: 'singleLineText' },
         { name: 'AddedBy', type: 'singleLineText' }
@@ -3185,32 +3189,83 @@ function createReviewAskrTable() {
     showToast('Network error — check token and try again');
   });
 }
-function _raFields(r) {
+function _raBaseFields(r) {
   return { Name: r.name || '', Phone: r.phone || '', Device: r.device || '', TicketId: r.ticketId || '', Status: r.status || 'pending', ContactCount: r.contactCount || 0, AddedAt: r.addedAt || '', CapturedAt: r.capturedAt || '', AddedBy: r.addedBy || '' };
 }
+function _raFields(r) {
+  return Object.assign(_raBaseFields(r), { SmsCount: r.smsCount || 0, EmailCount: r.emailCount || 0, CallCount: r.callCount || 0 });
+}
+var _raExtendedSync = null; // null=unknown, true=supported, false=not supported
 function fetchReviewAskrFromAT() {
   if (!AT_REVIEW_TBL || !apiPass) return;
   atFetch(AT_BASE + '/' + AT_REVIEW_TBL + '?pageSize=100').then(function(data) {
     if (data.error || !data.records) return;
     var merged = data.records.map(function(rec) {
       var f = rec.fields;
-      return { id: 'ra_at_' + rec.id, _atId: rec.id, name: f['Name'] || '', phone: f['Phone'] || '', device: f['Device'] || '', ticketId: f['TicketId'] || '', status: f['Status'] || 'pending', contactCount: parseInt(f['ContactCount']) || 0, smsCount: parseInt(f['SmsCount']) || 0, emailCount: parseInt(f['EmailCount']) || 0, callCount: parseInt(f['CallCount']) || 0, addedAt: f['AddedAt'] || rec.createdTime || '', capturedAt: f['CapturedAt'] || '', addedBy: f['AddedBy'] || '' };
+      var local = reviewAskrStorage.find(function(x) { return x._atId === rec.id; });
+      var atSms = parseInt(f['SmsCount']); var atEmail = parseInt(f['EmailCount']); var atCall = parseInt(f['CallCount']);
+      if (!isNaN(atSms) || !isNaN(atEmail) || !isNaN(atCall)) _raExtendedSync = true;
+      return {
+        id: 'ra_at_' + rec.id, _atId: rec.id,
+        name: f['Name'] || '', phone: f['Phone'] || '', device: f['Device'] || '',
+        ticketId: f['TicketId'] || '', status: f['Status'] || 'pending',
+        contactCount: parseInt(f['ContactCount']) || 0,
+        smsCount:   !isNaN(atSms)   ? atSms   : (local ? (local.smsCount   || 0) : 0),
+        emailCount: !isNaN(atEmail) ? atEmail : (local ? (local.emailCount || 0) : 0),
+        callCount:  !isNaN(atCall)  ? atCall  : (local ? (local.callCount  || 0) : 0),
+        addedAt: f['AddedAt'] || rec.createdTime || '', capturedAt: f['CapturedAt'] || '', addedBy: f['AddedBy'] || ''
+      };
     });
     reviewAskrStorage = merged;
     saveReviewAskr(); updateReviewAskrBadge();
-    if (leadSubTab === 'review') switchReviewSubTab(reviewSubTab || 'pending');
+    var reviewTab = el('tabReview'); if (reviewTab && !reviewTab.classList.contains('hidden')) switchReviewSubTab(reviewSubTab || 'pending');
   });
 }
 function syncReviewEntry(r) {
   if (!AT_REVIEW_TBL || !apiPass) return;
-  var fields = _raFields(r);
+  var fields = _raExtendedSync === false ? _raBaseFields(r) : _raFields(r);
+  function onErr(retryWithBase, onId) {
+    if (_raExtendedSync !== false) {
+      _raExtendedSync = false;
+      var base = _raBaseFields(r);
+      atFetch(AT_BASE + '/' + AT_REVIEW_TBL + (r._atId ? '/' + r._atId : ''), { method: r._atId ? 'PATCH' : 'POST', body: JSON.stringify({ fields: base }) }).then(function(d) {
+        if (!r._atId && d && d.id) { r._atId = d.id; r.id = 'ra_at_' + d.id; saveReviewAskr(); }
+      });
+    }
+  }
   if (r._atId) {
-    atFetch(AT_BASE + '/' + AT_REVIEW_TBL + '/' + r._atId, { method: 'PATCH', body: JSON.stringify({ fields: fields }) });
+    atFetch(AT_BASE + '/' + AT_REVIEW_TBL + '/' + r._atId, { method: 'PATCH', body: JSON.stringify({ fields: fields }) }).then(function(data) {
+      if (data && data.error) onErr();
+      else _raExtendedSync = true;
+    });
   } else {
     atFetch(AT_BASE + '/' + AT_REVIEW_TBL, { method: 'POST', body: JSON.stringify({ fields: fields }) }).then(function(data) {
-      if (data.id) { r._atId = data.id; r.id = 'ra_at_' + data.id; saveReviewAskr(); }
+      if (data && data.error) { onErr(); return; }
+      if (data && data.id) { _raExtendedSync = true; r._atId = data.id; r.id = 'ra_at_' + data.id; saveReviewAskr(); }
     });
   }
+}
+function migrateReviewAskrFields() {
+  if (!apiPass || !AT_REVIEW_TBL) { showToast('Set token and table ID first'); return; }
+  var btn = el('migrateReviewTblBtn'); if (btn) { btn.textContent = 'Adding fields…'; btn.disabled = true; }
+  var newFields = [
+    { name: 'SmsCount', type: 'number', options: { precision: 0 } },
+    { name: 'EmailCount', type: 'number', options: { precision: 0 } },
+    { name: 'CallCount', type: 'number', options: { precision: 0 } }
+  ];
+  Promise.all(newFields.map(function(fld) {
+    return atFetch('meta/bases/' + AT_BASE + '/tables/' + AT_REVIEW_TBL + '/fields', { method: 'POST', body: JSON.stringify(fld) });
+  })).then(function(results) {
+    if (btn) { btn.textContent = '＋ Add Contact Tracking Fields to Existing Table'; btn.disabled = false; }
+    var errs = results.filter(function(d) { return d && d.error; });
+    if (!errs.length) { _raExtendedSync = true; showToast('Contact tracking fields added ✓ — syncing now'); fetchReviewAskrFromAT(); }
+    else {
+      var msg = errs[0].error.message || '';
+      if (msg.toLowerCase().includes('permission')) showToast('Token needs schema:bases:write scope');
+      else if (msg.toLowerCase().includes('duplicate') || msg.toLowerCase().includes('already')) { _raExtendedSync = true; showToast('Fields already exist ✓'); }
+      else showToast('Error: ' + (msg || JSON.stringify(errs[0].error)));
+    }
+  });
 }
 function deleteReviewEntry(r) {
   if (!AT_REVIEW_TBL || !apiPass || !r._atId) return;
@@ -4198,7 +4253,7 @@ function dismissInstallBanner() {
   var c = el('iosBanner'); if (c) c.style.display = 'none';
   localStorage.setItem('almatek_install_dismissed', '1');
 }
-var APP_VERSION = '20260606-75';
+var APP_VERSION = '20260606-76';
 (function() {
   var stored = localStorage.getItem('almatek_version');
   if (stored && stored !== APP_VERSION) { localStorage.setItem('almatek_version', APP_VERSION); localStorage.removeItem('almatek_pricing'); location.reload(true); return; }
