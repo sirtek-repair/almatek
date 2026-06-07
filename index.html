@@ -3556,11 +3556,11 @@ function fetchWeather() {
   _wxLastFetch = now;
   fetch('https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.0060&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=America%2FNew_York')
     .then(function(r) { return r.json(); }).then(function(d) {
-      if (d && d.current) { _wxCache.nyc = _wmoEmoji(d.current.weather_code) + ' ' + Math.round(d.current.temperature_2m) + '°F'; _applyWeather(); }
+      if (d && d.current) { var f = Math.round(d.current.temperature_2m); var c = Math.round((f-32)*5/9); _wxCache.nyc = _wmoEmoji(d.current.weather_code) + ' ' + f + '°F / ' + c + '°C'; _applyWeather(); }
     }).catch(function() {});
   fetch('https://api.open-meteo.com/v1/forecast?latitude=24.8607&longitude=67.0011&current=temperature_2m,weather_code&timezone=Asia%2FKarachi')
     .then(function(r) { return r.json(); }).then(function(d) {
-      if (d && d.current) { _wxCache.khi = _wmoEmoji(d.current.weather_code) + ' ' + Math.round(d.current.temperature_2m) + '°C'; _applyWeather(); }
+      if (d && d.current) { var c = Math.round(d.current.temperature_2m); var f = Math.round(c*9/5+32); _wxCache.khi = _wmoEmoji(d.current.weather_code) + ' ' + f + '°F / ' + c + '°C'; _applyWeather(); }
     }).catch(function() {});
 }
 fetchWeather();
