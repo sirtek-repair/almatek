@@ -175,6 +175,7 @@
     .wc-time { font-size:14px; font-weight:600; color:var(--text); }
     .wc-edit-btn { background:none; border:none; cursor:pointer; font-size:13px; color:var(--muted); padding:2px 5px; border-radius:6px; line-height:1; opacity:0.55; transition:opacity 0.15s; }
     .wc-edit-btn:hover { opacity:1; background:var(--surface2); }
+    .wc-weather { font-size:10px; color:var(--muted); font-weight:500; letter-spacing:0.02em; min-height:13px; }
     .wc-mock-badge { background:#f59e0b; color:#fff; border-radius:10px; padding:1px 6px; font-size:10px; font-weight:700; letter-spacing:0.05em; cursor:pointer; }
     .app-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:20px 16px; background:var(--surface); border:1px solid var(--border); border-radius:16px; min-width:100px; cursor:pointer; text-decoration:none; color:var(--text); transition:background 0.15s; }
     .app-tile:hover { background:var(--surface2); }
@@ -435,7 +436,7 @@
       <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Log In</button>
       <button id="chpassBtn" class="chpass-link" onclick="showChangePass()">Change Password</button>
     </div>
-    <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST2">—</div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT2">—</div></div><span class="wc-mock-badge hidden" id="wcMockBadge2" onclick="openClockMockModal()">MOCK</span><button class="wc-edit-btn" onclick="openClockMockModal()" title="Set planning time">✏️</button></div>
+    <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST2">—</div><div class="wc-weather" id="weatherNYC2"></div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT2">—</div><div class="wc-weather" id="weatherKHI2"></div></div><span class="wc-mock-badge hidden" id="wcMockBadge2" onclick="openClockMockModal()">MOCK</span><button class="wc-edit-btn" onclick="openClockMockModal()" title="Set planning time">✏️</button></div>
   </header>
 
   <div id="scheduleStrip" style="display:none;margin:0 0 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);padding:9px 14px;font-size:12.5px;line-height:1.5;">
@@ -779,7 +780,7 @@
   <header style="padding:16px 0 20px;text-align:center;">
     <img src="line-logo.jpg" width="48" height="48" style="display:block;margin:0 auto 6px;border-radius:10px;" alt="AlmaTek" />
     <h1 style="font-size:26px;font-family:Georgia,serif;font-weight:normal;text-transform:none;letter-spacing:0.01em;"><span class="brand">LeadTek</span></h1>
-    <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST">—</div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT">—</div></div><span class="wc-mock-badge hidden" id="wcMockBadge1" onclick="openClockMockModal()">MOCK</span><button class="wc-edit-btn" onclick="openClockMockModal()" title="Set planning time">✏️</button></div>
+    <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST">—</div><div class="wc-weather" id="weatherNYC"></div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT">—</div><div class="wc-weather" id="weatherKHI"></div></div><span class="wc-mock-badge hidden" id="wcMockBadge1" onclick="openClockMockModal()">MOCK</span><button class="wc-edit-btn" onclick="openClockMockModal()" title="Set planning time">✏️</button></div>
     <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;">
       <button id="newLeadBtn" onclick="showNewLeadForm()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
       <div class="hlink-dropdown" id="contactsDropdown3" style="position:relative;">
@@ -3528,6 +3529,42 @@ function resetClockMock() {
 }
 updateWorldClock();
 setInterval(updateWorldClock, 30000);
+
+var _wxCache = {};
+var _wxLastFetch = 0;
+function _wmoEmoji(c) {
+  if (c === 0) return '☀️';
+  if (c <= 1) return '🌤';
+  if (c <= 2) return '⛅';
+  if (c <= 3) return '☁️';
+  if (c <= 48) return '🌫';
+  if (c <= 55) return '🌦';
+  if (c <= 67) return '🌧';
+  if (c <= 77) return '❄️';
+  if (c <= 82) return '🌧';
+  if (c <= 86) return '❄️';
+  return '⛈';
+}
+function _applyWeather() {
+  var nyc = _wxCache.nyc || ''; var khi = _wxCache.khi || '';
+  ['weatherNYC','weatherNYC2'].forEach(function(id) { var e = el(id); if (e) e.textContent = nyc; });
+  ['weatherKHI','weatherKHI2'].forEach(function(id) { var e = el(id); if (e) e.textContent = khi; });
+}
+function fetchWeather() {
+  var now = Date.now();
+  if (now - _wxLastFetch < 20 * 60 * 1000) { _applyWeather(); return; }
+  _wxLastFetch = now;
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.0060&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=America%2FNew_York')
+    .then(function(r) { return r.json(); }).then(function(d) {
+      if (d && d.current) { _wxCache.nyc = _wmoEmoji(d.current.weather_code) + ' ' + Math.round(d.current.temperature_2m) + '°F'; _applyWeather(); }
+    }).catch(function() {});
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=24.8607&longitude=67.0011&current=temperature_2m,weather_code&timezone=Asia%2FKarachi')
+    .then(function(r) { return r.json(); }).then(function(d) {
+      if (d && d.current) { _wxCache.khi = _wmoEmoji(d.current.weather_code) + ' ' + Math.round(d.current.temperature_2m) + '°C'; _applyWeather(); }
+    }).catch(function() {});
+}
+fetchWeather();
+setInterval(fetchWeather, 20 * 60 * 1000);
 
 // Sync from Sheets on startup if already authenticated (skips login flow)
 if (authd) { setTimeout(syncFromSheets, 500); setTimeout(refreshPricingIfStale, 1000); setTimeout(loadSchedule, 1500); startScheduleRefresh(); }
