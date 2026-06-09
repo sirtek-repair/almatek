@@ -1200,7 +1200,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <span style="font-size:11px;color:var(--muted);">Rate: 1 USD =</span>
-      <input type="number" id="pkrRateInput" min="1" step="0.01" style="width:80px;padding:5px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-weight:600;font-family:inherit;outline:none;" oninput="onPkrRateEdit(this.value)" />
+      <span id="pkrRateDisplay" style="font-size:13px;font-weight:600;color:var(--text);">—</span>
       <span style="font-size:11px;color:var(--muted);">PKR</span>
       <button id="pkrRateRefreshBtn" onclick="fetchPkrRate(true)" title="Fetch live rate" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;opacity:0.7;">🔄</button>
       <span id="pkrRateStatus" style="font-size:10px;color:var(--muted);"></span>
@@ -3591,7 +3591,6 @@ var PKR_RATE_KEY = 'almatek_pkr_rate';
 var PKR_RATE_TS_KEY = 'almatek_pkr_rate_ts';
 function getPkrRate() { return parseFloat(localStorage.getItem(PKR_RATE_KEY)) || 280; }
 function savePkrRate(v) { var r = parseFloat(v); if (r > 0) localStorage.setItem(PKR_RATE_KEY, r); }
-function onPkrRateEdit(v) { savePkrRate(v); recalcCurrency(); _pkrRateStatus('manual'); }
 function calcFromPkr(v) { var r = getPkrRate(); var pkr = parseFloat(v); var inp = el('usdInput'); if (inp) inp.value = isNaN(pkr) || v === '' ? '' : (pkr / r).toFixed(2); }
 function calcFromUsd(v) { var r = getPkrRate(); var usd = parseFloat(v); var inp = el('pkrInput'); if (inp) inp.value = isNaN(usd) || v === '' ? '' : Math.round(usd * r); }
 function recalcCurrency() { var pkr = el('pkrInput'), usd = el('usdInput'); if (!pkr || !usd) return; if (pkr.value !== '') calcFromPkr(pkr.value); else if (usd.value !== '') calcFromUsd(usd.value); }
@@ -3601,19 +3600,15 @@ function swapCurrency() {
   var tmp = pkr.value; pkr.value = usd.value; usd.value = tmp;
   calcFromPkr(pkr.value);
 }
-function _pkrRateStatus(src) {
+function _pkrRateStatus() {
   var s = el('pkrRateStatus'); if (!s) return;
-  if (src === 'live') {
-    var ts = parseInt(localStorage.getItem(PKR_RATE_TS_KEY) || 0);
-    var t = ts ? new Date(ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true}) : '';
-    s.textContent = '● live' + (t ? ' · ' + t : ''); s.style.color = '#10b981';
-  } else {
-    s.textContent = '● manual'; s.style.color = 'var(--muted)';
-  }
+  var ts = parseInt(localStorage.getItem(PKR_RATE_TS_KEY) || 0);
+  var t = ts ? new Date(ts).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true}) : '';
+  s.textContent = '● live' + (t ? ' · ' + t : ''); s.style.color = '#10b981';
 }
 function fetchPkrRate(force) {
   var last = parseInt(localStorage.getItem(PKR_RATE_TS_KEY) || 0);
-  if (!force && last && Date.now() - last < 60 * 60 * 1000) { _pkrRateStatus('live'); return; }
+  if (!force && last && Date.now() - last < 60 * 60 * 1000) { _pkrRateStatus(); return; }
   var btn = el('pkrRateRefreshBtn'); if (btn) { btn.style.animation = 'spin-icon 0.8s linear infinite'; btn.style.display = 'inline-block'; }
   fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json')
     .then(function(r) { return r.json(); })
@@ -3623,15 +3618,15 @@ function fetchPkrRate(force) {
         var rate = Math.round(d.usd.pkr * 100) / 100;
         savePkrRate(rate);
         localStorage.setItem(PKR_RATE_TS_KEY, Date.now().toString());
-        var inp = el('pkrRateInput'); if (inp) inp.value = rate;
+        var disp = el('pkrRateDisplay'); if (disp) disp.textContent = rate;
         recalcCurrency();
-        _pkrRateStatus('live');
+        _pkrRateStatus();
       }
     })
     .catch(function() { if (btn) btn.style.animation = ''; });
 }
 function initPkrCalc() {
-  var inp = el('pkrRateInput'); if (inp) inp.value = getPkrRate();
+  var disp = el('pkrRateDisplay'); if (disp) disp.textContent = getPkrRate();
   fetchPkrRate(false);
 }
 // ── Ticket Search ─────────────────────────────────────────────────────────────
