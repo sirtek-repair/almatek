@@ -173,8 +173,6 @@
     .wc-item { display:flex; flex-direction:column; align-items:center; gap:1px; }
     .wc-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); }
     .wc-time { font-size:14px; font-weight:600; color:var(--text); }
-    .wc-edit-btn { background:none; border:none; cursor:pointer; font-size:13px; color:var(--muted); padding:2px 5px; border-radius:6px; line-height:1; opacity:0.55; transition:opacity 0.15s; }
-    .wc-edit-btn:hover { opacity:1; background:var(--surface2); }
     .wc-weather { font-size:10px; color:var(--muted); font-weight:500; letter-spacing:0.02em; min-height:13px; }
     .wc-mock-badge { background:#f59e0b; color:#fff; border-radius:10px; padding:1px 6px; font-size:10px; font-weight:700; letter-spacing:0.05em; cursor:pointer; }
     .app-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:20px 16px; background:var(--surface); border:1px solid var(--border); border-radius:16px; min-width:100px; cursor:pointer; text-decoration:none; color:var(--text); transition:background 0.15s; }
@@ -325,7 +323,6 @@
     header img { display: block; margin: 0 auto 6px; }
     header h1 { font-size: 30px; }
     .header-links { justify-content: center; flex-wrap: wrap; margin-top: 12px; }
-    .world-clock { position: absolute; right: 0; top: 24px; }
     #quoteColumns { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; align-items: start; }
     #quoteLeftCol, #quoteRightCol { min-width: 0; }
   }
@@ -375,6 +372,15 @@
   <button class="tab-btn" id="tabProfileBtn" onclick="switchTab('profile')">👤 Profile</button>
   <button class="tab-btn hidden" id="tabAdminBtn" onclick="switchTab('admin')">🔧 Admin</button>
   <button class="tab-btn" id="tabToolsBtn" onclick="switchTab('tools')">🚀 Tools</button>
+</div>
+
+<div class="container" id="globalClockBar" style="padding-bottom:0;">
+  <div class="world-clock" style="margin-top:0;padding:6px 0 2px;">
+    <div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST">—</div><div class="wc-weather" id="weatherNYC"></div></div>
+    <div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT">—</div><div class="wc-weather" id="weatherKHI"></div></div>
+    <span class="wc-mock-badge hidden" id="wcMockBadge" onclick="openClockMockModal()">MOCK</span>
+    <button class="wc-edit-btn" onclick="openClockMockModal()" title="Set planning time">✏️</button>
+  </div>
 </div>
 
 <!-- Quote Tab -->
@@ -436,7 +442,6 @@
       <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Log In</button>
       <button id="chpassBtn" class="chpass-link" onclick="showChangePass()">Change Password</button>
     </div>
-    <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST2">—</div><div class="wc-weather" id="weatherNYC2"></div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT2">—</div><div class="wc-weather" id="weatherKHI2"></div></div><span class="wc-mock-badge hidden" id="wcMockBadge2" onclick="openClockMockModal()">MOCK</span><button class="wc-edit-btn" onclick="openClockMockModal()" title="Set planning time">✏️</button></div>
   </header>
 
   <div id="scheduleStrip" style="display:none;margin:0 0 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);padding:9px 14px;font-size:12.5px;line-height:1.5;">
@@ -780,7 +785,6 @@
   <header style="padding:16px 0 20px;text-align:center;">
     <img src="line-logo.jpg" width="48" height="48" style="display:block;margin:0 auto 6px;border-radius:10px;" alt="AlmaTek" />
     <h1 style="font-size:26px;font-family:Georgia,serif;font-weight:normal;text-transform:none;letter-spacing:0.01em;"><span class="brand">LeadTek</span></h1>
-    <div class="world-clock"><div class="wc-item"><div class="wc-label">EST</div><div class="wc-time" id="clockEST">—</div><div class="wc-weather" id="weatherNYC"></div></div><div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT">—</div><div class="wc-weather" id="weatherKHI"></div></div><span class="wc-mock-badge hidden" id="wcMockBadge1" onclick="openClockMockModal()">MOCK</span><button class="wc-edit-btn" onclick="openClockMockModal()" title="Set planning time">✏️</button></div>
     <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;">
       <button id="newLeadBtn" onclick="showNewLeadForm()" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">+ New Lead</button>
       <div class="hlink-dropdown" id="contactsDropdown3" style="position:relative;">
@@ -3483,10 +3487,10 @@ function updateWorldClock() {
   var now = new Date(Date.now() + clockMockOffset);
   var est = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: true });
   var pkt = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit', hour12: true });
-  ['clockEST','clockEST2'].forEach(function(id) { var e = el(id); if (e) e.textContent = est; });
-  ['clockPKT','clockPKT2'].forEach(function(id) { var e = el(id); if (e) e.textContent = pkt; });
+  var eEst = el('clockEST'); if (eEst) eEst.textContent = est;
+  var ePkt = el('clockPKT'); if (ePkt) ePkt.textContent = pkt;
   var mocked = clockMockOffset !== 0;
-  ['wcMockBadge1','wcMockBadge2'].forEach(function(id) { var e = el(id); if (e) e.classList.toggle('hidden', !mocked); });
+  var eBadge = el('wcMockBadge'); if (eBadge) eBadge.classList.toggle('hidden', !mocked);
 }
 var mockZone = 'America/New_York';
 function setMockZone(zone) {
@@ -3549,8 +3553,8 @@ function _wmoEmoji(c) {
 }
 function _applyWeather() {
   var nyc = _wxCache.nyc || ''; var khi = _wxCache.khi || '';
-  ['weatherNYC','weatherNYC2'].forEach(function(id) { var e = el(id); if (e) e.textContent = nyc; });
-  ['weatherKHI','weatherKHI2'].forEach(function(id) { var e = el(id); if (e) e.textContent = khi; });
+  var eNyc = el('weatherNYC'); if (eNyc) eNyc.textContent = nyc;
+  var eKhi = el('weatherKHI'); if (eKhi) eKhi.textContent = khi;
 }
 function fetchWeather() {
   var now = Date.now();
