@@ -451,7 +451,7 @@
     </div>
   </header>
 
-  <div id="scheduleStrip" style="display:none;margin:0 0 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);padding:9px 14px;font-size:12.5px;line-height:1.5;">
+  <div id="scheduleStrip" style="display:none;margin:0 0 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);padding:10px 14px;font-size:12.5px;line-height:1.4;">
     <div id="scheduleStripContent"></div>
   </div>
 
@@ -1730,25 +1730,48 @@ function renderScheduleStrip(events, _dbg) {
   var strip=el('scheduleStrip'), content=el('scheduleStripContent'); if(!strip||!content) return;
   if(!authd){strip.style.display='none';return;}
   if(_dbg){content.innerHTML='<span style="color:var(--muted);font-size:11px;">sched:'+_dbg+'</span>'; strip.style.display=''; return;}
-  var now=new Date(), onNow=[], upcoming=[];
-  (events||[]).forEach(function(ev){
-    if(ev.allDay) return;
-    var s=new Date(ev.start), e=new Date(ev.end);
-    if(e<=now) return;
-    if(s<=now) onNow.push({name:ev.name,end:e});
-    else upcoming.push({name:ev.name,start:s,end:e});
+
+  var now = new Date();
+  // today's date string in NYC time (YYYY-MM-DD)
+  var nyNow = new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'}));
+  var todayKey = nyNow.getFullYear()+'-'+String(nyNow.getMonth()+1).padStart(2,'0')+'-'+String(nyNow.getDate()).padStart(2,'0');
+
+  var todayEvts = (events||[]).filter(function(ev){
+    if(ev.allDay) return false;
+    var s = new Date(ev.start);
+    var sNY = new Date(s.toLocaleString('en-US',{timeZone:'America/New_York'}));
+    var sKey = sNY.getFullYear()+'-'+String(sNY.getMonth()+1).padStart(2,'0')+'-'+String(sNY.getDate()).padStart(2,'0');
+    return sKey === todayKey;
   });
-  upcoming.sort(function(a,b){return a.start-b.start;});
-  var html='';
-  if(onNow.length){
-    html+='<span style="color:var(--green);">●</span> On shift: '+onNow.map(function(e){return '<strong>'+e.name+'</strong> <span style="color:var(--muted);">until '+_fmtTime(e.end)+'</span>';}).join(' · ');
-  } else {
-    html+='<span style="color:var(--muted);">● No one on shift right now</span>';
+  todayEvts.sort(function(a,b){return new Date(a.start)-new Date(b.start);});
+
+  var dateLabel = now.toLocaleDateString('en-US',{timeZone:'America/New_York',weekday:'short',month:'short',day:'numeric'});
+
+  if(!todayEvts.length){
+    content.innerHTML='<span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">'+dateLabel+'</span>  <span style="color:var(--muted);">No shifts scheduled</span>';
+    strip.style.display=''; return;
   }
-  if(upcoming.length){
-    var nx=upcoming[0];
-    html+=' &nbsp;<span style="color:var(--border);">|</span>&nbsp; Next: <strong>'+nx.name+'</strong> <span style="color:var(--muted);">at '+_fmtTime(nx.start)+'</span>';
-  }
+
+  var anyOn = todayEvts.some(function(ev){ var s=new Date(ev.start),e=new Date(ev.end); return s<=now&&e>now; });
+  var html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">'
+    +'<span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">'+dateLabel+'</span>'
+    +'<span style="font-size:10px;color:'+(anyOn?'#10b981':'var(--muted)')+';">'+(anyOn?'● on shift':'○ no one on shift')+'</span>'
+    +'</div>';
+
+  todayEvts.forEach(function(ev){
+    var s=new Date(ev.start), e=new Date(ev.end);
+    var isOn   = s<=now && e>now;
+    var isPast = e<=now;
+    var dotColor = isOn?'#10b981':(isPast?'var(--border)':'var(--accent)');
+    var nameStyle = 'font-weight:'+(isOn?'700':'500')+';color:'+(isOn?'#10b981':(isPast?'var(--muted)':'var(--text)'))+';';
+    var timeStyle = 'font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;';
+    var onTag = isOn?'<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:5px;">ON</span>':'';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;'+(isPast?'opacity:0.38;':'')+'">'
+      +'<span style="'+nameStyle+'"><span style="color:'+dotColor+';">'+(isOn?'●':isPast?'–':'○')+'</span>  '+ev.name+onTag+'</span>'
+      +'<span style="'+timeStyle+'">'+_fmtTime(s)+'&ndash;'+_fmtTime(e)+'</span>'
+      +'</div>';
+  });
+
   content.innerHTML=html; strip.style.display='';
 }
 function loadSchedule(force) {
