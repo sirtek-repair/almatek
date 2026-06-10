@@ -3538,11 +3538,12 @@ setInterval(updateWorldClock, 30000);
 
 var _wxCache = {};
 var _wxLastFetch = 0;
-function _wmoEmoji(code) {
+function _wmoEmoji(code, isDay) {
   var c = parseInt(code);
   if (isNaN(c)) return '';
-  if (c === 0) return '☀️';
-  if (c <= 1) return '🌤';
+  var day = isDay !== false;
+  if (c === 0) return day ? '☀️' : '🌙';
+  if (c <= 1) return day ? '🌤' : '🌙';
   if (c <= 2) return '⛅';
   if (c <= 3) return '☁️';
   if (c <= 48) return '🌫';
@@ -3563,13 +3564,25 @@ function fetchWeather() {
   var now = Date.now();
   if (now - _wxLastFetch < 20 * 60 * 1000) { _applyWeather(); return; }
   _wxLastFetch = now;
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.0060&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=America%2FNew_York')
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.0060&current_weather=true&current=temperature_2m&temperature_unit=fahrenheit&timezone=America%2FNew_York')
     .then(function(r) { return r.json(); }).then(function(d) {
-      if (d && d.current) { var wc = d.current.weather_code !== undefined ? d.current.weather_code : d.current.weathercode; var f = Math.round(d.current.temperature_2m); var c = Math.round((f-32)*5/9); _wxCache.nyc = _wmoEmoji(wc) + ' ' + f + '°F / ' + c + '°C'; _applyWeather(); }
+      var cw = d && d.current_weather;
+      if (cw) {
+        var f = d.current && d.current.temperature_2m !== undefined ? Math.round(d.current.temperature_2m) : Math.round(cw.temperature);
+        var c = Math.round((f - 32) * 5 / 9);
+        _wxCache.nyc = _wmoEmoji(cw.weathercode, cw.is_day !== 0) + ' ' + f + '°F / ' + c + '°C';
+        _applyWeather();
+      }
     }).catch(function() {});
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=24.8607&longitude=67.0011&current=temperature_2m,weather_code&timezone=Asia%2FKarachi')
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=24.8607&longitude=67.0011&current_weather=true&current=temperature_2m&timezone=Asia%2FKarachi')
     .then(function(r) { return r.json(); }).then(function(d) {
-      if (d && d.current) { var wc = d.current.weather_code !== undefined ? d.current.weather_code : d.current.weathercode; var c = Math.round(d.current.temperature_2m); var f = Math.round(c*9/5+32); _wxCache.khi = _wmoEmoji(wc) + ' ' + f + '°F / ' + c + '°C'; _applyWeather(); }
+      var cw = d && d.current_weather;
+      if (cw) {
+        var c = d.current && d.current.temperature_2m !== undefined ? Math.round(d.current.temperature_2m) : Math.round(cw.temperature);
+        var f = Math.round(c * 9 / 5 + 32);
+        _wxCache.khi = _wmoEmoji(cw.weathercode, cw.is_day !== 0) + ' ' + f + '°F / ' + c + '°C';
+        _applyWeather();
+      }
     }).catch(function() {});
 }
 fetchWeather();
