@@ -175,6 +175,13 @@
     .wc-time { font-size:14px; font-weight:600; color:var(--text); }
     .wc-weather { font-size:10px; color:var(--muted); font-weight:500; letter-spacing:0.02em; min-height:13px; }
     .wc-mock-badge { background:#f59e0b; color:#fff; border-radius:10px; padding:1px 6px; font-size:10px; font-weight:700; letter-spacing:0.05em; cursor:pointer; }
+    .cb { padding:13px 6px;border:none;border-radius:8px;font-family:inherit;cursor:pointer;font-size:16px;font-weight:600;transition:filter 0.1s; }
+    .cb:active { filter:brightness(0.82); }
+    .cb-num { background:var(--surface2);color:var(--text); }
+    .cb-op  { background:var(--accent);color:#fff;font-size:18px; }
+    .cb-fn  { background:var(--surface);color:var(--muted);border:1px solid var(--border); }
+    .cb-eq  { background:#10b981;color:#fff;font-size:18px; }
+    .cb-ac  { background:#ef4444;color:#fff; }
     .app-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:20px 16px; background:var(--surface); border:1px solid var(--border); border-radius:16px; min-width:100px; cursor:pointer; text-decoration:none; color:var(--text); transition:background 0.15s; }
     .app-tile:hover { background:var(--surface2); }
     .app-tile-icon { font-size:32px; line-height:1; }
@@ -1238,28 +1245,34 @@
 
 <!-- Calculator Modal -->
 <div id="calcModal" class="chpass-overlay hidden" onclick="if(event.target===this)el('calcModal').classList.add('hidden')">
-  <div class="chpass-box" style="max-width:260px;padding:16px;">
-    <div id="calcDisplay" style="background:var(--surface2);border-radius:8px;padding:10px 14px;font-size:28px;font-weight:700;text-align:right;margin-bottom:12px;letter-spacing:-0.02em;min-height:50px;display:flex;align-items:center;justify-content:flex-end;overflow:hidden;word-break:break-all;">0</div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
-      <button onclick="calcPress('AC')" style="grid-column:span 2;padding:12px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">AC</button>
-      <button onclick="calcPress('±')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;">±</button>
-      <button onclick="calcPress('÷')" style="padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;">÷</button>
-      <button onclick="calcPress('7')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">7</button>
-      <button onclick="calcPress('8')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">8</button>
-      <button onclick="calcPress('9')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">9</button>
-      <button onclick="calcPress('×')" style="padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;">×</button>
-      <button onclick="calcPress('4')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">4</button>
-      <button onclick="calcPress('5')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">5</button>
-      <button onclick="calcPress('6')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">6</button>
-      <button onclick="calcPress('−')" style="padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;">−</button>
-      <button onclick="calcPress('1')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">1</button>
-      <button onclick="calcPress('2')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">2</button>
-      <button onclick="calcPress('3')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">3</button>
-      <button onclick="calcPress('+')" style="padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;">+</button>
-      <button onclick="calcPress('0')" style="grid-column:span 2;padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;text-align:left;padding-left:20px;">0</button>
-      <button onclick="calcPress('.')" style="padding:12px;background:var(--surface2);color:var(--text);border:none;border-radius:8px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;">.</button>
-      <button onclick="calcPress('=')" style="padding:12px;background:#10b981;color:#fff;border:none;border-radius:8px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;">=</button>
+  <div class="chpass-box" style="max-width:290px;padding:16px;">
+    <div style="background:var(--surface2);border-radius:8px;padding:8px 14px 6px;margin-bottom:10px;">
+      <div id="calcExpr" style="font-size:12px;color:var(--muted);text-align:right;min-height:17px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;"></div>
+      <div id="calcDisplay" style="font-size:28px;font-weight:700;text-align:right;letter-spacing:-0.02em;min-height:44px;display:flex;align-items:center;justify-content:flex-end;overflow:hidden;word-break:break-all;">0</div>
     </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+      <button class="cb cb-ac"  onclick="calcPress('AC')">AC</button>
+      <button class="cb cb-fn"  onclick="calcPress('⌫')">⌫</button>
+      <button class="cb cb-fn"  onclick="calcPress('%')">%</button>
+      <button class="cb cb-op"  onclick="calcPress('÷')">÷</button>
+      <button class="cb cb-num" onclick="calcPress('7')">7</button>
+      <button class="cb cb-num" onclick="calcPress('8')">8</button>
+      <button class="cb cb-num" onclick="calcPress('9')">9</button>
+      <button class="cb cb-op"  onclick="calcPress('×')">×</button>
+      <button class="cb cb-num" onclick="calcPress('4')">4</button>
+      <button class="cb cb-num" onclick="calcPress('5')">5</button>
+      <button class="cb cb-num" onclick="calcPress('6')">6</button>
+      <button class="cb cb-op"  onclick="calcPress('−')">−</button>
+      <button class="cb cb-num" onclick="calcPress('1')">1</button>
+      <button class="cb cb-num" onclick="calcPress('2')">2</button>
+      <button class="cb cb-num" onclick="calcPress('3')">3</button>
+      <button class="cb cb-op"  onclick="calcPress('+')">+</button>
+      <button class="cb cb-fn"  onclick="calcPress('±')">±</button>
+      <button class="cb cb-num" onclick="calcPress('0')">0</button>
+      <button class="cb cb-num" onclick="calcPress('.')">.</button>
+      <button class="cb cb-eq"  onclick="calcPress('=')">=</button>
+    </div>
+    <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:8px;opacity:0.6;">keyboard: 0–9  + − * /  %  Enter  Backspace  Esc</div>
   </div>
 </div>
 
@@ -3603,7 +3616,7 @@ document.addEventListener('visibilitychange', function() {
 });
 
 // Calculator
-var _calcDisp = '0', _calcOp = '', _calcPrev = '', _calcFresh = false;
+var _calcDisp = '0', _calcOp = '', _calcPrev = '', _calcFresh = false, _calcJustEvaled = false;
 // ── PKR/USD Converter ────────────────────────────────────────────────────────
 var PKR_RATE_KEY = 'almatek_pkr_rate';
 var PKR_RATE_TS_KEY = 'almatek_pkr_rate_ts';
@@ -3660,27 +3673,76 @@ function clearTicketSearch() {
   var clr = el('ticketSearchClear'); if (clr) clr.style.display = 'none';
   renderTicketsList();
 }
-function openCalc() { _calcDisp='0';_calcOp='';_calcPrev='';_calcFresh=false; var d=el('calcDisplay'); if(d)d.textContent='0'; el('calcModal').classList.remove('hidden'); }
+function openCalc() {
+  _calcDisp='0';_calcOp='';_calcPrev='';_calcFresh=false;_calcJustEvaled=false;
+  _calcRefresh();
+  el('calcModal').classList.remove('hidden');
+}
+function _calcRefresh() {
+  var d=el('calcDisplay'); if(d) d.textContent=_calcDisp;
+  var e=el('calcExpr');   if(e) e.textContent=(_calcOp&&_calcPrev!=='')?(_calcPrev+' '+_calcOp):'';
+}
+function _calcEval() {
+  if (!_calcOp || _calcPrev==='') return;
+  var a=parseFloat(_calcPrev), b=parseFloat(_calcDisp), r;
+  if (_calcOp==='+') r=a+b; else if (_calcOp==='−') r=a-b; else if (_calcOp==='×') r=a*b; else r=b!==0?a/b:NaN;
+  _calcDisp=isNaN(r)?'Error':String(parseFloat(r.toFixed(10)));
+  _calcOp='';_calcPrev='';_calcFresh=false;_calcJustEvaled=true;
+}
 function calcPress(key) {
-  var ops = ['+','−','×','÷'];
-  if (key === 'AC') { _calcDisp='0';_calcOp='';_calcPrev='';_calcFresh=false; }
-  else if (key === '±') { _calcDisp = String(-parseFloat(_calcDisp)||0); }
-  else if (ops.includes(key)) { _calcPrev=_calcDisp; _calcOp=key; _calcFresh=true; }
-  else if (key === '=') {
-    if (_calcOp && _calcPrev !== '') {
-      var a=parseFloat(_calcPrev), b=parseFloat(_calcDisp), r;
-      if (_calcOp==='+') r=a+b; else if (_calcOp==='−') r=a-b; else if (_calcOp==='×') r=a*b; else r=b!==0?a/b:NaN;
-      _calcDisp = isNaN(r)?'Error':String(parseFloat(r.toFixed(10))); _calcOp='';_calcPrev='';_calcFresh=false;
+  var ops=['+','−','×','÷'];
+  if (key==='AC') {
+    _calcDisp='0';_calcOp='';_calcPrev='';_calcFresh=false;_calcJustEvaled=false;
+  } else if (key==='⌫') {
+    if (_calcDisp==='Error'||_calcDisp==='0') { _calcDisp='0'; }
+    else { _calcDisp=_calcDisp.length>1?_calcDisp.slice(0,-1):'0'; }
+    _calcJustEvaled=false;
+  } else if (key==='±') {
+    var n=parseFloat(_calcDisp); if (!isNaN(n)) _calcDisp=String(n===0?0:-n);
+    _calcJustEvaled=false;
+  } else if (key==='%') {
+    var v=parseFloat(_calcDisp);
+    if (isNaN(v)) { _calcDisp='Error'; }
+    else if (_calcOp&&_calcPrev!=='') {
+      // contextual: 100 + 20% → add 20% of 100 = 20
+      _calcDisp=String(parseFloat((parseFloat(_calcPrev)*v/100).toFixed(10)));
+    } else {
+      _calcDisp=String(parseFloat((v/100).toFixed(10)));
     }
-  } else if (key === '.') {
-    if (_calcFresh) { _calcDisp='0.'; _calcFresh=false; }
+    _calcFresh=false;_calcJustEvaled=false;
+  } else if (ops.indexOf(key)>-1) {
+    if (_calcOp&&_calcPrev!==''&&!_calcFresh) _calcEval(); // chain: finish previous op
+    _calcPrev=_calcDisp;_calcOp=key;_calcFresh=true;_calcJustEvaled=false;
+  } else if (key==='=') {
+    _calcEval();
+  } else if (key==='.') {
+    if (_calcFresh||_calcJustEvaled) { _calcDisp='0.';_calcFresh=false;_calcJustEvaled=false; }
     else if (!_calcDisp.includes('.')) _calcDisp+='.';
   } else {
-    if (_calcFresh||_calcDisp==='0'||_calcDisp==='Error') { _calcDisp=key; _calcFresh=false; }
-    else _calcDisp+=key;
+    // digit
+    if (_calcFresh||_calcDisp==='0'||_calcDisp==='Error'||_calcJustEvaled) {
+      _calcDisp=key;_calcFresh=false;_calcJustEvaled=false;
+    } else if (_calcDisp.replace(/\D/g,'').length<12) {
+      _calcDisp+=key;
+    }
   }
-  var d=el('calcDisplay'); if(d)d.textContent=_calcDisp;
+  _calcRefresh();
 }
+document.addEventListener('keydown', function(e) {
+  var modal=el('calcModal'); if(!modal||modal.classList.contains('hidden')) return;
+  var k=e.key;
+  if (k>='0'&&k<='9')            { e.preventDefault(); calcPress(k); }
+  else if (k==='.')               { e.preventDefault(); calcPress('.'); }
+  else if (k==='+')               { e.preventDefault(); calcPress('+'); }
+  else if (k==='-')               { e.preventDefault(); calcPress('−'); }
+  else if (k==='*')               { e.preventDefault(); calcPress('×'); }
+  else if (k==='/')               { e.preventDefault(); calcPress('÷'); }
+  else if (k==='%')               { e.preventDefault(); calcPress('%'); }
+  else if (k==='Enter'||k==='=')  { e.preventDefault(); calcPress('='); }
+  else if (k==='Backspace')       { e.preventDefault(); calcPress('⌫'); }
+  else if (k==='Escape')          { e.preventDefault(); calcPress('AC'); }
+  else if (k==='n')               { calcPress('±'); }
+});
 
 var currentTicketId = null;
 
