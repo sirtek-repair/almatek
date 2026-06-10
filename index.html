@@ -3682,22 +3682,34 @@ var _wxLastFetch = 0;
 var WX_CACHE_MS = 20 * 60 * 1000;
 var WX_KEY = '512bf7853c9b46e69e2213000261006';
 
-function _wapiEmoji(code, isDay) {
+function _wapiEmoji(code, isDay, precip, cloud) {
   var day = isDay !== 0;
+  var p = parseFloat(precip) || 0;
+  var cl = parseFloat(cloud) || 0;
+  // always trust: thunder, snow, fog, ice
+  if (code === 1087 || code === 1273 || code === 1276 || code === 1279 || code === 1282) return '⛈';
+  if (code === 1114 || code === 1117 || (code >= 1210 && code <= 1225) || code === 1255 || code === 1258 || code === 1066) return '❄️';
+  if (code === 1204 || code === 1207 || code === 1249 || code === 1252) return '🌨';
+  if (code === 1237 || code === 1261 || code === 1264) return '🧊';
+  if (code === 1030 || code === 1135 || code === 1147) return '🌫';
+  // rain codes: only show rain emoji if precip is actually observed
+  var isRainCode = (code >= 1063 && code <= 1201) || code === 1240 || code === 1243 || code === 1246;
+  if (isRainCode) {
+    if (p > 2)   return '🌧';
+    if (p > 0.1) return '🌦';
+    // condition says rain but none observed — fall through to cloud cover
+    if (cl > 75) return '☁️';
+    if (cl > 40) return '⛅';
+    return day ? '🌤' : '🌙';
+  }
+  // clear / cloudy
   if (code === 1000) return day ? '☀️' : '🌙';
   if (code === 1003) return '⛅';
   if (code === 1006 || code === 1009) return '☁️';
-  if (code === 1030 || code === 1135 || code === 1147) return '🌫';
-  if (code === 1087 || code === 1273 || code === 1276 || code === 1279 || code === 1282) return '⛈';
-  if (code === 1114 || code === 1117) return '❄️';
-  if (code >= 1210 && code <= 1225) return '❄️';
-  if (code === 1255 || code === 1258) return '❄️';
-  if (code === 1237 || code === 1261 || code === 1264) return '🧊';
-  if (code === 1204 || code === 1207 || code === 1249 || code === 1252) return '🌨';
-  if (code === 1063 || code === 1150 || code === 1153 || code === 1180 || code === 1183 || code === 1240) return '🌦';
-  if (code === 1069 || code === 1072 || code === 1168 || code === 1171 || code === 1186 || code === 1189 || code === 1192 || code === 1195 || code === 1198 || code === 1201 || code === 1243 || code === 1246) return '🌧';
-  if (code === 1066) return '🌨';
-  return day ? '🌤' : '🌙';
+  if (cl > 75) return '☁️';
+  if (cl > 40) return '⛅';
+  if (cl > 20) return day ? '🌤' : '🌙';
+  return day ? '☀️' : '🌙';
 }
 function _applyWeather() {
   var eNyc = el('weatherNYC'); if (eNyc) eNyc.textContent = _wxCache.nyc || '';
@@ -3708,7 +3720,7 @@ function _fetchWapi(q, isNYC) {
     .then(function(r){return r.json();}).then(function(d){
       var cur = d && d.current; if (!cur) return;
       var code = cur.condition && cur.condition.code;
-      var emoji = _wapiEmoji(code, cur.is_day);
+      var emoji = _wapiEmoji(code, cur.is_day, cur.precip_mm, cur.cloud);
       var f = Math.round(cur.temp_f), c = Math.round(cur.temp_c);
       var str = emoji + ' ' + f + '°F / ' + c + '°C';
       if (isNYC) _wxCache.nyc = str; else _wxCache.khi = str;
