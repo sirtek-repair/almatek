@@ -3705,7 +3705,7 @@ function _applyWeather() {
 function _fetchAw(locKey, isNYC) {
   var key = localStorage.getItem('almatek_aw_key') || AW_DEFAULT_KEY;
   if (!key) return;
-  fetch('https://dataservice.accuweather.com/currentconditions/v1/' + locKey + '?apikey=' + encodeURIComponent(key) + '&details=true')
+  fetch('https://dataservice.accuweather.com/currentconditions/v1/' + locKey + '?details=true', { headers: { 'Authorization': 'Bearer ' + key } })
     .then(function(r) { return r.json(); }).then(function(d) {
       var cur = d && d[0];
       if (!cur) return;
