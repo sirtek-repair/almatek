@@ -387,7 +387,7 @@
     <div class="wc-item"><div class="wc-label">PKT</div><div class="wc-time" id="clockPKT">—</div><div class="wc-weather" id="weatherKHI"></div></div>
     <span class="wc-mock-badge hidden" id="wcMockBadge" onclick="openClockMockModal()">MOCK</span>
     <button class="wc-edit-btn" onclick="openClockMockModal()" title="Set planning time">✏️</button>
-    <button id="forecastToggleBtn" onclick="toggleForecast()" title="7-hour forecast" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted);padding:2px 4px;line-height:1;margin-left:2px;">7h ▾</button>
+    <button id="forecastToggleBtn" onclick="toggleForecast()" title="7-hour forecast" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;color:var(--text);padding:3px 8px;line-height:1;margin-left:4px;">7h ▾</button>
   </div>
   <div id="forecastStrip" style="display:none;overflow-x:auto;padding:4px 0 8px;-webkit-overflow-scrolling:touch;">
     <div id="forecastStripInner" style="display:flex;gap:8px;padding:0 2px;min-width:max-content;"></div>
@@ -3720,9 +3720,7 @@ function _applyWeather() {
   var eKhi = el('weatherKHI'); if (eKhi) eKhi.textContent = _wxCache.khi || '';
 }
 function _fetchWapi(q, isNYC) {
-  var url = isNYC
-    ? 'https://api.weatherapi.com/v1/forecast.json?key=' + WX_KEY + '&q=' + encodeURIComponent(q) + '&days=2&aqi=no'
-    : 'https://api.weatherapi.com/v1/current.json?key=' + WX_KEY + '&q=' + encodeURIComponent(q) + '&aqi=no';
+  var url = 'https://api.weatherapi.com/v1/forecast.json?key=' + WX_KEY + '&q=' + encodeURIComponent(q) + '&days=2&aqi=no';
   fetch(url).then(function(r){return r.json();}).then(function(d){
     var cur = d && d.current; if (!cur) return;
     var code = cur.condition && cur.condition.code;
@@ -3745,6 +3743,17 @@ function _fetchWapi(q, isNYC) {
       if (strip && strip.style.display !== 'none') renderForecastStrip();
     } else {
       _wxCache.khi = str;
+      var nowMs2 = Date.now(); var khiHours = [];
+      if (d.forecast && d.forecast.forecastday) {
+        d.forecast.forecastday.forEach(function(day) {
+          day.hour.forEach(function(h) {
+            if (new Date(h.time).getTime() > nowMs2 && khiHours.length < 7) khiHours.push(h);
+          });
+        });
+      }
+      _wxCache.khiForecast = khiHours;
+      var strip2 = el('forecastStrip');
+      if (strip2 && strip2.style.display !== 'none') renderForecastStrip();
     }
     _applyWeather();
   }).catch(function(){});
@@ -3757,21 +3766,29 @@ function toggleForecast() {
   if (btn) btn.textContent = open ? '7h ▾' : '7h ▴';
   if (!open) renderForecastStrip();
 }
-function renderForecastStrip() {
-  var inner = el('forecastStripInner'); if (!inner) return;
-  var hours = _wxCache.nycForecast;
-  if (!hours || !hours.length) { inner.innerHTML = '<span style="font-size:12px;color:var(--muted);padding:4px 8px;">Loading…</span>'; return; }
-  inner.innerHTML = hours.map(function(h) {
+function _forecastCards(hours) {
+  if (!hours || !hours.length) return '<span style="font-size:12px;color:var(--muted);padding:4px 8px;">Loading…</span>';
+  return hours.map(function(h) {
     var t = new Date(h.time);
     var hr = t.getHours(); var ampm = hr >= 12 ? 'PM' : 'AM'; var hr12 = hr % 12 || 12;
     var emoji = _wapiEmoji(h.condition && h.condition.code, h.is_day, h.precip_mm, h.cloud);
-    var f = Math.round(h.temp_f);
-    return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;min-width:52px;">'
-      + '<span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;">' + hr12 + ampm + '</span>'
+    var f = Math.round(h.temp_f), c = Math.round(h.temp_c);
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;min-width:54px;">'
+      + '<span style="font-size:10px;font-weight:700;color:var(--muted);">' + hr12 + ampm + '</span>'
       + '<span style="font-size:18px;line-height:1.2;">' + emoji + '</span>'
-      + '<span style="font-size:12px;font-weight:600;color:var(--text);">' + f + '°</span>'
+      + '<span style="font-size:12px;font-weight:600;color:var(--text);">' + f + '°F</span>'
+      + '<span style="font-size:10px;color:var(--muted);">' + c + '°C</span>'
       + '</div>';
   }).join('');
+}
+function renderForecastStrip() {
+  var inner = el('forecastStripInner'); if (!inner) return;
+  var label = '<span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;writing-mode:vertical-rl;transform:rotate(180deg);padding:4px 2px;align-self:center;">';
+  inner.innerHTML =
+    '<div style="display:flex;flex-direction:column;gap:6px;">'
+    + '<div style="display:flex;align-items:center;gap:6px;">' + label + 'NYC</span>' + _forecastCards(_wxCache.nycForecast) + '</div>'
+    + '<div style="display:flex;align-items:center;gap:6px;">' + label + 'KHI</span>' + _forecastCards(_wxCache.khiForecast) + '</div>'
+    + '</div>';
 }
 function fetchWeather() {
   var now = Date.now();
