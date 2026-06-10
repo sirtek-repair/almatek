@@ -3680,45 +3680,47 @@ setInterval(updateWorldClock, 30000);
 var _wxCache = {};
 var _wxLastFetch = 0;
 var WX_CACHE_MS = 20 * 60 * 1000;
+var WX_KEY = '512bf7853c9b46e69e2213000261006';
 
-function _wxEmoji(code, precip, clouds, isDay) {
-  var c = parseInt(code); var p = parseFloat(precip)||0; var cl = parseFloat(clouds)||0; var day = isDay !== false;
-  // only trust code for unambiguous conditions (thunder, snow, fog)
-  if (!isNaN(c)) {
-    if (c >= 95) return '⛈';
-    if (c >= 71 && c <= 86) return '❄️';
-    if (c >= 45 && c <= 48) return '🌫';
-  }
-  // everything else: derive from actual observed precip + cloud cover
-  if (p > 2)   return '🌧';
-  if (p > 0.1) return '🌦';
-  if (cl > 80) return '☁️';
-  if (cl > 50) return '⛅';
-  if (cl > 20) return day ? '🌤' : '🌙';
-  return day ? '☀️' : '🌙';
+function _wapiEmoji(code, isDay) {
+  var day = isDay !== 0;
+  if (code === 1000) return day ? '☀️' : '🌙';
+  if (code === 1003) return '⛅';
+  if (code === 1006 || code === 1009) return '☁️';
+  if (code === 1030 || code === 1135 || code === 1147) return '🌫';
+  if (code === 1087 || code === 1273 || code === 1276 || code === 1279 || code === 1282) return '⛈';
+  if (code === 1114 || code === 1117) return '❄️';
+  if (code >= 1210 && code <= 1225) return '❄️';
+  if (code === 1255 || code === 1258) return '❄️';
+  if (code === 1237 || code === 1261 || code === 1264) return '🧊';
+  if (code === 1204 || code === 1207 || code === 1249 || code === 1252) return '🌨';
+  if (code === 1063 || code === 1150 || code === 1153 || code === 1180 || code === 1183 || code === 1240) return '🌦';
+  if (code === 1069 || code === 1072 || code === 1168 || code === 1171 || code === 1186 || code === 1189 || code === 1192 || code === 1195 || code === 1198 || code === 1201 || code === 1243 || code === 1246) return '🌧';
+  if (code === 1066) return '🌨';
+  return day ? '🌤' : '🌙';
 }
 function _applyWeather() {
   var eNyc = el('weatherNYC'); if (eNyc) eNyc.textContent = _wxCache.nyc || '';
   var eKhi = el('weatherKHI'); if (eKhi) eKhi.textContent = _wxCache.khi || '';
 }
+function _fetchWapi(q, isNYC) {
+  fetch('https://api.weatherapi.com/v1/current.json?key=' + WX_KEY + '&q=' + encodeURIComponent(q) + '&aqi=no')
+    .then(function(r){return r.json();}).then(function(d){
+      var cur = d && d.current; if (!cur) return;
+      var code = cur.condition && cur.condition.code;
+      var emoji = _wapiEmoji(code, cur.is_day);
+      var f = Math.round(cur.temp_f), c = Math.round(cur.temp_c);
+      var str = emoji + ' ' + f + '°F / ' + c + '°C';
+      if (isNYC) _wxCache.nyc = str; else _wxCache.khi = str;
+      _applyWeather();
+    }).catch(function(){});
+}
 function fetchWeather() {
   var now = Date.now();
   if (now - _wxLastFetch < WX_CACHE_MS) { _applyWeather(); return; }
   _wxLastFetch = now;
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.0060&current=temperature_2m,weather_code,precipitation,cloud_cover,is_day&temperature_unit=fahrenheit&timezone=America%2FNew_York')
-    .then(function(r){return r.json();}).then(function(d){
-      var cur = d && d.current; if (!cur) return;
-      var f = Math.round(cur.temperature_2m), c = Math.round((f-32)*5/9);
-      _wxCache.nyc = _wxEmoji(cur.weather_code, cur.precipitation, cur.cloud_cover, cur.is_day!==0) + ' ' + f + '°F / ' + c + '°C';
-      _applyWeather();
-    }).catch(function(){});
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=24.8607&longitude=67.0011&current=temperature_2m,weather_code,precipitation,cloud_cover,is_day&timezone=Asia%2FKarachi')
-    .then(function(r){return r.json();}).then(function(d){
-      var cur = d && d.current; if (!cur) return;
-      var c = Math.round(cur.temperature_2m), f = Math.round(c*9/5+32);
-      _wxCache.khi = _wxEmoji(cur.weather_code, cur.precipitation, cur.cloud_cover, cur.is_day!==0) + ' ' + f + '°F / ' + c + '°C';
-      _applyWeather();
-    }).catch(function(){});
+  _fetchWapi('New York', true);
+  _fetchWapi('Karachi', false);
 }
 fetchWeather();
 setInterval(fetchWeather, WX_CACHE_MS);
