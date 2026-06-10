@@ -3682,6 +3682,7 @@ var _wxLastFetch = 0;
 var AW_NYC_LOC = '349727';
 var AW_KHI_LOC = '211969';
 var AW_CACHE_MS = 60 * 60 * 1000;
+var AW_DEFAULT_KEY = '512bf7853c9b46e69e2213000261006';
 
 function _awEmoji(icon) {
   var i = parseInt(icon);
@@ -3702,7 +3703,7 @@ function _applyWeather() {
   var eKhi = el('weatherKHI'); if (eKhi) eKhi.textContent = khi;
 }
 function _fetchAw(locKey, isNYC) {
-  var key = localStorage.getItem('almatek_aw_key') || '';
+  var key = localStorage.getItem('almatek_aw_key') || AW_DEFAULT_KEY;
   if (!key) return;
   fetch('https://dataservice.accuweather.com/currentconditions/v1/' + locKey + '?apikey=' + encodeURIComponent(key) + '&details=true')
     .then(function(r) { return r.json(); }).then(function(d) {
@@ -3719,7 +3720,7 @@ function _fetchAw(locKey, isNYC) {
 function fetchWeather() {
   var now = Date.now();
   if (now - _wxLastFetch < AW_CACHE_MS) { _applyWeather(); return; }
-  var key = localStorage.getItem('almatek_aw_key') || '';
+  var key = localStorage.getItem('almatek_aw_key') || AW_DEFAULT_KEY;
   if (!key) return;
   _wxLastFetch = now;
   _fetchAw(AW_NYC_LOC, true);
