@@ -3679,55 +3679,49 @@ setInterval(updateWorldClock, 30000);
 
 var _wxCache = {};
 var _wxLastFetch = 0;
-var AW_NYC_LOC = '349727';
-var AW_KHI_LOC = '211969';
-var AW_CACHE_MS = 60 * 60 * 1000;
-var AW_DEFAULT_KEY = '512bf7853c9b46e69e2213000261006';
+var WX_CACHE_MS = 20 * 60 * 1000;
 
-function _awEmoji(icon) {
-  var i = parseInt(icon);
-  if (isNaN(i)) return '';
-  var map = {
-    1:'☀️',2:'☀️',3:'🌤',4:'⛅',5:'🌤',6:'⛅',7:'☁️',8:'☁️',
-    11:'🌫',12:'🌦',13:'🌦',14:'🌦',15:'⛈',16:'⛈',17:'⛈',
-    18:'🌧',19:'🌨',20:'🌨',21:'🌨',22:'❄️',23:'❄️',24:'🧊',
-    25:'🌨',26:'🌧',29:'🌨',30:'🌡️',31:'🥶',32:'💨',
-    33:'🌙',34:'🌙',35:'🌙',36:'⛅',37:'🌙',38:'☁️',
-    39:'🌦',40:'🌧',41:'⛈',42:'⛈',43:'🌨',44:'❄️'
-  };
-  return map[i] || '';
+function _wxEmoji(code, precip, clouds, isDay) {
+  var c = parseInt(code); var p = parseFloat(precip)||0; var cl = parseFloat(clouds)||0; var day = isDay !== false;
+  // only trust code for unambiguous conditions (thunder, snow, fog)
+  if (!isNaN(c)) {
+    if (c >= 95) return '⛈';
+    if (c >= 71 && c <= 86) return '❄️';
+    if (c >= 45 && c <= 48) return '🌫';
+  }
+  // everything else: derive from actual observed precip + cloud cover
+  if (p > 2)   return '🌧';
+  if (p > 0.1) return '🌦';
+  if (cl > 80) return '☁️';
+  if (cl > 50) return '⛅';
+  if (cl > 20) return day ? '🌤' : '🌙';
+  return day ? '☀️' : '🌙';
 }
 function _applyWeather() {
-  var nyc = _wxCache.nyc || ''; var khi = _wxCache.khi || '';
-  var eNyc = el('weatherNYC'); if (eNyc) eNyc.textContent = nyc;
-  var eKhi = el('weatherKHI'); if (eKhi) eKhi.textContent = khi;
-}
-function _fetchAw(locKey, isNYC) {
-  var key = localStorage.getItem('almatek_aw_key') || AW_DEFAULT_KEY;
-  if (!key) return;
-  fetch('https://dataservice.accuweather.com/currentconditions/v1/' + locKey + '?details=true', { headers: { 'Authorization': 'Bearer ' + key } })
-    .then(function(r) { return r.json(); }).then(function(d) {
-      var cur = d && d[0];
-      if (!cur) return;
-      var emoji = _awEmoji(cur.WeatherIcon);
-      var f = Math.round(cur.Temperature && cur.Temperature.Imperial && cur.Temperature.Imperial.Value);
-      var c = Math.round(cur.Temperature && cur.Temperature.Metric && cur.Temperature.Metric.Value);
-      var str = emoji + ' ' + f + '°F / ' + c + '°C';
-      if (isNYC) _wxCache.nyc = str; else _wxCache.khi = str;
-      _applyWeather();
-    }).catch(function() {});
+  var eNyc = el('weatherNYC'); if (eNyc) eNyc.textContent = _wxCache.nyc || '';
+  var eKhi = el('weatherKHI'); if (eKhi) eKhi.textContent = _wxCache.khi || '';
 }
 function fetchWeather() {
   var now = Date.now();
-  if (now - _wxLastFetch < AW_CACHE_MS) { _applyWeather(); return; }
-  var key = localStorage.getItem('almatek_aw_key') || AW_DEFAULT_KEY;
-  if (!key) return;
+  if (now - _wxLastFetch < WX_CACHE_MS) { _applyWeather(); return; }
   _wxLastFetch = now;
-  _fetchAw(AW_NYC_LOC, true);
-  _fetchAw(AW_KHI_LOC, false);
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.0060&current=temperature_2m,weather_code,precipitation,cloud_cover,is_day&temperature_unit=fahrenheit&timezone=America%2FNew_York')
+    .then(function(r){return r.json();}).then(function(d){
+      var cur = d && d.current; if (!cur) return;
+      var f = Math.round(cur.temperature_2m), c = Math.round((f-32)*5/9);
+      _wxCache.nyc = _wxEmoji(cur.weather_code, cur.precipitation, cur.cloud_cover, cur.is_day!==0) + ' ' + f + '°F / ' + c + '°C';
+      _applyWeather();
+    }).catch(function(){});
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=24.8607&longitude=67.0011&current=temperature_2m,weather_code,precipitation,cloud_cover,is_day&timezone=Asia%2FKarachi')
+    .then(function(r){return r.json();}).then(function(d){
+      var cur = d && d.current; if (!cur) return;
+      var c = Math.round(cur.temperature_2m), f = Math.round(c*9/5+32);
+      _wxCache.khi = _wxEmoji(cur.weather_code, cur.precipitation, cur.cloud_cover, cur.is_day!==0) + ' ' + f + '°F / ' + c + '°C';
+      _applyWeather();
+    }).catch(function(){});
 }
 fetchWeather();
-setInterval(fetchWeather, AW_CACHE_MS);
+setInterval(fetchWeather, WX_CACHE_MS);
 
 // Sync from Sheets on startup if already authenticated (skips login flow)
 if (authd) { setTimeout(syncFromSheets, 500); setTimeout(refreshPricingIfStale, 1000); setTimeout(loadSchedule, 1500); startScheduleRefresh(); }
