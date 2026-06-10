@@ -2071,6 +2071,7 @@ function placeCartOrder() {
   });
   Promise.all(promises).then(function(results) {
     var errors = results.filter(function(r) { return r.error; });
+    var created = results.filter(function(r) { return r.id; });
     if (errors.length) { showToast(errors.length + ' item(s) failed'); }
     else {
       showToast('Order placed — ' + orderCart.length + ' item' + (orderCart.length !== 1 ? 's' : '') + ' ✓');
@@ -2080,7 +2081,17 @@ function placeCartOrder() {
     if (el('cartSupplier')) { el('cartSupplier').value = ''; el('cartSupplier').style.borderColor = ''; }
     if (el('cartOrderDate')) { el('cartOrderDate').value = ''; el('cartOrderDate').style.borderColor = ''; }
     if (btn) { btn.textContent = 'Place Order'; btn.disabled = false; }
-    clearCache('almatek_orders_cache'); updateCartTabBadge(); renderCartTab(); renderNeedOrderList(); loadOrderRecords();
+    clearCache('almatek_orders_cache');
+    // Inject the newly created records immediately so they appear without waiting for Airtable indexing
+    if (created.length) {
+      allOrderRecords = created.concat(allOrderRecords);
+      setCache('almatek_orders_cache', allOrderRecords);
+    }
+    updateCartTabBadge(); renderCartTab(); renderNeedOrderList(); updateOrderedPendingBadge();
+    // Auto-navigate to Ordered tab so the new orders are visible right away
+    switchOrdersView('ordered');
+    // Re-fetch from Airtable in the background after a short delay to confirm consistency
+    setTimeout(function() { ordersLoading2 = false; clearCache('almatek_orders_cache'); loadOrderRecords(); }, 2500);
   }).catch(function() {
     showToast('Network error — try again');
     if (btn) { btn.textContent = 'Place Order'; btn.disabled = false; }
