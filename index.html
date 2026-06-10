@@ -1024,16 +1024,33 @@
 <!-- ReviewAskr Tab -->
 <div id="tabReview" class="tab-content hidden">
   <div class="container">
-  <div style="display:flex;align-items:center;gap:6px;padding:8px 0 6px;">
+  <div style="display:flex;align-items:center;gap:6px;padding:8px 0 6px;flex-wrap:wrap;">
     <button class="orders-tab-btn active" id="reviewSubBtnPending" onclick="switchReviewSubTab('pending')">Pending</button>
     <button class="orders-tab-btn" id="reviewSubBtnCaptured" onclick="switchReviewSubTab('captured')">⭐ Captured</button>
-    <button onclick="window.open(REVIEW_LINK_URL,'_blank')" style="margin-left:auto;padding:5px 12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">🔗 Review Link</button>
+    <button class="orders-tab-btn" id="reviewSubBtnStats" onclick="switchReviewSubTab('stats')">📊 Stats</button>
+    <div style="margin-left:auto;display:flex;gap:6px;">
+      <button onclick="window.open(REVIEW_LINK_URL,'_blank')" style="padding:5px 10px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">🔗 Link</button>
+      <button onclick="toggleAddReviewForm()" style="padding:5px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#10b981;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">➕ Add</button>
+    </div>
+  </div>
+  <div id="reviewAddForm" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+    <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">Add Customer to ReviewAskr</div>
+    <input type="text" id="reviewAddName" placeholder="Name *" autocomplete="off" onkeydown="if(event.key==='Enter')el('reviewAddPhone').focus()" style="width:100%;box-sizing:border-box;padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-bottom:7px;" />
+    <input type="tel" id="reviewAddPhone" placeholder="Phone" autocomplete="off" onkeydown="if(event.key==='Enter')el('reviewAddDevice').focus()" style="width:100%;box-sizing:border-box;padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-bottom:7px;" />
+    <input type="text" id="reviewAddDevice" placeholder="Device (optional)" autocomplete="off" onkeydown="if(event.key==='Enter')submitManualReviewEntry()" style="width:100%;box-sizing:border-box;padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-bottom:8px;" />
+    <div style="display:flex;gap:6px;">
+      <button onclick="submitManualReviewEntry()" style="flex:1;padding:9px;background:#10b981;border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Add to ReviewAskr</button>
+      <button onclick="toggleAddReviewForm()" style="padding:9px 14px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
+    </div>
   </div>
   <div id="reviewSubViewPending">
     <div id="reviewPendingList"></div>
   </div>
   <div id="reviewSubViewCaptured" class="hidden">
     <div id="reviewCapturedList"></div>
+  </div>
+  <div id="reviewSubViewStats" class="hidden">
+    <div id="reviewStatsContent" style="padding-bottom:16px;"></div>
   </div>
   </div>
 </div>
@@ -3419,18 +3436,80 @@ function reviewShareEmail(id) {
 }
 function switchReviewSubTab(tab) {
   reviewSubTab = tab;
-  var isPending = tab === 'pending';
-  el('reviewSubBtnPending').classList.toggle('active', isPending);
-  el('reviewSubBtnCaptured').classList.toggle('active', !isPending);
-  el('reviewSubViewPending').classList.toggle('hidden', !isPending);
-  el('reviewSubViewCaptured').classList.toggle('hidden', isPending);
-  if (isPending) renderReviewAskrPending(); else renderReviewAskrCaptured();
+  ['pending','captured','stats'].forEach(function(t) {
+    var btn = el('reviewSubBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (btn) btn.classList.toggle('active', t === tab);
+    var view = el('reviewSubView' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (view) view.classList.toggle('hidden', t !== tab);
+  });
+  if (tab === 'pending') renderReviewAskrPending();
+  else if (tab === 'captured') renderReviewAskrCaptured();
+  else if (tab === 'stats') renderReviewStats();
+}
+function toggleAddReviewForm() {
+  var form = el('reviewAddForm'); if (!form) return;
+  var showing = form.style.display !== 'none';
+  form.style.display = showing ? 'none' : 'block';
+  if (!showing) setTimeout(function() { var n = el('reviewAddName'); if (n) n.focus(); }, 50);
+}
+function submitManualReviewEntry() {
+  var nameEl = el('reviewAddName'), phoneEl = el('reviewAddPhone'), deviceEl = el('reviewAddDevice');
+  var name = nameEl ? nameEl.value.trim() : '';
+  if (!name) { if (nameEl) { nameEl.style.borderColor = '#ef4444'; nameEl.focus(); } return; }
+  if (nameEl) nameEl.style.borderColor = '';
+  var entry = { id: 'ra_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), name: name, phone: phoneEl ? phoneEl.value.trim() : '', device: deviceEl ? deviceEl.value.trim() : '', ticketId: '', addedAt: new Date().toISOString(), addedBy: currentUser||'staff', contactCount: 0, smsCount: 0, emailCount: 0, callCount: 0, lastContactedAt: null, status: 'pending', capturedAt: null };
+  reviewAskrStorage.push(entry);
+  saveReviewAskr(); syncReviewEntry(entry); updateReviewAskrBadge();
+  if (nameEl) nameEl.value = ''; if (phoneEl) phoneEl.value = ''; if (deviceEl) deviceEl.value = '';
+  toggleAddReviewForm();
+  switchReviewSubTab('pending');
+  showToast('Added to ReviewAskr ✓');
+}
+function renderReviewStats() {
+  var content = el('reviewStatsContent'); if (!content) return;
+  var now = new Date(); var all = reviewAskrStorage;
+  var totalPending  = all.filter(function(r){return r.status==='pending';}).length;
+  var totalCaptured = all.filter(function(r){return r.status==='captured';}).length;
+  var totalContacts = all.reduce(function(s,r){return s+(r.smsCount||0)+(r.emailCount||0)+(r.callCount||0);},0);
+  function isoMonday(d){var t=new Date(d);var day=t.getDay();t.setDate(t.getDate()-((day+6)%7));t.setHours(0,0,0,0);return t;}
+  function wKey(d){var m=isoMonday(d);return m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-'+String(m.getDate()).padStart(2,'0');}
+  function mKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+  var weekKeys=[],monthKeys=[];
+  var mon0=isoMonday(now);
+  for(var i=7;i>=0;i--){var m=new Date(mon0);m.setDate(m.getDate()-i*7);var k=wKey(m);if(weekKeys.indexOf(k)<0)weekKeys.push(k);}
+  for(var i=5;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1);var k=mKey(d);if(monthKeys.indexOf(k)<0)monthKeys.push(k);}
+  var wA={},wC={},wR={},mA={},mC={},mR={};
+  weekKeys.forEach(function(k){wA[k]=0;wC[k]=0;wR[k]=0;});
+  monthKeys.forEach(function(k){mA[k]=0;mC[k]=0;mR[k]=0;});
+  all.forEach(function(r){
+    if(r.addedAt){var d=new Date(r.addedAt);var wk=wKey(d),mk=mKey(d);if(wA[wk]!==undefined)wA[wk]++;if(mA[mk]!==undefined)mA[mk]++;}
+    if(r.lastContactedAt){var d=new Date(r.lastContactedAt);var wk=wKey(d),mk=mKey(d);if(wC[wk]!==undefined)wC[wk]++;if(mC[mk]!==undefined)mC[mk]++;}
+    if(r.capturedAt){var d=new Date(r.capturedAt);var wk=wKey(d),mk=mKey(d);if(wR[wk]!==undefined)wR[wk]++;if(mR[mk]!==undefined)mR[mk]++;}
+  });
+  function wLabel(k){var p=k.split('-');var mon=new Date(+p[0],+p[1]-1,+p[2]);var sun=new Date(mon);sun.setDate(mon.getDate()+6);var f=function(d){return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});};return f(mon)+'–'+f(sun);}
+  function mLabel(k){var p=k.split('-');return new Date(+p[0],+p[1]-1).toLocaleDateString('en-US',{month:'short',year:'numeric'});}
+  var thisWk=wKey(now),thisMk=mKey(now);
+  var thead='<tr style="border-bottom:1px solid var(--border);"><th style="padding:5px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Period</th><th style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Added</th><th style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Contacted</th><th style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:0.05em;">⭐ Captured</th></tr>';
+  function trow(label,a,c,r,hi){var bg=hi?'background:rgba(59,130,246,0.07);':'';return '<tr style="'+bg+'border-bottom:1px solid var(--border);"><td style="padding:5px 8px;color:var(--text);font-size:12px;">'+label+'</td><td style="padding:5px 8px;text-align:right;color:var(--accent);font-weight:600;font-size:12px;">'+a+'</td><td style="padding:5px 8px;text-align:right;color:#3b82f6;font-weight:600;font-size:12px;">'+c+'</td><td style="padding:5px 8px;text-align:right;color:#f59e0b;font-weight:700;font-size:12px;">'+r+'</td></tr>';}
+  var weekRows=weekKeys.map(function(k){return trow(wLabel(k),wA[k]||0,wC[k]||0,wR[k]||0,k===thisWk);}).join('');
+  var monthRows=monthKeys.map(function(k){return trow(mLabel(k),mA[k]||0,mC[k]||0,mR[k]||0,k===thisMk);}).join('');
+  content.innerHTML=
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0 16px;">'
+    +'<div style="background:var(--surface2);border-radius:10px;padding:12px 8px;text-align:center;border:1px solid var(--border);"><div style="font-size:26px;font-weight:700;color:var(--text);">'+totalPending+'</div><div style="font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;">Pending</div></div>'
+    +'<div style="background:var(--surface2);border-radius:10px;padding:12px 8px;text-align:center;border:1px solid var(--border);"><div style="font-size:26px;font-weight:700;color:#f59e0b;">'+totalCaptured+'</div><div style="font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;">⭐ Captured</div></div>'
+    +'<div style="background:var(--surface2);border-radius:10px;padding:12px 8px;text-align:center;border:1px solid var(--border);"><div style="font-size:26px;font-weight:700;color:#3b82f6;">'+totalContacts+'</div><div style="font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;">Contacts Sent</div></div>'
+    +'</div>'
+    +'<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin:0 0 5px;">By Week</div>'
+    +'<div style="background:var(--surface2);border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:16px;"><table style="width:100%;border-collapse:collapse;">'+thead+weekRows+'</table></div>'
+    +'<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin:0 0 5px;">By Month</div>'
+    +'<div style="background:var(--surface2);border-radius:10px;overflow:hidden;border:1px solid var(--border);"><table style="width:100%;border-collapse:collapse;">'+thead+monthRows+'</table></div>'
+    +'<p style="font-size:10px;color:var(--muted);text-align:center;margin-top:8px;line-height:1.4;">Contacted = most recent contact date in period · Total Contacts = all-time SMS + Email + Calls</p>';
 }
 function renderReviewAskrPending() {
   var list = el('reviewPendingList'); if (!list) return;
   var pending = reviewAskrStorage.filter(function(r) { return r.status === 'pending'; });
   pending.sort(function(a,b) { return new Date(a.addedAt) - new Date(b.addedAt); });
-  if (!pending.length) { list.innerHTML = '<div class="orders-empty-state">No pending review requests<br><span style="font-size:12px;color:var(--muted);">Add customers from a ticket using ⭐ Add to ReviewAskr</span></div>'; return; }
+  if (!pending.length) { list.innerHTML = '<div class="orders-empty-state">No pending review requests<br><span style="font-size:12px;color:var(--muted);">Tap ➕ Add above or use ⭐ Add to ReviewAskr from a ticket</span></div>'; return; }
   var bBase = 'padding:7px 4px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;';
   var bNeutral = bBase + 'background:var(--surface2);border:1px solid var(--border);color:var(--text);';
   var bGreen   = bBase + 'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;';
