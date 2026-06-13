@@ -3230,7 +3230,7 @@ function renderPickedUpList() {
 
 // ── ReviewAskr ────────────────────────────────────────────────────────────────
 var reviewAskrStorage = [], reviewSubTab = 'pending';
-const REVIEW_LINK_URL = 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D';
+const REVIEW_LINK_URL = 'https://repairedcollective.com/leave-a-review-nyc/';
 function loadReviewAskr() {
   try { reviewAskrStorage = JSON.parse(localStorage.getItem('almatek_reviewaskr') || '[]'); } catch(e) { reviewAskrStorage = []; }
   updateReviewAskrBadge();
