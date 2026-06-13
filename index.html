@@ -1757,6 +1757,14 @@ if (!localStorage.getItem('almatek_script_url')) localStorage.setItem('almatek_s
 var SCHEDULE_CAL_ID = 'da5d00a37971f98d6d6a8cbda2bd5bdb311d3c06ee5bc15f5f5efcbaf683e3fe@group.calendar.google.com';
 var _schedCache = null, _schedCacheAt = 0, _schedTimer = null;
 function _fmtTime(d) { var h=d.getHours(),m=d.getMinutes(),ap=h>=12?'pm':'am'; h=h%12||12; return h+(m?':'+String(m).padStart(2,'0'):'')+ap; }
+function _fmtTZ(d,tz) { return _fmtTime(new Date(d.toLocaleString('en-US',{timeZone:tz}))); }
+function _shiftTime(s,e) {
+  return _fmtTZ(s,'America/New_York')+'&ndash;'+_fmtTZ(e,'America/New_York')
+    +' <span style="font-size:10px;color:var(--muted);">EST</span>'
+    +'&nbsp;&nbsp;'
+    +_fmtTZ(s,'Asia/Karachi')+'&ndash;'+_fmtTZ(e,'Asia/Karachi')
+    +' <span style="font-size:10px;color:var(--muted);">PKT</span>';
+}
 function renderScheduleStrip(events, _dbg) {
   var strip=el('scheduleStrip'), content=el('scheduleStripContent'); if(!strip||!content) return;
   if(!authd){strip.style.display='none';return;}
@@ -1804,7 +1812,7 @@ function renderScheduleStrip(events, _dbg) {
     var onTag = isOn?'<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:5px;">ON</span>':'';
     html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;'+(isPast?'opacity:0.38;':'')+'">'
       +'<span style="'+nameStyle+'"><span style="color:'+dotColor+';">'+(isOn?'●':isPast?'–':'○')+'</span>  '+ev.name+onTag+'</span>'
-      +'<span style="'+timeStyle+'">'+_fmtTime(s)+'&ndash;'+_fmtTime(e)+'</span>'
+      +'<span style="'+timeStyle+'">'+_shiftTime(s,e)+'</span>'
       +'</div>';
   });
 
