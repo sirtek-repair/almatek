@@ -2832,23 +2832,23 @@ function buildQuoteText() {
       lines.push('For your ' + model1 + ', we have the following options available:');
       lines.push('');
       if (manHasStd) {
-        lines.push('STANDARD — $' + withTax(fullPrice(manPrices.standard,'iphone_screen') + mobileFee) + ' (tax included)');
+        lines.push('STANDARD — $' + withTax(fullPrice(manPrices.standard,'iphone_screen') + mobileFee));
         lines.push('LCD screen that looks & functions just like the original. The frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re upgrading soon or keeping your phone under a year.');
         lines.push('');
       }
       if (manHasPrem) {
-        lines.push('PREMIUM — $' + withTax(fullPrice(manPrices.premium,'iphone_screen') + mobileFee) + ' (tax included)');
+        lines.push('PREMIUM — $' + withTax(fullPrice(manPrices.premium,'iphone_screen') + mobileFee));
         lines.push('Soft OLED screen (OEM-quality) — same exact specs as the original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
         lines.push('');
       }
-      lines.push('EXPEDITED SAME-DAY SPECIAL ORDER — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
+      lines.push('EXPEDITED SAME-DAY SPECIAL ORDER — $' + withTax(p1 + mobileFee) + (mobileFee > 0 ? ', includes mobile service' : ''));
       lines.push('We\'ll source the part specifically for you and have it completed the same day. Comes with a warranty.');
       lines.push('');
       lines.push('All options come with a warranty' + (mobileFee > 0 ? ' and include mobile service' : '') + '. Which works best for you?');
     } else {
       lines.push('Good news — we can get your ' + itemLabel + ' done today as a same-day special order.');
       lines.push('');
-      lines.push('Expedited same-day special order — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
+      lines.push('Expedited same-day special order — $' + withTax(p1 + mobileFee) + (mobileFee > 0 ? ', includes mobile service' : ''));
       lines.push('We\'ll source the part specifically for you and have it completed the same day. Comes with a warranty.');
     }
     lines.push('');
