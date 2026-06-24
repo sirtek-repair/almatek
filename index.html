@@ -850,6 +850,7 @@
     <input type="email" id="leadEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;" />
     <input type="text" id="leadDevice" placeholder="Device" style="width:100%;margin-bottom:10px;" />
     <textarea id="leadIssue" placeholder="Issue / Notes" rows="2" style="width:100%;margin-bottom:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:inherit;resize:vertical;"></textarea>
+    <input type="number" id="leadQuoteInput" placeholder="Quote Total (optional) $" min="0" step="1" style="width:100%;margin-bottom:10px;" />
     <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Service Tier</label>
     <div style="display:flex;gap:8px;margin-bottom:10px;">
       <button type="button" id="tierBtnStandard" onclick="toggleLeadTier('standard')" style="flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;">Standard</button>
@@ -971,6 +972,7 @@
     <input type="text" id="attPhone" placeholder="Phone Number *" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
     <input type="email" id="attEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
     <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Quote Total</div><input type="number" id="attManualTotal" placeholder="$0" min="0" step="1" style="width:100%;box-sizing:border-box;" /></div>
       <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Deposit Paid</div><input type="number" id="attDeposit" placeholder="$0" min="0" step="1" style="width:100%;box-sizing:border-box;" /></div>
     </div>
     <textarea id="attNotes" placeholder="Notes (optional)" rows="2" style="width:100%;margin-bottom:14px;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;"></textarea>
@@ -1527,6 +1529,7 @@ function showAddToTicketModal() {
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('attQuoteSummary').innerHTML = rows.join('');
   ['attName','attPhone','attEmail','attDeposit'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
+  if (el('attManualTotal')) el('attManualTotal').value = total || '';
   var qn = el('attNotes'); if (qn) qn.value = (el('quoteNotes') ? el('quoteNotes').value : '');
   var detectedFlow = detectTicketFlow();
   attFlow = detectedFlow;
@@ -1537,7 +1540,7 @@ function showAddToTicketModal() {
 function closeAddToTicketModal() { el('addToTicketModal').classList.add('hidden'); }
 function showNewTicketManual() {
   el('attQuoteSummary').innerHTML = '<div style="color:var(--muted);font-size:13px;">Manual ticket — no quote attached</div>';
-  ['attName','attPhone','attEmail','attDeposit','attNotes'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
+  ['attName','attPhone','attEmail','attDeposit','attManualTotal','attNotes'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
   attFlow = 'in_stock'; setTicketFlow('in_stock');
   el('addToTicketModal').classList.remove('hidden');
   setTimeout(function() { var n = el('attName'); if (n) n.focus(); }, 50);
@@ -1585,8 +1588,11 @@ function saveTicketFromQuote() {
   var name = (el('attName').value || '').trim(), phone = (el('attPhone').value || '').trim();
   if (!name || !phone) { _savingTicket = false; showToast('Name and phone required'); return; }
   var price = getPrice1(), p2 = secondOpen ? getPrice2() : 0;
+  var manualTotal = parseFloat((el('attManualTotal') ? el('attManualTotal').value : '0') || '0') || 0;
   var discounted2 = p2 > 0 ? Math.ceil(withTax(p2) / 2) : 0;
-  var total = p2 > 0 ? withTax(price + mobileFee) + discounted2 : withTax(price + mobileFee);
+  var total = price > 0
+    ? (p2 > 0 ? withTax(price + mobileFee) + discounted2 : withTax(price + mobileFee))
+    : manualTotal;
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
   var label2 = p2 > 0 ? (ATL_TYPE_LABELS[type2]||type2) + (tier2 && tier2!=='manual' ? ' · '+tier2.charAt(0).toUpperCase()+tier2.slice(1) : '') : '';
   var deviceStr = model1 ? model1 + (p2 > 0 && model2 && model2 !== model1 ? ' + ' + model2 : '') : typeLabel;
@@ -1595,7 +1601,7 @@ function saveTicketFromQuote() {
   var now = new Date().toISOString();
   var initStatus = attFlow === 'in_stock' ? 'waiting_for_repair' : 'need_to_order';
   var repairLabel = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '');
-  var initItems = price > 0 ? [{ label: repairLabel, price: withTax(price) }] : [];
+  var initItems = price > 0 ? [{ label: repairLabel, price: withTax(price) }] : (manualTotal > 0 ? [{ label: repairLabel || 'Repair', price: manualTotal }] : []);
   if (p2 > 0) initItems.push({ label: label2 + ' (50% deal)', price: discounted2 });
   var miles = parseFloat((el('milesInput') ? el('milesInput').value : '') || 0) || 0;
   var attNotesVal = (el('attNotes') ? el('attNotes').value : '').trim();
@@ -2721,14 +2727,14 @@ var SO_COLORS = { need_to_order:'#f59e0b', part_ordered:'#3b82f6', part_arrived:
 var REPAIR_STAGES = ['waiting_for_repair','in_repair','ready_for_pickup'];
 var REPAIR_LABELS = { waiting_for_repair:'Waiting for Repair', in_repair:'In Repair', ready_for_pickup:'Ready for Pickup' };
 var REPAIR_COLORS = { waiting_for_repair:'#f59e0b', in_repair:'#3b82f6', ready_for_pickup:'#10b981' };
-function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue'].forEach(id => { var e = el(id); if (e) e.value = ''; }); var fup = el('leadFollowUp'); if (fup) fup.value = ''; toggleLeadTier('standard'); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
+function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue','leadQuoteInput'].forEach(id => { var e = el(id); if (e) e.value = ''; }); var fup = el('leadFollowUp'); if (fup) fup.value = ''; toggleLeadTier('standard'); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
 
 var _savingLead = false;
 function createNewLead() {
   if (_savingLead) return; _savingLead = true; setTimeout(function(){ _savingLead = false; }, 2000);
   var name = el('leadName').value.trim(), phone = el('leadPhone').value.trim(); if (!name || !phone) { _savingLead = false; showToast('Name and phone required'); return; }
   var followUp = el('leadFollowUp') ? el('leadFollowUp').value : '';
-  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, altPhone: '', email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: 0, deposit: 0, tier: leadTier, createdAt: now, updatedAt: now };
+  var now = new Date().toISOString(), newLead = { id: 'lead_' + Date.now(), name, phone, altPhone: '', email: el('leadEmail').value.trim(), device: el('leadDevice').value.trim(), issue: el('leadIssue').value.trim(), status: followUp ? 'follow_up_scheduled' : 'new', followUpAt: followUp, followUpNotes: '', assignedTo: currentUser || 'staff', createdBy: currentUser || 'staff', lastContactedAt: '', contactAttempts: 0, bookedAt: '', closedAt: '', notes: [], quote: parseFloat((el('leadQuoteInput') ? el('leadQuoteInput').value : '0') || '0') || 0, deposit: 0, tier: leadTier, createdAt: now, updatedAt: now };
   leadsStorage.push(newLead); saveLeadsToStorage(); syncLeadToSheet(newLead); hideNewLeadForm(); renderLeadsList(); updateFollowUpBadge(); showToast('Lead saved ✓');
 }
 
