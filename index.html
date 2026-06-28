@@ -186,6 +186,10 @@
     .app-tile:hover { background:var(--surface2); }
     .app-tile-icon { font-size:32px; line-height:1; }
     .app-tile-label { font-size:13px; font-weight:600; }
+    .tool-group { margin-bottom:10px; }
+    .tool-group-btn { width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;cursor:pointer;color:var(--text);font-size:14px;font-weight:700;font-family:inherit;transition:background 0.15s; }
+    .tool-group-btn:hover { background:var(--surface2); }
+    .tool-group-tiles { display:flex;flex-wrap:wrap;gap:12px;padding:12px 2px 4px; }
     .token-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
     .token-card p { font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
     .token-row { display: flex; gap: 8px; }
@@ -1193,35 +1197,42 @@
   <header style="text-align:center;padding:16px 0 12px;">
     <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.01em;">🚀 Tools</h1>
   </header>
-  <div class="auth-only" style="display:flex;flex-wrap:wrap;gap:12px;padding:8px 0;">
-    <a href="https://meet.google.com" target="_blank" rel="noopener" class="app-tile">
-      <span class="app-tile-icon">📹</span>
-      <span class="app-tile-label">Google Meet</span>
-    </a>
-    <a href="https://clockify.me/tracker" target="_blank" rel="noopener" class="app-tile">
-      <span class="app-tile-icon">⏱</span>
-      <span class="app-tile-label">Clockify</span>
-    </a>
-    <a href="https://claude.ai" target="_blank" rel="noopener" class="app-tile">
-      <span class="app-tile-icon">🤖</span>
-      <span class="app-tile-label">Claude</span>
-    </a>
-    <a href="https://gemini.google.com" target="_blank" rel="noopener" class="app-tile">
-      <span class="app-tile-icon">✨</span>
-      <span class="app-tile-label">Gemini</span>
-    </a>
-    <a href="https://perplexity.ai" target="_blank" rel="noopener" class="app-tile">
-      <span class="app-tile-icon">🔍</span>
-      <span class="app-tile-label">Perplexity</span>
-    </a>
-    <a href="https://chat.deepseek.com" target="_blank" rel="noopener" class="app-tile">
-      <span class="app-tile-icon">🐋</span>
-      <span class="app-tile-label">DeepSeek</span>
-    </a>
-    <span class="app-tile" onclick="openCalc()" style="cursor:pointer;">
-      <span class="app-tile-icon">🧮</span>
-      <span class="app-tile-label">Calculator</span>
-    </span>
+  <div class="auth-only" style="padding:8px 0;">
+
+    <!-- Google -->
+    <div class="tool-group">
+      <button class="tool-group-btn" onclick="toggleToolGroup('googleGroup')">
+        <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:18px;">🔵</span> Google</span>
+        <span id="googleGroupChevron">▾</span>
+      </button>
+      <div id="googleGroup" class="tool-group-tiles">
+        <a href="https://meet.google.com" target="_blank" rel="noopener" class="app-tile"><span class="app-tile-icon">📹</span><span class="app-tile-label">Meet</span></a>
+        <a href="https://calendar.google.com" target="_blank" rel="noopener" class="app-tile"><span class="app-tile-icon">📅</span><span class="app-tile-label">Calendar</span></a>
+        <a href="https://docs.google.com" target="_blank" rel="noopener" class="app-tile"><span class="app-tile-icon">📝</span><span class="app-tile-label">Docs</span></a>
+        <a href="https://sheets.google.com" target="_blank" rel="noopener" class="app-tile"><span class="app-tile-icon">📊</span><span class="app-tile-label">Sheets</span></a>
+        <a href="https://drive.google.com" target="_blank" rel="noopener" class="app-tile"><span class="app-tile-icon">🗂</span><span class="app-tile-label">Drive</span></a>
+      </div>
+    </div>
+
+    <!-- AI Tools -->
+    <div class="tool-group">
+      <button class="tool-group-btn" onclick="toggleToolGroup('aiGroup')">
+        <span style="display:flex;align-items:center;gap:8px;"><span style="font-size:18px;">🤖</span> AI Tools</span>
+        <span id="aiGroupChevron">▾</span>
+      </button>
+      <div id="aiGroup" class="tool-group-tiles">
+        <a href="https://claude.ai" target="_blank" rel="noopener" class="app-tile"><span class="app-tile-icon">🤖</span><span class="app-tile-label">Claude</span></a>
+        <a href="https://gemini.google.com" target="_blank" rel="noopener" class="app-tile"><span class="app-tile-icon">✨</span><span class="app-tile-label">Gemini</span></a>
+        <a href="https://perplexity.ai" target="_blank" rel="noopener" class="app-tile"><span class="app-tile-icon">🔍</span><span class="app-tile-label">Perplexity</span></a>
+        <a href="https://chat.deepseek.com" target="_blank" rel="noopener" class="app-tile"><span class="app-tile-icon">🐋</span><span class="app-tile-label">DeepSeek</span></a>
+      </div>
+    </div>
+
+    <!-- Other -->
+    <div style="display:flex;flex-wrap:wrap;gap:12px;padding:4px 2px 8px;">
+      <a href="https://clockify.me/tracker" target="_blank" rel="noopener" class="app-tile"><span class="app-tile-icon">⏱</span><span class="app-tile-label">Clockify</span></a>
+      <span class="app-tile" onclick="openCalc()"><span class="app-tile-icon">🧮</span><span class="app-tile-label">Calculator</span></span>
+    </div>
   </div>
 
   <!-- PKR / USD Converter -->
@@ -1246,10 +1257,10 @@
       <span id="pkrRateStatus" style="font-size:10px;color:var(--muted);"></span>
     </div>
   </div>
-  <div class="demo-only" style="display:flex;flex-wrap:wrap;gap:12px;padding:8px 0;">
-    <span class="app-tile"><span class="app-tile-icon">📹</span><span class="app-tile-label">Video Call</span></span>
-    <span class="app-tile"><span class="app-tile-icon">⏱</span><span class="app-tile-label">Time Tracker</span></span>
-    <span class="app-tile"><span class="app-tile-icon">📅</span><span class="app-tile-label">Scheduler</span></span>
+  <div class="demo-only" style="padding:8px 0;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;opacity:0.6;"><span style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;"><span style="font-size:18px;">🔵</span> Google</span><span>▾</span></div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;opacity:0.6;"><span style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;"><span style="font-size:18px;">🤖</span> AI Tools</span><span>▾</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;padding:4px 2px;opacity:0.6;"><span class="app-tile"><span class="app-tile-icon">⏱</span><span class="app-tile-label">Clockify</span></span><span class="app-tile"><span class="app-tile-icon">🧮</span><span class="app-tile-label">Calculator</span></span></div>
   </div>
 </div>
 </div>
@@ -3883,6 +3894,12 @@ function clearTicketSearch() {
   var inp = el('ticketSearchInput'); if (inp) inp.value = '';
   var clr = el('ticketSearchClear'); if (clr) clr.style.display = 'none';
   renderTicketsList();
+}
+function toggleToolGroup(id) {
+  var pane = el(id), chevron = el(id + 'Chevron');
+  var open = pane.style.display !== 'none';
+  pane.style.display = open ? 'none' : 'flex';
+  if (chevron) chevron.textContent = open ? '▸' : '▾';
 }
 function openCalc() {
   _calcDisp='0';_calcOp='';_calcPrev='';_calcFresh=false;_calcJustEvaled=false;
