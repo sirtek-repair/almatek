@@ -1652,7 +1652,7 @@ function on2ndRepairChange() {
 }
 function renderDeal() {
   const p1=getPrice1(), p2=getPrice2(); if (p1<=0 || p2<=0) return;
-  const fullTotal = withTax(p1+p2), discounted2 = Math.ceil(withTax(p2)/2), dealTotal = withTax(p1)+discounted2, savings = fullTotal-dealTotal;
+  const fullTotal = withTax(p1+p2+mobileFee), discounted2 = Math.ceil(withTax(p2)/2), dealTotal = withTax(p1+mobileFee)+discounted2, savings = fullTotal-dealTotal;
   el('normalTotal').textContent=isAuth() ? '$'+fullTotal : 'part + tax + ❤️'; el('dealTotal').textContent=isAuth() ? '$'+dealTotal : 'part + tax + ❤️';
   el('savingsPill').textContent=isAuth() ? 'Saving $'+savings : 'They save 🤝'; el('dealResult').classList.remove('hidden');
 }
