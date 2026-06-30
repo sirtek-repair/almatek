@@ -580,6 +580,45 @@
     </div>
   </div>
 
+  <!-- Neighborhood surcharge row -->
+  <div id="neighborhoodRow" class="hidden" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">📍 <span>Neighborhood</span></div>
+      <span id="nbrSurchargeBadge" class="hidden" style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(245,158,11,0.12);color:#f59e0b;"></span>
+    </div>
+    <select id="neighborhoodSelect" onchange="onNeighborhoodChange()" style="width:100%;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit;outline:none;">
+      <option value="">Select neighborhood...</option>
+      <optgroup label="Base pricing (0%)">
+        <option value="0">Bedford-Stuyvesant</option>
+        <option value="0">Bushwick</option>
+      </optgroup>
+      <optgroup label="+5%">
+        <option value="5">Crown Heights</option>
+        <option value="5">Gowanus</option>
+        <option value="5">Greenpoint</option>
+        <option value="5">Ridgewood</option>
+        <option value="5">Williamsburg</option>
+      </optgroup>
+      <optgroup label="+10%">
+        <option value="10">Prospect Heights</option>
+        <option value="10">Queens</option>
+        <option value="10">Red Hook</option>
+      </optgroup>
+      <optgroup label="+15%">
+        <option value="15">Carroll Gardens</option>
+        <option value="15">Clinton Hill</option>
+        <option value="15">Cobble Hill</option>
+        <option value="15">Downtown Brooklyn</option>
+        <option value="15">DUMBO</option>
+        <option value="15">Fort Greene</option>
+      </optgroup>
+      <optgroup label="+20%">
+        <option value="20">Brooklyn Heights</option>
+        <option value="20">Lower &amp; Midtown Manhattan</option>
+      </optgroup>
+    </select>
+  </div>
+
   <div id="mobileToggleRow" class="toggle-row hidden" onclick="onToggleMobile()">
     <div class="toggle-text"><div class="tl" id="mobileToggleLabel">Mobile repair service?</div></div>
     <div class="switch" id="mobileSw"></div>
@@ -1390,15 +1429,21 @@ function initGlassPriceTags() {
     ['glassPrice'+c, 'glassPrice2_'+c].forEach(function(id) { var el2 = el(id); if (el2) el2.textContent = p; });
   });
 }
+var neighborhoodSurcharge = 0;
+var selectedNeighborhood = '';
 function getPrice1() {
-  if (type1 === 'back_glass') { return cost1 > 0 ? cost1 : 0; }
-  if (type1 === 'skymobile') { return cost1 > 0 ? cost1 + TRANSIT_FEE.skymobile + LABOR.skymobile : 0; }
-  return cost1 > 0 ? fullPrice(cost1, type1) + (TRANSIT_FEE[type1] || 0) : 0;
+  var base;
+  if (type1 === 'back_glass') { base = cost1 > 0 ? cost1 : 0; }
+  else if (type1 === 'skymobile') { base = cost1 > 0 ? cost1 + TRANSIT_FEE.skymobile + LABOR.skymobile : 0; }
+  else { base = cost1 > 0 ? fullPrice(cost1, type1) + (TRANSIT_FEE[type1] || 0) : 0; }
+  return base * (1 + neighborhoodSurcharge);
 }
 function getPrice2() {
-  if (type2 === 'back_glass') { return cost2 > 0 ? cost2 : 0; }
-  if (type2 === 'skymobile') { return cost2 > 0 ? cost2 + TRANSIT_FEE.skymobile + LABOR.skymobile : 0; }
-  return cost2 > 0 ? fullPrice(cost2, type2) + (TRANSIT_FEE[type2] || 0) : 0;
+  var base;
+  if (type2 === 'back_glass') { base = cost2 > 0 ? cost2 : 0; }
+  else if (type2 === 'skymobile') { base = cost2 > 0 ? cost2 + TRANSIT_FEE.skymobile + LABOR.skymobile : 0; }
+  else { base = cost2 > 0 ? fullPrice(cost2, type2) + (TRANSIT_FEE[type2] || 0) : 0; }
+  return base * (1 + neighborhoodSurcharge);
 }
 
 function onRepairChange() {
@@ -1423,15 +1468,15 @@ function updateTierDisplay1() { updateTierPrices1(); }
 function updateTierDisplay2() { updateTierPrices2(); }
 function updateTierPrices1() {
   var prices = model1 ? (spLookup(model1) || {}) : {};
-  if (el('tierPrice1Std')) el('tierPrice1Std').textContent = prices.standard > 0 ? '$' + withTax(fullPrice(prices.standard, 'iphone_screen')) : '—';
-  if (el('tierPrice1Pre')) el('tierPrice1Pre').textContent = prices.premium > 0 ? '$' + withTax(fullPrice(prices.premium, 'iphone_screen')) : '—';
+  if (el('tierPrice1Std')) el('tierPrice1Std').textContent = prices.standard > 0 ? '$' + withTax(fullPrice(prices.standard, 'iphone_screen') * (1 + neighborhoodSurcharge)) : '—';
+  if (el('tierPrice1Pre')) el('tierPrice1Pre').textContent = prices.premium > 0 ? '$' + withTax(fullPrice(prices.premium, 'iphone_screen') * (1 + neighborhoodSurcharge)) : '—';
   if (model1) { showStockBadge('1Std', model1, 'standard'); showStockBadge('1Pre', model1, 'premium'); }
   else { ['stockRow1Std','stockRow1Pre'].forEach(function(id) { var r = el(id); if (r) r.classList.add('hidden'); }); }
 }
 function updateTierPrices2() {
   var prices = model2 ? (spLookup(model2) || {}) : {};
-  if (el('tierPrice2Std')) el('tierPrice2Std').textContent = prices.standard > 0 ? '$' + withTax(fullPrice(prices.standard, 'iphone_screen')) : '—';
-  if (el('tierPrice2Pre')) el('tierPrice2Pre').textContent = prices.premium > 0 ? '$' + withTax(fullPrice(prices.premium, 'iphone_screen')) : '—';
+  if (el('tierPrice2Std')) el('tierPrice2Std').textContent = prices.standard > 0 ? '$' + withTax(fullPrice(prices.standard, 'iphone_screen') * (1 + neighborhoodSurcharge)) : '—';
+  if (el('tierPrice2Pre')) el('tierPrice2Pre').textContent = prices.premium > 0 ? '$' + withTax(fullPrice(prices.premium, 'iphone_screen') * (1 + neighborhoodSurcharge)) : '—';
   if (model2) { showStockBadge('2Std', model2, 'standard'); showStockBadge('2Pre', model2, 'premium'); }
   else { ['stockRow2Std','stockRow2Pre'].forEach(function(id) { var r = el(id); if (r) r.classList.add('hidden'); }); }
 }
@@ -1494,16 +1539,28 @@ function onDeviceSelect2(subtype, btn) {
 
 function onCost1Change() { const inputId = type1==='iphone_screen' ? 'partCostIphone' : 'partCost'; cost1 = parseFloat(el(inputId).value) || 0; tryRenderQuote(); }
 function onCost2Change() { const inputId = type2==='iphone_screen' ? 'partCostIphone2' : 'partCost2'; cost2 = parseFloat(el(inputId).value) || 0; renderDeal(); }
+function onNeighborhoodChange() {
+  var sel = el('neighborhoodSelect');
+  var pct = sel.value !== '' ? parseInt(sel.value) || 0 : 0;
+  var name = sel.value !== '' ? sel.options[sel.selectedIndex].text : '';
+  neighborhoodSurcharge = pct / 100;
+  selectedNeighborhood = name;
+  var badge = el('nbrSurchargeBadge');
+  if (badge) { if (pct > 0) { badge.textContent = '+' + pct + '% area'; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
+  updateTierPrices1(); updateTierPrices2();
+  tryRenderQuote();
+  if (secondOpen) renderDeal();
+}
 
 function tryRenderQuote() {
   const p = getPrice1(); if (p <= 0) { hideQuote(); return; }
   const total = withTax(p + mobileFee);
   if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; el('taxIncludedLine').classList.remove('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.textContent = 'includes mobile service'; sub.classList.remove('hidden'); } else { sub.textContent = ''; sub.classList.add('hidden'); } }
   else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; el('taxIncludedLine').classList.add('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
-  el('quoteCard').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
+  el('quoteCard').classList.remove('hidden'); el('neighborhoodRow').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
-function hideQuote() { el('quoteCard').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
+function hideQuote() { el('quoteCard').classList.add('hidden'); el('neighborhoodRow').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
 
 var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', ipad:'iPad', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android', laptop:'Laptop' };
 
@@ -1536,6 +1593,7 @@ function showAddToTicketModal() {
   if (model1) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Device</span><span style="font-weight:600;">' + model1 + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 1</span><span style="font-weight:600;">' + typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + '</span></div>');
   if (p2 > 0) { var label2 = (ATL_TYPE_LABELS[type2]||type2) + (tier2 && tier2!=='manual' ? ' · '+tier2.charAt(0).toUpperCase()+tier2.slice(1) : ''); rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 2</span><span style="font-weight:600;">' + label2 + ' <span style="color:#f59e0b;font-size:11px;">50% deal</span></span></div>'); }
+  if (selectedNeighborhood) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">📍 Area</span><span style="font-weight:600;">' + selectedNeighborhood + (neighborhoodSurcharge > 0 ? ' <span style="color:#f59e0b;font-size:11px;">+' + Math.round(neighborhoodSurcharge*100) + '%</span>' : '') + '</span></div>');
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('attQuoteSummary').innerHTML = rows.join('');
@@ -1564,6 +1622,7 @@ function showAddToLeadModal() {
   if (model1) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Device</span><span style="font-weight:600;">' + model1 + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 1</span><span style="font-weight:600;">' + typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + '</span></div>');
   if (p2 > 0) { var label2 = (ATL_TYPE_LABELS[type2]||type2) + (tier2 && tier2!=='manual' ? ' · '+tier2.charAt(0).toUpperCase()+tier2.slice(1) : ''); rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 2</span><span style="font-weight:600;">' + label2 + ' <span style="color:#f59e0b;font-size:11px;">50% deal</span></span></div>'); }
+  if (selectedNeighborhood) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">📍 Area</span><span style="font-weight:600;">' + selectedNeighborhood + (neighborhoodSurcharge > 0 ? ' <span style="color:#f59e0b;font-size:11px;">+' + Math.round(neighborhoodSurcharge*100) + '%</span>' : '') + '</span></div>');
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('atlQuoteSummary').innerHTML = rows.join('');
