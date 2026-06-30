@@ -609,6 +609,18 @@
     </select>
   </div>
 
+  <div id="afterHoursRow" class="hidden" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">🕐 <span>After-Hours</span></div>
+      <span id="afterHoursBadge" class="hidden" style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(239,68,68,0.12);color:#ef4444;"></span>
+    </div>
+    <select id="afterHoursSelect" onchange="onAfterHoursChange()" style="width:100%;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit;outline:none;">
+      <option value="">Regular hours (10AM–6PM)</option>
+      <option value="15">Evening (6PM–9PM) — +$15</option>
+      <option value="40">Late night (9PM–12AM) — +$40</option>
+    </select>
+  </div>
+
   <div id="mobileToggleRow" class="toggle-row hidden" onclick="onToggleMobile()">
     <div class="toggle-text"><div class="tl" id="mobileToggleLabel">Mobile repair service?</div></div>
     <div class="switch" id="mobileSw"></div>
@@ -1406,7 +1418,7 @@ function updateFactoryScreenBadge(model) {
   badge.classList.remove('hidden');
 }
 
-let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2='', mode1='select', mode2='select', secondOpen=false, mobileOpen=false, mobileFee=0;
+let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2='', mode1='select', mode2='select', secondOpen=false, mobileOpen=false, mobileFee=0, afterHoursFee=0, selectedTimeWindow='';
 const el = id => document.getElementById(id);
 
 function fullPrice(cost, type) { return cost * 1.2 + LABOR[type]; }
@@ -1541,16 +1553,26 @@ function onNeighborhoodChange() {
   tryRenderQuote();
   if (secondOpen) renderDeal();
 }
+function onAfterHoursChange() {
+  var sel = el('afterHoursSelect');
+  var fee = sel.value !== '' ? parseInt(sel.value) || 0 : 0;
+  afterHoursFee = fee;
+  selectedTimeWindow = fee > 0 ? sel.options[sel.selectedIndex].text.split(' —')[0] : '';
+  var badge = el('afterHoursBadge');
+  if (badge) { if (fee > 0) { badge.textContent = '+$' + fee; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
+  tryRenderQuote();
+  if (secondOpen) renderDeal();
+}
 
 function tryRenderQuote() {
   const p = getPrice1(); if (p <= 0) { hideQuote(); return; }
-  const total = withTax(p + mobileFee);
+  const total = withTax(p + afterHoursFee + mobileFee);
   if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; el('taxIncludedLine').classList.remove('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.textContent = 'includes mobile service'; sub.classList.remove('hidden'); } else { sub.textContent = ''; sub.classList.add('hidden'); } }
   else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; el('taxIncludedLine').classList.add('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
-  el('quoteCard').classList.remove('hidden'); el('neighborhoodRow').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
+  el('quoteCard').classList.remove('hidden'); el('neighborhoodRow').classList.remove('hidden'); el('afterHoursRow').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
-function hideQuote() { el('quoteCard').classList.add('hidden'); el('neighborhoodRow').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
+function hideQuote() { el('quoteCard').classList.add('hidden'); el('neighborhoodRow').classList.add('hidden'); el('afterHoursRow').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
 
 var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', ipad:'iPad', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android', laptop:'Laptop' };
 
@@ -1577,13 +1599,14 @@ function detectTicketFlow() {
 }
 function showAddToTicketModal() {
   var price = getPrice1(), p2 = secondOpen ? getPrice2() : 0;
-  var total = p2 > 0 ? withTax(price + mobileFee) + Math.ceil(withTax(p2) / 2) : withTax(price + mobileFee);
+  var total = p2 > 0 ? withTax(price + afterHoursFee + mobileFee) + Math.ceil(withTax(p2) / 2) : withTax(price + afterHoursFee + mobileFee);
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
   var rows = [];
   if (model1) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Device</span><span style="font-weight:600;">' + model1 + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 1</span><span style="font-weight:600;">' + typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + '</span></div>');
   if (p2 > 0) { var label2 = (ATL_TYPE_LABELS[type2]||type2) + (tier2 && tier2!=='manual' ? ' · '+tier2.charAt(0).toUpperCase()+tier2.slice(1) : ''); rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 2</span><span style="font-weight:600;">' + label2 + ' <span style="color:#f59e0b;font-size:11px;">50% deal</span></span></div>'); }
   if (selectedNeighborhood) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">📍 Area</span><span style="font-weight:600;">' + selectedNeighborhood + (isOwner && neighborhoodSurcharge > 0 ? ' <span style="color:#f59e0b;font-size:11px;">+' + Math.round(neighborhoodSurcharge*100) + '%</span>' : '') + '</span></div>');
+  if (selectedTimeWindow) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">🕐 After-Hours</span><span style="font-weight:600;">' + selectedTimeWindow + ' <span style="color:#ef4444;font-size:11px;">+$' + afterHoursFee + '</span></span></div>');
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('attQuoteSummary').innerHTML = rows.join('');
@@ -1606,13 +1629,14 @@ function showNewTicketManual() {
 }
 function showAddToLeadModal() {
   var price = getPrice1(), p2 = secondOpen ? getPrice2() : 0;
-  var total = p2 > 0 ? withTax(price + mobileFee) + Math.ceil(withTax(p2) / 2) : withTax(price + mobileFee);
+  var total = p2 > 0 ? withTax(price + afterHoursFee + mobileFee) + Math.ceil(withTax(p2) / 2) : withTax(price + afterHoursFee + mobileFee);
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
   var rows = [];
   if (model1) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Device</span><span style="font-weight:600;">' + model1 + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 1</span><span style="font-weight:600;">' + typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + '</span></div>');
   if (p2 > 0) { var label2 = (ATL_TYPE_LABELS[type2]||type2) + (tier2 && tier2!=='manual' ? ' · '+tier2.charAt(0).toUpperCase()+tier2.slice(1) : ''); rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 2</span><span style="font-weight:600;">' + label2 + ' <span style="color:#f59e0b;font-size:11px;">50% deal</span></span></div>'); }
   if (selectedNeighborhood) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">📍 Area</span><span style="font-weight:600;">' + selectedNeighborhood + (neighborhoodSurcharge > 0 ? ' <span style="color:#f59e0b;font-size:11px;">+' + Math.round(neighborhoodSurcharge*100) + '%</span>' : '') + '</span></div>');
+  if (selectedTimeWindow) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">🕐 After-Hours</span><span style="font-weight:600;">' + selectedTimeWindow + ' <span style="color:#ef4444;font-size:11px;">+$' + afterHoursFee + '</span></span></div>');
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('atlQuoteSummary').innerHTML = rows.join('');
@@ -1651,7 +1675,7 @@ function saveTicketFromQuote() {
   var manualTotal = parseFloat((el('attManualTotal') ? el('attManualTotal').value : '0') || '0') || 0;
   var discounted2 = p2 > 0 ? Math.ceil(withTax(p2) / 2) : 0;
   var total = price > 0
-    ? (p2 > 0 ? withTax(price + mobileFee) + discounted2 : withTax(price + mobileFee))
+    ? (p2 > 0 ? withTax(price + afterHoursFee + mobileFee) + discounted2 : withTax(price + afterHoursFee + mobileFee))
     : manualTotal;
   var typeLabel = ATL_TYPE_LABELS[type1] || type1;
   var label2 = p2 > 0 ? (ATL_TYPE_LABELS[type2]||type2) + (tier2 && tier2!=='manual' ? ' · '+tier2.charAt(0).toUpperCase()+tier2.slice(1) : '') : '';
@@ -1701,7 +1725,7 @@ function on2ndRepairChange() {
 }
 function renderDeal() {
   const p1=getPrice1(), p2=getPrice2(); if (p1<=0 || p2<=0) return;
-  const fullTotal = withTax(p1+p2+mobileFee), discounted2 = Math.ceil(withTax(p2)/2), dealTotal = withTax(p1+mobileFee)+discounted2, savings = fullTotal-dealTotal;
+  const fullTotal = withTax(p1+p2+afterHoursFee+mobileFee), discounted2 = Math.ceil(withTax(p2)/2), dealTotal = withTax(p1+afterHoursFee+mobileFee)+discounted2, savings = fullTotal-dealTotal;
   el('normalTotal').textContent=isAuth() ? '$'+fullTotal : 'part + tax + ❤️'; el('dealTotal').textContent=isAuth() ? '$'+dealTotal : 'part + tax + ❤️';
   el('savingsPill').textContent=isAuth() ? 'Saving $'+savings : 'They save 🤝'; el('dealResult').classList.remove('hidden');
 }
@@ -2854,13 +2878,13 @@ function buildQuoteText() {
     lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
   } else if (hasSecond) {
     // ── Two-repair combo deal ──────────────────────────────────
-    var full1 = withTax(p1 + mobileFee), full2 = withTax(p2), fullTotal = withTax(p1 + p2 + mobileFee);
-    var discounted2 = Math.ceil(withTax(p2) / 2), dealTotal = withTax(p1 + mobileFee) + discounted2;
+    var full1 = withTax(p1 + afterHoursFee + mobileFee), full2 = withTax(p2), fullTotal = withTax(p1 + p2 + afterHoursFee + mobileFee);
+    var discounted2 = Math.ceil(withTax(p2) / 2), dealTotal = withTax(p1 + afterHoursFee + mobileFee) + discounted2;
     var savings = fullTotal - dealTotal;
 
     lines.push('Great news — since we\'re already in your device, we can bundle both repairs and save you money!');
     lines.push('');
-    lines.push('Repair 1 — ' + label1 + model1Label + tier1Label + ': $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ' · includes mobile service' : ''));
+    lines.push('Repair 1 — ' + label1 + model1Label + tier1Label + ': $' + withTax(p1 + afterHoursFee + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ' · includes mobile service' : ''));
     lines.push('Repair 2 — ' + label2 + model2Label + tier2Label + ': normally $' + full2 + ', but with the combo deal only $' + discounted2 + ' (50% off, tax included)');
     lines.push('');
     lines.push('Regular price for both: $' + fullTotal + ' (tax included)');
@@ -2875,10 +2899,10 @@ function buildQuoteText() {
     if (hasStd && hasPrem) {
       lines.push('For your ' + model1 + ', we have two options available:');
       lines.push('');
-      lines.push('STANDARD — $' + withTax(fullPrice(prices.standard,'iphone_screen') + mobileFee) + ' (tax included)');
+      lines.push('STANDARD — $' + withTax(fullPrice(prices.standard,'iphone_screen') + afterHoursFee + mobileFee) + ' (tax included)');
       lines.push('LCD screen that looks & functions just like the original. The frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re upgrading soon or keeping your phone under a year.');
       lines.push('');
-      lines.push('PREMIUM — $' + withTax(fullPrice(prices.premium,'iphone_screen') + mobileFee) + ' (tax included)');
+      lines.push('PREMIUM — $' + withTax(fullPrice(prices.premium,'iphone_screen') + afterHoursFee + mobileFee) + ' (tax included)');
       lines.push('Soft OLED screen (OEM-quality) — same exact specs as the original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
       lines.push('');
       lines.push('Both come with a warranty' + (mobileFee > 0 ? ' and include mobile service' : '') + '. Which works better for you?');
@@ -2886,7 +2910,7 @@ function buildQuoteText() {
       lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
     } else {
       var opt = hasPrem ? 'premium' : 'standard', price = prices[opt];
-      lines.push(model1 + ' — ' + opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(fullPrice(price,'iphone_screen') + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
+      lines.push(model1 + ' — ' + opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(fullPrice(price,'iphone_screen') + afterHoursFee + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
       lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
     }
   } else if (tier1 === 'manual') {
@@ -2898,30 +2922,30 @@ function buildQuoteText() {
       lines.push('For your ' + model1 + ', we have the following options available:');
       lines.push('');
       if (manHasStd) {
-        lines.push('STANDARD — $' + withTax(fullPrice(manPrices.standard,'iphone_screen') + mobileFee));
+        lines.push('STANDARD — $' + withTax(fullPrice(manPrices.standard,'iphone_screen') + afterHoursFee + mobileFee));
         lines.push('LCD screen that looks & functions just like the original. The frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re upgrading soon or keeping your phone under a year.');
         lines.push('');
       }
       if (manHasPrem) {
-        lines.push('PREMIUM — $' + withTax(fullPrice(manPrices.premium,'iphone_screen') + mobileFee));
+        lines.push('PREMIUM — $' + withTax(fullPrice(manPrices.premium,'iphone_screen') + afterHoursFee + mobileFee));
         lines.push('Soft OLED screen (OEM-quality) — same exact specs as the original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
         lines.push('');
       }
-      lines.push('EXPEDITED SAME-DAY SPECIAL ORDER — $' + withTax(p1 + mobileFee) + (mobileFee > 0 ? ', includes mobile service' : ''));
+      lines.push('EXPEDITED SAME-DAY SPECIAL ORDER — $' + withTax(p1 + afterHoursFee + mobileFee) + (mobileFee > 0 ? ', includes mobile service' : ''));
       lines.push('We\'ll source the part specifically for you and have it completed the same day. Comes with a warranty.');
       lines.push('');
       lines.push('All options come with a warranty' + (mobileFee > 0 ? ' and include mobile service' : '') + '. Which works best for you?');
     } else {
       lines.push('Good news — we can get your ' + itemLabel + ' done today as a same-day special order.');
       lines.push('');
-      lines.push('Expedited same-day special order — $' + withTax(p1 + mobileFee) + (mobileFee > 0 ? ', includes mobile service' : ''));
+      lines.push('Expedited same-day special order — $' + withTax(p1 + afterHoursFee + mobileFee) + (mobileFee > 0 ? ', includes mobile service' : ''));
       lines.push('We\'ll source the part specifically for you and have it completed the same day. Comes with a warranty.');
     }
     lines.push('');
     lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
   } else {
     // ── Single non-screen repair ───────────────────────────────
-    lines.push(label1 + model1Label + tier1Label + ' repair — $' + withTax(p1 + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
+    lines.push(label1 + model1Label + tier1Label + ' repair — $' + withTax(p1 + afterHoursFee + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
     lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
   }
   return lines.join('\r\n');
