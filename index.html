@@ -1563,6 +1563,14 @@ function onAfterHoursChange() {
   tryRenderQuote();
   if (secondOpen) renderDeal();
 }
+function autoSetAfterHours() {
+  var sel = el('afterHoursSelect'); if (!sel) return;
+  var hour = parseInt(new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false, timeZone: 'America/New_York' }).format(new Date()));
+  if (hour >= 18 && hour < 21) { sel.value = '15'; }
+  else if (hour >= 21) { sel.value = '40'; }
+  else { sel.value = ''; }
+  onAfterHoursChange();
+}
 
 function tryRenderQuote() {
   const p = getPrice1(); if (p <= 0) { hideQuote(); return; }
@@ -1840,6 +1848,7 @@ if (localStorage.getItem('almatek_auth_v') !== '2') { localStorage.removeItem('a
 var authPass = localStorage.getItem('almatek_pass') || '', apiPass = localStorage.getItem('almatek_api_pass') || '', isOwner = localStorage.getItem('almatek_is_owner') === 'true', currentUser = localStorage.getItem('almatek_current_user') || '', currentUserStructure = localStorage.getItem('almatek_user_structure') || 'standard';
 if (authPass && authPass !== '_auth_') { isOwner = false; localStorage.setItem('almatek_is_owner', 'false'); }
 if (isOwner && !currentUser) { currentUser = 'Sir'; localStorage.setItem('almatek_current_user', 'Sir'); }
+autoSetAfterHours();
 
 const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7P3ixTJATVr2YbDAhYpUTAz5HAtECUwFDcESDFlHcB60TaeKMmjT9lKc17FHKPWlc/exec';
 var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || DEFAULT_SCRIPT_URL, USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
