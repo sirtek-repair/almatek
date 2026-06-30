@@ -1558,12 +1558,11 @@ function onAfterHoursChange() {
   afterHoursFee = fee;
   selectedTimeWindow = fee > 0 ? sel.options[sel.selectedIndex].text.split(' —')[0] : '';
   var badge = el('afterHoursBadge');
-  if (badge) { if (fee > 0) { badge.textContent = '+$' + fee; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
+  if (badge) { if (fee > 0 && isOwner) { badge.textContent = '+$' + fee; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
   tryRenderQuote();
   if (secondOpen) renderDeal();
 }
 function autoSetAfterHours() {
-  if (!isOwner) return;
   var sel = el('afterHoursSelect'); if (!sel) return;
   var hour = parseInt(new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false, timeZone: 'America/New_York' }).format(new Date()));
   if (hour >= 18 && hour < 21) { sel.value = '15'; }
@@ -1577,7 +1576,7 @@ function tryRenderQuote() {
   const total = withTax(p + afterHoursFee + mobileFee);
   if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; el('taxIncludedLine').classList.remove('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.textContent = 'includes mobile service'; sub.classList.remove('hidden'); } else { sub.textContent = ''; sub.classList.add('hidden'); } }
   else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; el('taxIncludedLine').classList.add('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
-  el('quoteCard').classList.remove('hidden'); el('quoteNotesRow').classList.remove('hidden'); if (isOwner) { el('neighborhoodRow').classList.remove('hidden'); el('afterHoursRow').classList.remove('hidden'); } el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
+  el('quoteCard').classList.remove('hidden'); el('quoteNotesRow').classList.remove('hidden'); el('neighborhoodRow').classList.remove('hidden'); el('afterHoursRow').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
 function hideQuote() { el('quoteCard').classList.add('hidden'); el('quoteNotesRow').classList.add('hidden'); el('neighborhoodRow').classList.add('hidden'); el('afterHoursRow').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
@@ -1614,7 +1613,7 @@ function showAddToTicketModal() {
   rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 1</span><span style="font-weight:600;">' + typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + '</span></div>');
   if (p2 > 0) { var label2 = (ATL_TYPE_LABELS[type2]||type2) + (tier2 && tier2!=='manual' ? ' · '+tier2.charAt(0).toUpperCase()+tier2.slice(1) : ''); rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 2</span><span style="font-weight:600;">' + label2 + ' <span style="color:#f59e0b;font-size:11px;">50% deal</span></span></div>'); }
   if (selectedNeighborhood) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">📍 Area</span><span style="font-weight:600;">' + selectedNeighborhood + (isOwner && neighborhoodSurcharge > 0 ? ' <span style="color:#f59e0b;font-size:11px;">+' + Math.round(neighborhoodSurcharge*100) + '%</span>' : '') + '</span></div>');
-  if (selectedTimeWindow) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">🕐 After-Hours</span><span style="font-weight:600;">' + selectedTimeWindow + ' <span style="color:#ef4444;font-size:11px;">+$' + afterHoursFee + '</span></span></div>');
+  if (selectedTimeWindow) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">🕐 After-Hours</span><span style="font-weight:600;">' + selectedTimeWindow + (isOwner && afterHoursFee > 0 ? ' <span style="color:#ef4444;font-size:11px;">+$' + afterHoursFee + '</span>' : '') + '</span></div>');
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('attQuoteSummary').innerHTML = rows.join('');
@@ -1644,7 +1643,7 @@ function showAddToLeadModal() {
   rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 1</span><span style="font-weight:600;">' + typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + '</span></div>');
   if (p2 > 0) { var label2 = (ATL_TYPE_LABELS[type2]||type2) + (tier2 && tier2!=='manual' ? ' · '+tier2.charAt(0).toUpperCase()+tier2.slice(1) : ''); rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 2</span><span style="font-weight:600;">' + label2 + ' <span style="color:#f59e0b;font-size:11px;">50% deal</span></span></div>'); }
   if (selectedNeighborhood) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">📍 Area</span><span style="font-weight:600;">' + selectedNeighborhood + (neighborhoodSurcharge > 0 ? ' <span style="color:#f59e0b;font-size:11px;">+' + Math.round(neighborhoodSurcharge*100) + '%</span>' : '') + '</span></div>');
-  if (selectedTimeWindow) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">🕐 After-Hours</span><span style="font-weight:600;">' + selectedTimeWindow + ' <span style="color:#ef4444;font-size:11px;">+$' + afterHoursFee + '</span></span></div>');
+  if (selectedTimeWindow) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">🕐 After-Hours</span><span style="font-weight:600;">' + selectedTimeWindow + (isOwner && afterHoursFee > 0 ? ' <span style="color:#ef4444;font-size:11px;">+$' + afterHoursFee + '</span>' : '') + '</span></div>');
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('atlQuoteSummary').innerHTML = rows.join('');
@@ -1849,6 +1848,10 @@ var authPass = localStorage.getItem('almatek_pass') || '', apiPass = localStorag
 if (authPass && authPass !== '_auth_') { isOwner = false; localStorage.setItem('almatek_is_owner', 'false'); }
 if (isOwner && !currentUser) { currentUser = 'Sir'; localStorage.setItem('almatek_current_user', 'Sir'); }
 autoSetAfterHours();
+if (!isOwner) {
+  var _ahSel = el('afterHoursSelect');
+  if (_ahSel) { Array.from(_ahSel.options).forEach(function(o){ o.text = o.text.split(' —')[0]; }); }
+}
 
 const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7P3ixTJATVr2YbDAhYpUTAz5HAtECUwFDcESDFlHcB60TaeKMmjT9lKc17FHKPWlc/exec';
 var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || DEFAULT_SCRIPT_URL, USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
