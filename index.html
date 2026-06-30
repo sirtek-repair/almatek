@@ -588,34 +588,24 @@
     </div>
     <select id="neighborhoodSelect" onchange="onNeighborhoodChange()" style="width:100%;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit;outline:none;">
       <option value="">Select neighborhood...</option>
-      <optgroup label="Base pricing (0%)">
-        <option value="0">Bedford-Stuyvesant</option>
-        <option value="0">Bushwick</option>
-      </optgroup>
-      <optgroup label="+5%">
-        <option value="5">Crown Heights</option>
-        <option value="5">Gowanus</option>
-        <option value="5">Greenpoint</option>
-        <option value="5">Ridgewood</option>
-        <option value="5">Williamsburg</option>
-      </optgroup>
-      <optgroup label="+10%">
-        <option value="10">Prospect Heights</option>
-        <option value="10">Queens</option>
-        <option value="10">Red Hook</option>
-      </optgroup>
-      <optgroup label="+15%">
-        <option value="15">Carroll Gardens</option>
-        <option value="15">Clinton Hill</option>
-        <option value="15">Cobble Hill</option>
-        <option value="15">Downtown Brooklyn</option>
-        <option value="15">DUMBO</option>
-        <option value="15">Fort Greene</option>
-      </optgroup>
-      <optgroup label="+20%">
-        <option value="20">Brooklyn Heights</option>
-        <option value="20">Lower &amp; Midtown Manhattan</option>
-      </optgroup>
+      <option value="0">Bedford-Stuyvesant</option>
+      <option value="20">Brooklyn Heights</option>
+      <option value="0">Bushwick</option>
+      <option value="15">Carroll Gardens</option>
+      <option value="15">Clinton Hill</option>
+      <option value="15">Cobble Hill</option>
+      <option value="5">Crown Heights</option>
+      <option value="15">Downtown Brooklyn</option>
+      <option value="15">DUMBO</option>
+      <option value="15">Fort Greene</option>
+      <option value="5">Gowanus</option>
+      <option value="5">Greenpoint</option>
+      <option value="20">Lower &amp; Midtown Manhattan</option>
+      <option value="10">Prospect Heights</option>
+      <option value="10">Queens</option>
+      <option value="10">Red Hook</option>
+      <option value="5">Ridgewood</option>
+      <option value="5">Williamsburg</option>
     </select>
   </div>
 
@@ -1546,7 +1536,7 @@ function onNeighborhoodChange() {
   neighborhoodSurcharge = pct / 100;
   selectedNeighborhood = name;
   var badge = el('nbrSurchargeBadge');
-  if (badge) { if (pct > 0) { badge.textContent = '+' + pct + '% area'; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
+  if (badge) { if (pct > 0 && isOwner) { badge.textContent = '+' + pct + '% area'; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
   updateTierPrices1(); updateTierPrices2();
   tryRenderQuote();
   if (secondOpen) renderDeal();
@@ -1593,7 +1583,7 @@ function showAddToTicketModal() {
   if (model1) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Device</span><span style="font-weight:600;">' + model1 + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 1</span><span style="font-weight:600;">' + typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + '</span></div>');
   if (p2 > 0) { var label2 = (ATL_TYPE_LABELS[type2]||type2) + (tier2 && tier2!=='manual' ? ' · '+tier2.charAt(0).toUpperCase()+tier2.slice(1) : ''); rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Repair 2</span><span style="font-weight:600;">' + label2 + ' <span style="color:#f59e0b;font-size:11px;">50% deal</span></span></div>'); }
-  if (selectedNeighborhood) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">📍 Area</span><span style="font-weight:600;">' + selectedNeighborhood + (neighborhoodSurcharge > 0 ? ' <span style="color:#f59e0b;font-size:11px;">+' + Math.round(neighborhoodSurcharge*100) + '%</span>' : '') + '</span></div>');
+  if (selectedNeighborhood) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">📍 Area</span><span style="font-weight:600;">' + selectedNeighborhood + (isOwner && neighborhoodSurcharge > 0 ? ' <span style="color:#f59e0b;font-size:11px;">+' + Math.round(neighborhoodSurcharge*100) + '%</span>' : '') + '</span></div>');
   if (mobileFee > 0) rows.push('<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Mobile Fee</span><span style="font-weight:600;">$' + mobileFee + '</span></div>');
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('attQuoteSummary').innerHTML = rows.join('');
