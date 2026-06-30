@@ -459,7 +459,7 @@
     </div>
   </header>
 
-  <div id="scheduleStrip" style="display:none;margin:0 0 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);padding:10px 14px;font-size:12.5px;line-height:1.4;">
+  <div id="scheduleStrip" class="auth-only" style="display:none;margin:0 0 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);padding:10px 14px;font-size:12.5px;line-height:1.4;">
     <div id="scheduleStripContent"></div>
   </div>
 
@@ -1765,14 +1765,16 @@ function switchTab(tab) {
   if (isQuote) loadSchedule();
   if (isInventory) initInventory();
   else if (isReview) { switchReviewSubTab(reviewSubTab || 'pending'); }
-  else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); switchProfileSubTab(profileSubTab || 'tally'); }
+  else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); switchProfileSubTab(profileSubTab || (isOwner ? 'tally' : 'settings')); }
   else if (isLeads) { switchLeadSubTab('leads'); }
   else if (isTools) { initPkrCalc(); }
 }
 var profileSubTab = 'tally';
 function switchProfileSubTab(tab) {
+  if (tab === 'tally' && !isOwner) tab = 'settings';
   profileSubTab = tab;
   var isTally = tab === 'tally', isSettings = tab === 'settings', isAdmin = tab === 'admin';
+  el('profileSubBtnTally').classList.toggle('hidden', !isOwner);
   el('profileSubViewTally').classList.toggle('hidden', !isTally);
   el('profileSubViewSettings').classList.toggle('hidden', !isSettings);
   el('profileSubViewAdmin').classList.toggle('hidden', !isAdmin);
