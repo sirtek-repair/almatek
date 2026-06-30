@@ -557,30 +557,6 @@
     </div>
   </div>
 
-  <div id="quoteNotesRow" style="margin-bottom:8px;">
-    <label class="field-label" style="margin-bottom:6px;display:block;">Notes</label>
-    <textarea id="quoteNotes" placeholder="Add a message to include in the quote sent to the customer..." rows="2" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
-  </div>
-
-  <div id="factoryScreenBadge" class="hidden" style="text-align:center;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.04em;"></div>
-
-  </div><!-- quoteLeftCol -->
-  <div id="quoteRightCol">
-  <div id="quoteCard" class="quote-card hidden">
-    <div class="ql">Quote to Customer</div>
-    <div class="qa" id="quoteAmt">$—</div>
-    <div class="qsub hidden" id="taxIncludedLine">tax included</div>
-    <div class="qsub hidden" id="mobileSubline">includes mobile service fee</div>
-    <div class="qsub hidden" id="quoteStockLine"></div>
-    <button onclick="showAddToTicketModal()" style="margin-top:16px;width:100%;padding:10px 0;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">🎫 Add to Ticket</button>
-    <button onclick="showAddToLeadModal()" style="margin-top:8px;width:100%;padding:10px 0;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">👤 Add to Lead</button>
-    <div style="display:flex;gap:8px;margin-top:8px;">
-      <button onclick="copyQuote(this)" style="flex:1;padding:9px 0;background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.65);border-radius:10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
-      <button onclick="shareQuote()" style="flex:1;padding:9px 0;background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.65);border-radius:10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>
-    </div>
-  </div>
-
-  <!-- Neighborhood surcharge row -->
   <div id="neighborhoodRow" class="hidden" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:0;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
       <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">📍 <span>Neighborhood</span></div>
@@ -619,6 +595,29 @@
       <option value="15">Evening (6PM–9PM) — +$15</option>
       <option value="40">Late night (9PM–12AM) — +$40</option>
     </select>
+  </div>
+
+  <div id="factoryScreenBadge" class="hidden" style="text-align:center;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.04em;"></div>
+
+  </div><!-- quoteLeftCol -->
+  <div id="quoteRightCol">
+  <div id="quoteCard" class="quote-card hidden">
+    <div class="ql">Quote to Customer</div>
+    <div class="qa" id="quoteAmt">$—</div>
+    <div class="qsub hidden" id="taxIncludedLine">tax included</div>
+    <div class="qsub hidden" id="mobileSubline">includes mobile service fee</div>
+    <div class="qsub hidden" id="quoteStockLine"></div>
+    <button onclick="showAddToTicketModal()" style="margin-top:16px;width:100%;padding:10px 0;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">🎫 Add to Ticket</button>
+    <button onclick="showAddToLeadModal()" style="margin-top:8px;width:100%;padding:10px 0;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">👤 Add to Lead</button>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button onclick="copyQuote(this)" style="flex:1;padding:9px 0;background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.65);border-radius:10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
+      <button onclick="shareQuote()" style="flex:1;padding:9px 0;background:none;border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.65);border-radius:10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>
+    </div>
+  </div>
+
+  <div id="quoteNotesRow" class="hidden" style="margin-bottom:0;">
+    <label class="field-label" style="margin-bottom:6px;display:block;">Notes</label>
+    <textarea id="quoteNotes" placeholder="Add a message to include in the quote sent to the customer..." rows="2" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
   </div>
 
   <div id="mobileToggleRow" class="toggle-row hidden" onclick="onToggleMobile()">
@@ -1577,10 +1576,10 @@ function tryRenderQuote() {
   const total = withTax(p + afterHoursFee + mobileFee);
   if (isAuth()) { el('quoteAmt').textContent = '$' + total; el('quoteAmt').className = 'qa'; el('taxIncludedLine').classList.remove('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.textContent = 'includes mobile service'; sub.classList.remove('hidden'); } else { sub.textContent = ''; sub.classList.add('hidden'); } }
   else { el('quoteAmt').textContent = 'part + tax + ❤️'; el('quoteAmt').className = 'qa demo-price'; el('taxIncludedLine').classList.add('hidden'); const sub = el('mobileSubline'); if (mobileOpen) { sub.innerHTML = ''; sub.classList.remove('hidden'); requestAnimationFrame(function(){ sub.innerHTML = '+ <span class="coffee-emoji">☕</span>'; }); } else { sub.innerHTML = ''; sub.classList.add('hidden'); } }
-  el('quoteCard').classList.remove('hidden'); el('neighborhoodRow').classList.remove('hidden'); el('afterHoursRow').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
+  el('quoteCard').classList.remove('hidden'); el('quoteNotesRow').classList.remove('hidden'); el('neighborhoodRow').classList.remove('hidden'); el('afterHoursRow').classList.remove('hidden'); el('mobileToggleRow').classList.remove('hidden'); el('secondToggle').classList.remove('hidden');
   if (secondOpen) renderDeal();
 }
-function hideQuote() { el('quoteCard').classList.add('hidden'); el('neighborhoodRow').classList.add('hidden'); el('afterHoursRow').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
+function hideQuote() { el('quoteCard').classList.add('hidden'); el('quoteNotesRow').classList.add('hidden'); el('neighborhoodRow').classList.add('hidden'); el('afterHoursRow').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
 
 var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', ipad:'iPad', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android', laptop:'Laptop' };
 
