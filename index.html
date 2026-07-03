@@ -562,27 +562,30 @@
       <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">📍 <span>Neighborhood</span></div>
       <span id="nbrSurchargeBadge" class="hidden" style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(245,158,11,0.12);color:#f59e0b;"></span>
     </div>
-    <select id="neighborhoodSelect" onchange="onNeighborhoodChange()" style="width:100%;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit;outline:none;">
-      <option value="">Select neighborhood...</option>
-      <option value="0">Bedford-Stuyvesant</option>
-      <option value="20">Brooklyn Heights</option>
-      <option value="0">Bushwick</option>
-      <option value="15">Carroll Gardens</option>
-      <option value="15">Clinton Hill</option>
-      <option value="15">Cobble Hill</option>
-      <option value="5">Crown Heights</option>
-      <option value="15">Downtown Brooklyn</option>
-      <option value="15">DUMBO</option>
-      <option value="15">Fort Greene</option>
-      <option value="5">Gowanus</option>
-      <option value="5">Greenpoint</option>
-      <option value="20">Lower &amp; Midtown Manhattan</option>
-      <option value="10">Prospect Heights</option>
-      <option value="10">Queens</option>
-      <option value="10">Red Hook</option>
-      <option value="5">Ridgewood</option>
-      <option value="5">Williamsburg</option>
-    </select>
+    <div style="display:flex;gap:8px;align-items:stretch;">
+      <select id="neighborhoodSelect" onchange="onNeighborhoodChange()" style="flex:1;min-width:0;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit;outline:none;">
+        <option value="">Select neighborhood...</option>
+        <option value="0">Bedford-Stuyvesant</option>
+        <option value="20">Brooklyn Heights</option>
+        <option value="0">Bushwick</option>
+        <option value="15">Carroll Gardens</option>
+        <option value="15">Clinton Hill</option>
+        <option value="15">Cobble Hill</option>
+        <option value="5">Crown Heights</option>
+        <option value="15">Downtown Brooklyn</option>
+        <option value="15">DUMBO</option>
+        <option value="15">Fort Greene</option>
+        <option value="5">Gowanus</option>
+        <option value="5">Greenpoint</option>
+        <option value="20">Lower &amp; Midtown Manhattan</option>
+        <option value="10">Prospect Heights</option>
+        <option value="10">Queens</option>
+        <option value="10">Red Hook</option>
+        <option value="5">Ridgewood</option>
+        <option value="5">Williamsburg</option>
+      </select>
+      <button onclick="copyNbrAsk(this)" title="Copy ask-the-customer message" style="padding:9px 12px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);color:var(--accent);border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;">📋 Ask</button>
+    </div>
   </div>
 
   <div id="afterHoursRow" class="hidden" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:0;">
@@ -1540,6 +1543,14 @@ function onDeviceSelect2(subtype, btn) {
 
 function onCost1Change() { const inputId = type1==='iphone_screen' ? 'partCostIphone' : 'partCost'; cost1 = parseFloat(el(inputId).value) || 0; tryRenderQuote(); }
 function onCost2Change() { const inputId = type2==='iphone_screen' ? 'partCostIphone2' : 'partCost2'; cost2 = parseFloat(el(inputId).value) || 0; renderDeal(); }
+function copyNbrAsk(btn) {
+  var text = "Hey! Quick questions before I get your quote together — what neighborhood are you in? And are you looking for someone to come to you, or would you be okay meeting at one of our spots?";
+  var orig = btn.textContent;
+  function done() { btn.textContent = '✓ Copied'; setTimeout(function() { btn.textContent = orig; }, 1500); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(function() { var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); });
+  } else { var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }
+}
 function onNeighborhoodChange() {
   var sel = el('neighborhoodSelect');
   var pct = sel.value !== '' ? parseInt(sel.value) || 0 : 0;
