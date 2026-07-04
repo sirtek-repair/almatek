@@ -2924,10 +2924,10 @@ function buildQuoteText() {
     if (hasStd && hasPrem) {
       lines.push('For your ' + model1 + ', we have two options available:');
       lines.push('');
-      lines.push('STANDARD — $' + withTax(fullPrice(prices.standard,'iphone_screen') + afterHoursFee + mobileFee) + ' (tax included)');
+      lines.push('STANDARD — $' + withTax(fullPrice(prices.standard,'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee + mobileFee) + ' (tax included)');
       lines.push('LCD screen that looks & functions just like the original. The frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re upgrading soon or keeping your phone under a year.');
       lines.push('');
-      lines.push('PREMIUM — $' + withTax(fullPrice(prices.premium,'iphone_screen') + afterHoursFee + mobileFee) + ' (tax included)');
+      lines.push('PREMIUM — $' + withTax(fullPrice(prices.premium,'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee + mobileFee) + ' (tax included)');
       lines.push('Soft OLED screen (OEM-quality) — same exact specs as the original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
       lines.push('');
       lines.push('Both come with a warranty' + (mobileFee > 0 ? ' and include mobile service' : '') + '. Which works better for you?');
@@ -2935,7 +2935,7 @@ function buildQuoteText() {
       lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
     } else {
       var opt = hasPrem ? 'premium' : 'standard', price = prices[opt];
-      lines.push(model1 + ' — ' + opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(fullPrice(price,'iphone_screen') + afterHoursFee + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
+      lines.push(model1 + ' — ' + opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(fullPrice(price,'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
       lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
     }
   } else if (tier1 === 'manual') {
@@ -2947,12 +2947,12 @@ function buildQuoteText() {
       lines.push('For your ' + model1 + ', we have the following options available:');
       lines.push('');
       if (manHasStd) {
-        lines.push('STANDARD — $' + withTax(fullPrice(manPrices.standard,'iphone_screen') + afterHoursFee + mobileFee));
+        lines.push('STANDARD — $' + withTax(fullPrice(manPrices.standard,'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee + mobileFee));
         lines.push('LCD screen that looks & functions just like the original. The frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re upgrading soon or keeping your phone under a year.');
         lines.push('');
       }
       if (manHasPrem) {
-        lines.push('PREMIUM — $' + withTax(fullPrice(manPrices.premium,'iphone_screen') + afterHoursFee + mobileFee));
+        lines.push('PREMIUM — $' + withTax(fullPrice(manPrices.premium,'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee + mobileFee));
         lines.push('Soft OLED screen (OEM-quality) — same exact specs as the original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
         lines.push('');
       }
