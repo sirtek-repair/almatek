@@ -1472,15 +1472,15 @@ function updateTierDisplay1() { updateTierPrices1(); }
 function updateTierDisplay2() { updateTierPrices2(); }
 function updateTierPrices1() {
   var prices = model1 ? (spLookup(model1) || {}) : {};
-  if (el('tierPrice1Std')) el('tierPrice1Std').textContent = prices.standard > 0 ? '$' + withTax(fullPrice(prices.standard, 'iphone_screen') * (1 + neighborhoodSurcharge)) : '—';
-  if (el('tierPrice1Pre')) el('tierPrice1Pre').textContent = prices.premium > 0 ? '$' + withTax(fullPrice(prices.premium, 'iphone_screen') * (1 + neighborhoodSurcharge)) : '—';
+  if (el('tierPrice1Std')) el('tierPrice1Std').textContent = prices.standard > 0 ? '$' + withTax(fullPrice(prices.standard, 'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee) : '—';
+  if (el('tierPrice1Pre')) el('tierPrice1Pre').textContent = prices.premium > 0 ? '$' + withTax(fullPrice(prices.premium, 'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee) : '—';
   if (model1) { showStockBadge('1Std', model1, 'standard'); showStockBadge('1Pre', model1, 'premium'); }
   else { ['stockRow1Std','stockRow1Pre'].forEach(function(id) { var r = el(id); if (r) r.classList.add('hidden'); }); }
 }
 function updateTierPrices2() {
   var prices = model2 ? (spLookup(model2) || {}) : {};
-  if (el('tierPrice2Std')) el('tierPrice2Std').textContent = prices.standard > 0 ? '$' + withTax(fullPrice(prices.standard, 'iphone_screen') * (1 + neighborhoodSurcharge)) : '—';
-  if (el('tierPrice2Pre')) el('tierPrice2Pre').textContent = prices.premium > 0 ? '$' + withTax(fullPrice(prices.premium, 'iphone_screen') * (1 + neighborhoodSurcharge)) : '—';
+  if (el('tierPrice2Std')) el('tierPrice2Std').textContent = prices.standard > 0 ? '$' + withTax(fullPrice(prices.standard, 'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee) : '—';
+  if (el('tierPrice2Pre')) el('tierPrice2Pre').textContent = prices.premium > 0 ? '$' + withTax(fullPrice(prices.premium, 'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee) : '—';
   if (model2) { showStockBadge('2Std', model2, 'standard'); showStockBadge('2Pre', model2, 'premium'); }
   else { ['stockRow2Std','stockRow2Pre'].forEach(function(id) { var r = el(id); if (r) r.classList.add('hidden'); }); }
 }
@@ -1570,6 +1570,7 @@ function onAfterHoursChange() {
   selectedTimeWindow = fee > 0 ? sel.options[sel.selectedIndex].text.split(' —')[0] : '';
   var badge = el('afterHoursBadge');
   if (badge) { if (fee > 0 && isOwner) { badge.textContent = '+$' + fee; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
+  updateTierPrices1(); updateTierPrices2();
   tryRenderQuote();
   if (secondOpen) renderDeal();
 }
