@@ -16,25 +16,22 @@
 </head>
 <body>
 <h2>AlmaTek → Supabase: Inventory Migration</h2>
-<p>Run this BEFORE switching the Cloudflare Worker to Supabase.<br>
-   Make sure you've already run <code>supabase_schema.sql</code> in your Supabase SQL editor.</p>
+<p>Make sure you've already run <code>supabase_schema.sql</code> in your Supabase SQL editor before clicking Run.</p>
 <button id="btn" onclick="run()">▶ Run Migration</button>
 <div id="log"></div>
 
 <script>
-const WORKER    = 'https://almatek.sirtek-repair.workers.dev';
-const AT_BASE   = 'appDFaflvCWvIGhZB';
-const AT_INV    = 'tblGqxylJqQjAgJ40';
-const SB_URL    = 'https://ortpalipagcryxjthoyb.supabase.co';
-const SB_KEY    = document.__sbKey; // set at runtime via prompt below
+const AT_BASE = 'appDFaflvCWvIGhZB';
+const AT_INV  = 'tblGqxylJqQjAgJ40';
+const SB_URL  = 'https://ortpalipagcryxjthoyb.supabase.co';
 
 // Airtable field IDs
-const F_NAME    = 'fldWzYeFcqm0qnxD8';
-const F_STATUS  = 'fldZEvcZT2JnX5kwh';
-const F_QTY     = 'fldvwFFYSxAJlcFpp';
-const F_CAT     = 'fldxQhVZSYmXNK6CW';
-const F_MIN     = 'fldB16jlPFHm11tfW';
-const F_MODEL   = 'fldV0jSP3xJuinS8t';
+const F_NAME   = 'fldWzYeFcqm0qnxD8';
+const F_STATUS = 'fldZEvcZT2JnX5kwh';
+const F_QTY    = 'fldvwFFYSxAJlcFpp';
+const F_CAT    = 'fldxQhVZSYmXNK6CW';
+const F_MIN    = 'fldB16jlPFHm11tfW';
+const F_MODEL  = 'fldV0jSP3xJuinS8t';
 
 function log(msg, cls) {
   const el = document.getElementById('log');
@@ -45,21 +42,21 @@ function log(msg, cls) {
   el.scrollTop = el.scrollHeight;
 }
 
-async function fetchAirtable(offset) {
-  let url = `${WORKER}/v0/${AT_BASE}/${AT_INV}?returnFieldsByFieldId=true`
+async function fetchAirtable(atKey, offset) {
+  let url = `https://api.airtable.com/v0/${AT_BASE}/${AT_INV}?returnFieldsByFieldId=true`
     + `&fields[]=${F_NAME}&fields[]=${F_STATUS}&fields[]=${F_QTY}`
     + `&fields[]=${F_CAT}&fields[]=${F_MIN}&fields[]=${F_MODEL}&pageSize=100`;
   if (offset) url += '&offset=' + encodeURIComponent(offset);
-  const r = await fetch(url, { headers: { 'X-Auth': 'migration', 'Content-Type': 'application/json' } });
+  const r = await fetch(url, { headers: { 'Authorization': `Bearer ${atKey}` } });
   return r.json();
 }
 
-async function upsertToSupabase(rows) {
+async function upsertToSupabase(sbKey, rows) {
   const r = await fetch(`${SB_URL}/rest/v1/inventory`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${SB_KEY}`,
-      'apikey': SB_KEY,
+      'Authorization': `Bearer ${sbKey}`,
+      'apikey': sbKey,
       'Content-Type': 'application/json',
       'Prefer': 'resolution=merge-duplicates,return=minimal',
     },
@@ -72,11 +69,11 @@ async function upsertToSupabase(rows) {
 }
 
 async function run() {
-  if (!document.__sbKey) {
-    const k = prompt('Paste your Supabase secret key (sbp_...):');
-    if (!k) return;
-    document.__sbKey = k;
-  }
+  const atKey = prompt('Paste your Airtable Personal Access Token\n(airtable.com → account → Developer Hub → Personal access tokens):');
+  if (!atKey) return;
+  const sbKey = prompt('Paste your Supabase publishable key\n(sb_publishable_...):');
+  if (!sbKey) return;
+
   document.getElementById('btn').disabled = true;
   document.getElementById('log').innerHTML = '';
   log('Starting migration...', 'info');
@@ -86,10 +83,9 @@ async function run() {
     let offset = null;
     let page = 1;
 
-    // Paginate through all Airtable inventory records
     do {
       log(`Fetching page ${page} from Airtable...`, 'info');
-      const data = await fetchAirtable(offset);
+      const data = await fetchAirtable(atKey, offset);
       if (data.error) throw new Error(JSON.stringify(data.error));
       allRecords = allRecords.concat(data.records || []);
       offset = data.offset || null;
@@ -99,7 +95,7 @@ async function run() {
     log(`Found ${allRecords.length} inventory items.\n`, 'info');
 
     if (allRecords.length === 0) {
-      log('No records found in Airtable inventory. Nothing to migrate.', 'err');
+      log('No records found. Check your Airtable token has access to this base.', 'err');
       document.getElementById('btn').disabled = false;
       return;
     }
@@ -112,19 +108,18 @@ async function run() {
         ? (stockVal.name || 'In Stock')
         : (stockVal || 'In Stock');
       return {
-        id:           r.id,
-        name:         f[F_NAME]  || '',
+        id:          r.id,
+        name:        f[F_NAME]  || '',
         stock_status: stockStatus,
-        opening_qty:  parseInt(f[F_QTY])  || 0,
-        category:     f[F_CAT]   || '',
-        min_stock:    parseInt(f[F_MIN])   || 0,
-        model:        f[F_MODEL] || '',
+        opening_qty: parseInt(f[F_QTY])  || 0,
+        category:    f[F_CAT]   || '',
+        min_stock:   parseInt(f[F_MIN])   || 0,
+        model:       f[F_MODEL] || '',
       };
     });
 
-    // Show preview
     log('Preview (first 5 items):', 'info');
-    rows.slice(0, 5).forEach(r => log(`  ${r.id}  ${r.name}  qty=${r.opening_qty}  model=${r.model}`));
+    rows.slice(0, 5).forEach(r => log(`  ${r.name}  qty=${r.opening_qty}  model=${r.model}`));
     if (rows.length > 5) log(`  ... and ${rows.length - 5} more`);
     log('');
 
@@ -132,18 +127,16 @@ async function run() {
     const BATCH = 50;
     let imported = 0;
     for (let i = 0; i < rows.length; i += BATCH) {
-      const batch = rows.slice(i, i + BATCH);
-      await upsertToSupabase(batch);
-      imported += batch.length;
+      await upsertToSupabase(sbKey, rows.slice(i, i + BATCH));
+      imported += rows.slice(i, i + BATCH).length;
       log(`Imported ${imported} / ${rows.length}...`);
     }
 
-    log(`\n✓ Migration complete! ${rows.length} inventory items are now in Supabase.`, 'ok');
-    log('\nNext step: update your Cloudflare Worker env vars (see instructions below).', 'info');
+    log(`\n✓ Done! ${rows.length} inventory items are now in Supabase.`, 'ok');
+    log('Your app is ready to use.', 'info');
 
   } catch (e) {
     log('\n✗ Error: ' + e.message, 'err');
-    log('Make sure you ran supabase_schema.sql first, then try again.', 'err');
     document.getElementById('btn').disabled = false;
     return;
   }
