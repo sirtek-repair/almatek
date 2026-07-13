@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AlmaTek → Supabase Inventory Migration</title>
+<style>
+  body { font-family: monospace; background: #111; color: #eee; padding: 24px; max-width: 700px; margin: 0 auto; }
+  h2 { color: #60a5fa; }
+  button { background: #2563eb; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 15px; cursor: pointer; margin-bottom: 16px; }
+  button:disabled { background: #444; cursor: default; }
+  #log { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 16px; min-height: 200px; white-space: pre-wrap; font-size: 13px; line-height: 1.6; }
+  .ok  { color: #4ade80; }
+  .err { color: #f87171; }
+  .info { color: #60a5fa; }
+</style>
+</head>
+<body>
+<h2>AlmaTek → Supabase: Inventory Migration</h2>
+<p>Run this BEFORE switching the Cloudflare Worker to Supabase.<br>
+   Make sure you've already run <code>supabase_schema.sql</code> in your Supabase SQL editor.</p>
+<button id="btn" onclick="run()">▶ Run Migration</button>
+<div id="log"></div>
+
+<script>
+const WORKER    = 'https://almatek.sirtek-repair.workers.dev';
+const AT_BASE   = 'appDFaflvCWvIGhZB';
+const AT_INV    = 'tblGqxylJqQjAgJ40';
+const SB_URL    = 'https://ortpalipagcryxjthoyb.supabase.co';
+const SB_KEY    = document.__sbKey; // set at runtime via prompt below
+
+// Airtable field IDs
+const F_NAME    = 'fldWzYeFcqm0qnxD8';
+const F_STATUS  = 'fldZEvcZT2JnX5kwh';
+const F_QTY     = 'fldvwFFYSxAJlcFpp';
+const F_CAT     = 'fldxQhVZSYmXNK6CW';
+const F_MIN     = 'fldB16jlPFHm11tfW';
+const F_MODEL   = 'fldV0jSP3xJuinS8t';
+
+function log(msg, cls) {
+  const el = document.getElementById('log');
+  const span = document.createElement('span');
+  if (cls) span.className = cls;
+  span.textContent = msg + '\n';
+  el.appendChild(span);
+  el.scrollTop = el.scrollHeight;
+}
+
+async function fetchAirtable(offset) {
+  let url = `${WORKER}/v0/${AT_BASE}/${AT_INV}?returnFieldsByFieldId=true`
+    + `&fields[]=${F_NAME}&fields[]=${F_STATUS}&fields[]=${F_QTY}`
+    + `&fields[]=${F_CAT}&fields[]=${F_MIN}&fields[]=${F_MODEL}&pageSize=100`;
+  if (offset) url += '&offset=' + encodeURIComponent(offset);
+  const r = await fetch(url, { headers: { 'X-Auth': 'migration', 'Content-Type': 'application/json' } });
+  return r.json();
+}
+
+async function upsertToSupabase(rows) {
+  const r = await fetch(`${SB_URL}/rest/v1/inventory`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SB_KEY}`,
+      'apikey': SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates,return=minimal',
+    },
+    body: JSON.stringify(rows),
+  });
+  if (!r.ok) {
+    const err = await r.text();
+    throw new Error(err);
+  }
+}
+
+async function run() {
+  if (!document.__sbKey) {
+    const k = prompt('Paste your Supabase secret key (sbp_...):');
+    if (!k) return;
+    document.__sbKey = k;
+  }
+  document.getElementById('btn').disabled = true;
+  document.getElementById('log').innerHTML = '';
+  log('Starting migration...', 'info');
+
+  try {
+    let allRecords = [];
+    let offset = null;
+    let page = 1;
+
+    // Paginate through all Airtable inventory records
+    do {
+      log(`Fetching page ${page} from Airtable...`, 'info');
+      const data = await fetchAirtable(offset);
+      if (data.error) throw new Error(JSON.stringify(data.error));
+      allRecords = allRecords.concat(data.records || []);
+      offset = data.offset || null;
+      page++;
+    } while (offset);
+
+    log(`Found ${allRecords.length} inventory items.\n`, 'info');
+
+    if (allRecords.length === 0) {
+      log('No records found in Airtable inventory. Nothing to migrate.', 'err');
+      document.getElementById('btn').disabled = false;
+      return;
+    }
+
+    // Map to Supabase rows
+    const rows = allRecords.map(r => {
+      const f = r.fields || {};
+      const stockVal = f[F_STATUS];
+      const stockStatus = (typeof stockVal === 'object' && stockVal !== null)
+        ? (stockVal.name || 'In Stock')
+        : (stockVal || 'In Stock');
+      return {
+        id:           r.id,
+        name:         f[F_NAME]  || '',
+        stock_status: stockStatus,
+        opening_qty:  parseInt(f[F_QTY])  || 0,
+        category:     f[F_CAT]   || '',
+        min_stock:    parseInt(f[F_MIN])   || 0,
+        model:        f[F_MODEL] || '',
+      };
+    });
+
+    // Show preview
+    log('Preview (first 5 items):', 'info');
+    rows.slice(0, 5).forEach(r => log(`  ${r.id}  ${r.name}  qty=${r.opening_qty}  model=${r.model}`));
+    if (rows.length > 5) log(`  ... and ${rows.length - 5} more`);
+    log('');
+
+    // Upsert in batches of 50
+    const BATCH = 50;
+    let imported = 0;
+    for (let i = 0; i < rows.length; i += BATCH) {
+      const batch = rows.slice(i, i + BATCH);
+      await upsertToSupabase(batch);
+      imported += batch.length;
+      log(`Imported ${imported} / ${rows.length}...`);
+    }
+
+    log(`\n✓ Migration complete! ${rows.length} inventory items are now in Supabase.`, 'ok');
+    log('\nNext step: update your Cloudflare Worker env vars (see instructions below).', 'info');
+
+  } catch (e) {
+    log('\n✗ Error: ' + e.message, 'err');
+    log('Make sure you ran supabase_schema.sql first, then try again.', 'err');
+    document.getElementById('btn').disabled = false;
+    return;
+  }
+  document.getElementById('btn').disabled = false;
+}
+</script>
+</body>
+</html>
