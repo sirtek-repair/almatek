@@ -1774,7 +1774,7 @@ function switchTab(tab) {
   el('tabAdminBtn').classList.add('hidden');
   el('tabToolsBtn').classList.toggle('active', isTools);
   if (isLeads) { exitLeadSelectMode && exitLeadSelectMode(); exitTicketSelectMode && exitTicketSelectMode(); }
-  if (isQuote) loadSchedule();
+  if (isQuote) { loadSchedule(); if (authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); } }
   if (isInventory) initInventory();
   else if (isReview) { switchReviewSubTab(reviewSubTab || 'pending'); }
   else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); switchProfileSubTab(profileSubTab || (isOwner ? 'tally' : 'settings')); }
