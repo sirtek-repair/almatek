@@ -31,17 +31,11 @@ export default {
       return env.ASSETS ? env.ASSETS.fetch(request) : new Response('Not found', { status: 404 });
     }
 
-    if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) {
-      return json({
-        error: 'Supabase not configured',
-        missing: [
-          !env.SUPABASE_URL ? 'SUPABASE_URL' : null,
-          !env.SUPABASE_SERVICE_KEY ? 'SUPABASE_SERVICE_KEY' : null,
-        ].filter(Boolean),
-      }, 503);
+    if (!env.SUPABASE_SERVICE_KEY) {
+      return json({ error: 'Supabase not configured', missing: ['SUPABASE_SERVICE_KEY'] }, 503);
     }
 
-    const SB = env.SUPABASE_URL.replace(/\/$/, '');
+    const SB = (env.SUPABASE_URL || 'https://ortpalipagcryxjthoyb.supabase.co').replace(/\/$/, '');
     const SK = env.SUPABASE_SERVICE_KEY;
     const BASE_H = {
       'Authorization': `Bearer ${SK}`,
