@@ -110,7 +110,7 @@ function log(msg, cls) {
 
 function parseCSV(text) {
   const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-  if (lines.length < 2) return [];
+  if (lines.length < 2) return { headers: [], rows: [] };
 
   const headers = parseCSVLine(lines[0]);
   const rows = [];
