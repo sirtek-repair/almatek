@@ -1986,7 +1986,7 @@ function loadInventoryPage(offset, quiet) {
       if (!quiet) el('invLoading').innerHTML = '⚠ ' + msg + ' <button onclick="invLoaded=false;allInvRecords=[];clearCache(\'almatek_inv_cache\');loadInventory()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;">Retry</button>';
       return;
     }
-    allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; setCache('almatek_inv_cache', allInvRecords); if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } else { if (model1) updateTierDisplay1(); if (model2) updateTierDisplay2(); } }
+    allInvRecords = allInvRecords.concat(data.records || []); if (data.offset) loadInventoryPage(data.offset, quiet); else { invLoaded = true; setCache('almatek_inv_cache', allInvRecords); if (!quiet) { el('invLoading').classList.add('hidden'); renderInventory(); } else { updateTierDisplay1(); updateTierDisplay2(); } }
   }).catch(function(err) {
     if (!quiet) el('invLoading').innerHTML = '⚠ ' + err.message + ' <button onclick="invLoaded=false;allInvRecords=[];clearCache(\'almatek_inv_cache\');loadInventory()" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-family:inherit;cursor:pointer;margin-left:6px;">Retry</button>';
   });
@@ -2335,9 +2335,20 @@ function showStockBadge(slot, model, tier) {
   if (!rowEl) return;
   if (!authd || !allInvRecords.length) { rowEl.classList.add('hidden'); return; }
   var typeStr = TIER_TO_TYPE[tier];
+  var modelLower = model.toLowerCase();
+  var tierLower = (tier || '').toLowerCase();
   var rec = allInvRecords.find(function(r) {
-    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === model.toLowerCase()
-      && selName(r.fields['fldxQhVZSYmXNK6CW']) === typeStr;
+    var cat = selName(r.fields['fldxQhVZSYmXNK6CW']);
+    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower
+      && cat === typeStr;
+  }) || allInvRecords.find(function(r) {
+    var cat = selName(r.fields['fldxQhVZSYmXNK6CW']).toLowerCase();
+    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower
+      && cat.includes(tierLower);
+  }) || allInvRecords.find(function(r) {
+    var cat = selName(r.fields['fldxQhVZSYmXNK6CW']).toLowerCase();
+    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower
+      && (cat.includes('screen') || cat.includes('iphone'));
   });
   if (!rec) { rowEl.classList.add('hidden'); return; }
   var qty = rec.fields['fldvwFFYSxAJlcFpp'] || 0;
