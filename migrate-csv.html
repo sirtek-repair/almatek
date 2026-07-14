@@ -79,17 +79,20 @@ const SB_URL = 'https://ortpalipagcryxjthoyb.supabase.co';
 
 // Airtable field names (column headers) → Supabase column names for inventory
 const INV_FIELD_MAP = {
-  // Try common Airtable display names
+  'Description':  'name',
   'Name':         'name',
   'name':         'name',
   'Item Name':    'name',
+  'status':       'stock_status',
   'Status':       'stock_status',
   'Stock Status': 'stock_status',
   'stock_status': 'stock_status',
+  'qty':          'opening_qty',
   'QTY':          'opening_qty',
   'Qty':          'opening_qty',
-  'qty':          'opening_qty',
   'Quantity':     'opening_qty',
+  'type':         'category',
+  'Type':         'category',
   'Category':     'category',
   'category':     'category',
   'Min Stock':    'min_stock',
@@ -197,7 +200,7 @@ async function migrateInventory(sbKey, text) {
     }
 
     // Defaults
-    if (!row.name) row.name = r[headers[1]] || r[headers[0]] || '';
+    if (!row.name) row.name = row.model || '';
     if (!row.stock_status) row.stock_status = 'In Stock';
     if (row.opening_qty === undefined) row.opening_qty = 0;
     if (!row.category) row.category = '';
