@@ -44,6 +44,18 @@
 </div>
 
 <div class="section">
+  <h3>Sold Items <small style="color:#64748b">(optional)</small></h3>
+  <small>Exports items sold/used in repairs — affects current inventory qty.</small>
+  <input type="file" id="csvSold" accept=".csv" />
+</div>
+
+<div class="section">
+  <h3>Removed from Inventory <small style="color:#64748b">(optional)</small></h3>
+  <small>Manual removals/waste — affects current inventory qty.</small>
+  <input type="file" id="csvRemoved" accept=".csv" />
+</div>
+
+<div class="section">
   <h3>Leads <small style="color:#64748b">(optional)</small></h3>
   <input type="file" id="csvLeads" accept=".csv" />
 </div>
@@ -265,6 +277,55 @@ async function migrateOrders(sbKey, text) {
   return mapped.length;
 }
 
+// Fetch inventory name→id map from Supabase for linking sold/removed records
+async function fetchInventoryMap(sbKey) {
+  const r = await fetch(`${SB_URL}/rest/v1/inventory?select=id,name&limit=2000`, {
+    headers: { 'Authorization': `Bearer ${sbKey}`, 'apikey': sbKey },
+  });
+  if (!r.ok) throw new Error('Could not fetch inventory for name lookup');
+  const rows = await r.json();
+  const map = {};
+  for (const row of rows) map[row.name.toLowerCase().trim()] = row.id;
+  return map;
+}
+
+async function migrateSoldOrRemoved(sbKey, table, text, invMap) {
+  const { headers, rows } = parseCSV(text);
+  log(`  Headers: ${headers.join(', ')}`, 'info');
+
+  const dateCol = table === 'sold' ? 'date_sold' : 'date_removed';
+  let unmatched = 0;
+
+  const mapped = rows.map(r => {
+    const row = {};
+    for (const h of headers) {
+      const v = r[h]; if (!v) continue;
+      const hl = h.toLowerCase();
+      if (hl.includes('item') || hl === 'name') {
+        row._itemName = v;
+        // Try to resolve to inventory id
+        const id = invMap[v.toLowerCase().trim()];
+        if (id) row.item_id = id;
+      }
+      if (hl === 'qty' || hl === 'quantity') row.qty = parseInt(v) || 1;
+      if (hl.includes('date')) row[dateCol] = v;
+    }
+    if (!row.item_id) unmatched++;
+    if (!row.qty) row.qty = 1;
+    return row;
+  }).filter(r => r._itemName || r.qty).map(({ _itemName, ...r }) => r);
+
+  if (unmatched > 0) log(`  Warning: ${unmatched} rows could not be matched to an inventory item (qty won't affect counts).`, 'warn');
+
+  if (mapped.length === 0) { log('  No rows to migrate.', 'warn'); return 0; }
+
+  const BATCH = 50;
+  for (let i = 0; i < mapped.length; i += BATCH) {
+    await upsert(sbKey, table, mapped.slice(i, i + BATCH), 'return=minimal');
+  }
+  return mapped.length;
+}
+
 async function run() {
   const sbKey = document.getElementById('sbKey').value.trim();
   if (!sbKey) { log('Enter your Supabase key first.', 'err'); return; }
@@ -308,6 +369,26 @@ async function run() {
       log('── Tickets ──', 'info');
       const n = await migrateJSONB(sbKey, 'tickets', tickText);
       log(`  ✓ ${n} tickets migrated.\n`, 'ok');
+      total += n;
+    }
+
+    // SOLD
+    const soldText = await readFile(document.getElementById('csvSold'));
+    if (soldText) {
+      log('── Sold Items ──', 'info');
+      const invMap = await fetchInventoryMap(sbKey);
+      const n = await migrateSoldOrRemoved(sbKey, 'sold', soldText, invMap);
+      log(`  ✓ ${n} sold records migrated.\n`, 'ok');
+      total += n;
+    }
+
+    // REMOVED
+    const removedText = await readFile(document.getElementById('csvRemoved'));
+    if (removedText) {
+      log('── Removed from Inventory ──', 'info');
+      const invMap = await fetchInventoryMap(sbKey);
+      const n = await migrateSoldOrRemoved(sbKey, 'removed', removedText, invMap);
+      log(`  ✓ ${n} removed records migrated.\n`, 'ok');
       total += n;
     }
 
