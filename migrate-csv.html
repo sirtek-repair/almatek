@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AlmaTek → Supabase CSV Migration</title>
+<style>
+  body { font-family: monospace; background: #111; color: #eee; padding: 24px; max-width: 800px; margin: 0 auto; }
+  h2 { color: #60a5fa; }
+  h3 { color: #a78bfa; margin-top: 28px; }
+  .section { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  label { display: block; margin-bottom: 6px; color: #94a3b8; font-size: 13px; }
+  input[type=file] { color: #eee; background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px; width: 100%; box-sizing: border-box; cursor: pointer; }
+  input[type=text], input[type=password] { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 8px 12px; color: #eee; width: 100%; box-sizing: border-box; font-family: monospace; font-size: 13px; }
+  button { background: #2563eb; color: #fff; border: none; padding: 12px 28px; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 8px; }
+  button:disabled { background: #444; cursor: default; }
+  #log { background: #0a0a0a; border: 1px solid #333; border-radius: 8px; padding: 16px; min-height: 120px; white-space: pre-wrap; font-size: 13px; line-height: 1.6; margin-top: 16px; }
+  .ok   { color: #4ade80; }
+  .err  { color: #f87171; }
+  .info { color: #60a5fa; }
+  .warn { color: #fbbf24; }
+  small { color: #64748b; font-size: 12px; }
+</style>
+</head>
+<body>
+<h2>AlmaTek → Supabase: CSV Migration</h2>
+<p>Export each table from Airtable as CSV, then upload them here.</p>
+<p><small>Airtable: open each table → Grid view → Download CSV (or "Export to CSV")</small></p>
+
+<div class="section">
+  <label>Supabase Publishable Key</label>
+  <input type="text" id="sbKey" placeholder="sb_publishable_..." value="sb_publishable_ZYMjpTC5M5ovBugOIvBTSQ_hXxneVik" />
+  <small>Already filled in — verify it matches your project.</small>
+</div>
+
+<div class="section">
+  <h3>Inventory</h3>
+  <label>Inventory CSV file (required)</label>
+  <input type="file" id="csvInventory" accept=".csv" />
+</div>
+
+<div class="section">
+  <h3>Orders / Special Orders <small style="color:#64748b">(optional)</small></h3>
+  <input type="file" id="csvOrders" accept=".csv" />
+</div>
+
+<div class="section">
+  <h3>Leads <small style="color:#64748b">(optional)</small></h3>
+  <input type="file" id="csvLeads" accept=".csv" />
+</div>
+
+<div class="section">
+  <h3>Tickets <small style="color:#64748b">(optional)</small></h3>
+  <input type="file" id="csvTickets" accept=".csv" />
+</div>
+
+<div class="section">
+  <h3>ReviewAskr <small style="color:#64748b">(optional)</small></h3>
+  <input type="file" id="csvReview" accept=".csv" />
+</div>
+
+<button id="btn" onclick="run()">▶ Run Migration</button>
+
+<div id="log"></div>
+
+<script>
+const SB_URL = 'https://ortpalipagcryxjthoyb.supabase.co';
+
+// Airtable field names (column headers) → Supabase column names for inventory
+const INV_FIELD_MAP = {
+  // Try common Airtable display names
+  'Name':         'name',
+  'name':         'name',
+  'Item Name':    'name',
+  'Status':       'stock_status',
+  'Stock Status': 'stock_status',
+  'stock_status': 'stock_status',
+  'QTY':          'opening_qty',
+  'Qty':          'opening_qty',
+  'qty':          'opening_qty',
+  'Quantity':     'opening_qty',
+  'Category':     'category',
+  'category':     'category',
+  'Min Stock':    'min_stock',
+  'min_stock':    'min_stock',
+  'Min':          'min_stock',
+  'Model':        'model',
+  'model':        'model',
+};
+
+function log(msg, cls) {
+  const el = document.getElementById('log');
+  const span = document.createElement('span');
+  if (cls) span.className = cls;
+  span.textContent = msg + '\n';
+  el.appendChild(span);
+  el.scrollTop = el.scrollHeight;
+}
+
+function parseCSV(text) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  if (lines.length < 2) return [];
+
+  const headers = parseCSVLine(lines[0]);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const vals = parseCSVLine(lines[i]);
+    const row = {};
+    headers.forEach((h, idx) => { row[h.trim()] = (vals[idx] || '').trim(); });
+    rows.push(row);
+  }
+  return { headers, rows };
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '', inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (c === ',' && !inQuote) {
+      result.push(cur); cur = '';
+    } else {
+      cur += c;
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+async function upsert(sbKey, table, rows, preferHeader = 'resolution=merge-duplicates,return=minimal') {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${sbKey}`,
+      'apikey': sbKey,
+      'Content-Type': 'application/json',
+      'Prefer': preferHeader,
+    },
+    body: JSON.stringify(rows),
+  });
+  if (!r.ok) {
+    const err = await r.text();
+    throw new Error(`${table}: ${err}`);
+  }
+}
+
+async function readFile(input) {
+  return new Promise((res, rej) => {
+    const f = input.files[0];
+    if (!f) { res(null); return; }
+    const reader = new FileReader();
+    reader.onload = e => res(e.target.result);
+    reader.onerror = rej;
+    reader.readAsText(f);
+  });
+}
+
+async function migrateInventory(sbKey, text) {
+  const { headers, rows } = parseCSV(text);
+  log(`  Headers found: ${headers.join(', ')}`, 'info');
+
+  // Find the record ID column (Airtable always exports it as first col or "Record ID")
+  const idCol = headers.find(h => h === 'Record ID' || h === 'id' || h === 'ID' || /^rec[A-Za-z0-9]{14}$/.test(rows[0]?.[h]));
+
+  const mapped = rows.map((r, i) => {
+    const row = {};
+
+    // ID: use Airtable record ID if available, else generate placeholder
+    const recId = idCol ? r[idCol] : null;
+    if (recId && recId.startsWith('rec')) row.id = recId;
+    else row.id = `csv_${Date.now()}_${i}`;
+
+    // Map fields
+    for (const [csvCol, sbCol] of Object.entries(INV_FIELD_MAP)) {
+      if (r[csvCol] !== undefined && r[csvCol] !== '') {
+        if (sbCol === 'opening_qty' || sbCol === 'min_stock') {
+          row[sbCol] = parseInt(r[csvCol]) || 0;
+        } else {
+          row[sbCol] = r[csvCol];
+        }
+      }
+    }
+
+    // Defaults
+    if (!row.name) row.name = r[headers[1]] || r[headers[0]] || '';
+    if (!row.stock_status) row.stock_status = 'In Stock';
+    if (row.opening_qty === undefined) row.opening_qty = 0;
+    if (!row.category) row.category = '';
+    if (row.min_stock === undefined) row.min_stock = 0;
+    if (!row.model) row.model = '';
+
+    return row;
+  }).filter(r => r.name);
+
+  if (mapped.length === 0) {
+    log('  No inventory rows mapped — check column names match expected fields.', 'warn');
+    log(`  Expected one of: Name, Item Name, name`, 'warn');
+    return 0;
+  }
+
+  log(`  Preview: ${mapped[0].name} | qty=${mapped[0].opening_qty} | model=${mapped[0].model}`);
+
+  const BATCH = 50;
+  for (let i = 0; i < mapped.length; i += BATCH) {
+    await upsert(sbKey, 'inventory', mapped.slice(i, i + BATCH));
+  }
+  return mapped.length;
+}
+
+async function migrateJSONB(sbKey, table, text) {
+  const { headers, rows } = parseCSV(text);
+  log(`  Headers: ${headers.slice(0, 6).join(', ')}${headers.length > 6 ? '...' : ''}`, 'info');
+
+  const idCol = headers.find(h => h === 'Record ID' || h === 'id');
+
+  const mapped = rows.map((r, i) => {
+    const fields = {};
+    headers.forEach(h => {
+      if (h === idCol) return;
+      if (r[h] !== undefined && r[h] !== '') fields[h] = r[h];
+    });
+    return { fields };
+  }).filter(r => Object.keys(r.fields).length > 0);
+
+  if (mapped.length === 0) { log('  No rows to migrate.', 'warn'); return 0; }
+
+  const BATCH = 50;
+  for (let i = 0; i < mapped.length; i += BATCH) {
+    await upsert(sbKey, table, mapped.slice(i, i + BATCH), 'return=minimal');
+  }
+  return mapped.length;
+}
+
+async function migrateOrders(sbKey, text) {
+  const { headers, rows } = parseCSV(text);
+  log(`  Headers: ${headers.join(', ')}`, 'info');
+
+  const mapped = rows.map(r => {
+    const row = {};
+    for (const h of headers) {
+      const v = r[h];
+      if (!v) continue;
+      const hl = h.toLowerCase();
+      if (hl.includes('item') || hl === 'name') row.item_name = v;
+      else if (hl === 'qty' || hl === 'quantity') row.qty = parseInt(v) || 1;
+      else if (hl.includes('supplier')) row.supplier = v;
+      else if (hl.includes('date') && hl.includes('receiv')) row.date_received = v;
+      else if (hl === 'status') row.status = v;
+    }
+    if (!row.item_name) row.item_name = '';
+    if (!row.qty) row.qty = 1;
+    if (!row.status) row.status = 'inv received';
+    return row;
+  }).filter(r => r.item_name || r.qty > 0);
+
+  if (mapped.length === 0) { log('  No rows to migrate.', 'warn'); return 0; }
+
+  const BATCH = 50;
+  for (let i = 0; i < mapped.length; i += BATCH) {
+    await upsert(sbKey, 'orders', mapped.slice(i, i + BATCH), 'return=minimal');
+  }
+  return mapped.length;
+}
+
+async function run() {
+  const sbKey = document.getElementById('sbKey').value.trim();
+  if (!sbKey) { log('Enter your Supabase key first.', 'err'); return; }
+
+  document.getElementById('btn').disabled = true;
+  document.getElementById('log').innerHTML = '';
+  log('Starting migration...\n', 'info');
+
+  let total = 0;
+  try {
+    // INVENTORY
+    const invText = await readFile(document.getElementById('csvInventory'));
+    if (invText) {
+      log('── Inventory ──', 'info');
+      const n = await migrateInventory(sbKey, invText);
+      log(`  ✓ ${n} inventory items migrated.\n`, 'ok');
+      total += n;
+    }
+
+    // ORDERS
+    const ordText = await readFile(document.getElementById('csvOrders'));
+    if (ordText) {
+      log('── Orders ──', 'info');
+      const n = await migrateOrders(sbKey, ordText);
+      log(`  ✓ ${n} orders migrated.\n`, 'ok');
+      total += n;
+    }
+
+    // LEADS
+    const leadsText = await readFile(document.getElementById('csvLeads'));
+    if (leadsText) {
+      log('── Leads ──', 'info');
+      const n = await migrateJSONB(sbKey, 'leads', leadsText);
+      log(`  ✓ ${n} leads migrated.\n`, 'ok');
+      total += n;
+    }
+
+    // TICKETS
+    const tickText = await readFile(document.getElementById('csvTickets'));
+    if (tickText) {
+      log('── Tickets ──', 'info');
+      const n = await migrateJSONB(sbKey, 'tickets', tickText);
+      log(`  ✓ ${n} tickets migrated.\n`, 'ok');
+      total += n;
+    }
+
+    // REVIEW ASKR
+    const revText = await readFile(document.getElementById('csvReview'));
+    if (revText) {
+      log('── ReviewAskr ──', 'info');
+      const n = await migrateJSONB(sbKey, 'review_askr', revText);
+      log(`  ✓ ${n} ReviewAskr records migrated.\n`, 'ok');
+      total += n;
+    }
+
+    if (total === 0) {
+      log('No files uploaded — select at least one CSV to migrate.', 'warn');
+    } else {
+      log(`\n✓ Done! ${total} total records migrated to Supabase.`, 'ok');
+    }
+
+  } catch(e) {
+    log('\n✗ Error: ' + e.message, 'err');
+  }
+
+  document.getElementById('btn').disabled = false;
+}
+</script>
+</body>
+</html>
