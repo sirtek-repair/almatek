@@ -23,7 +23,13 @@ export default {
     }
 
     if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) {
-      return json({ error: 'Supabase not configured' }, 503);
+      return json({
+        error: 'Supabase not configured',
+        missing: [
+          !env.SUPABASE_URL ? 'SUPABASE_URL' : null,
+          !env.SUPABASE_SERVICE_KEY ? 'SUPABASE_SERVICE_KEY' : null,
+        ].filter(Boolean),
+      }, 503);
     }
 
     const SB = env.SUPABASE_URL.replace(/\/$/, '');
