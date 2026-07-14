@@ -18,6 +18,15 @@ export default {
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
 
+    if (url.pathname === '/debug') {
+      return json({
+        has_url: !!env.SUPABASE_URL,
+        has_key: !!env.SUPABASE_SERVICE_KEY,
+        url_start: env.SUPABASE_URL ? env.SUPABASE_URL.slice(0, 30) : null,
+        key_start: env.SUPABASE_SERVICE_KEY ? env.SUPABASE_SERVICE_KEY.slice(0, 10) : null,
+      });
+    }
+
     if (!url.pathname.startsWith('/v0/')) {
       return env.ASSETS ? env.ASSETS.fetch(request) : new Response('Not found', { status: 404 });
     }
