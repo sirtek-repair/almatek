@@ -297,23 +297,30 @@ async function migrateSoldOrRemoved(sbKey, table, text, invMap) {
   let unmatched = 0;
 
   const mapped = rows.map(r => {
-    const row = {};
+    let itemName = null;
+    let item_id = null;
+    let qty = 1;
+    let dateVal = null;
+
     for (const h of headers) {
       const v = r[h]; if (!v) continue;
       const hl = h.toLowerCase();
-      if (hl.includes('item') || hl === 'name') {
-        row._itemName = v;
-        // Try to resolve to inventory id
+      if (hl === 'item' || hl === 'name' || hl === 'item name') {
+        itemName = v;
         const id = invMap[v.toLowerCase().trim()];
-        if (id) row.item_id = id;
+        if (id) item_id = id;
       }
-      if (hl === 'qty' || hl === 'quantity') row.qty = parseInt(v) || 1;
-      if (hl.includes('date')) row[dateCol] = v;
+      if (hl === 'qty' || hl === 'quantity') qty = parseInt(v) || 1;
+      if (hl.includes('date')) dateVal = v || null;
     }
-    if (!row.item_id) unmatched++;
-    if (!row.qty) row.qty = 1;
+
+    if (!item_id) unmatched++;
+
+    // Always return same keys so PostgREST batch stays consistent
+    const row = { item_id: item_id, qty: qty };
+    row[dateCol] = dateVal;
     return row;
-  }).filter(r => r._itemName || r.qty).map(({ _itemName, ...r }) => r);
+  }).filter(r => r.qty > 0);
 
   if (unmatched > 0) log(`  Warning: ${unmatched} rows could not be matched to an inventory item (qty won't affect counts).`, 'warn');
 
