@@ -255,6 +255,10 @@ export default {
       }
 
       if (method === 'PATCH' && recordId) {
+        // Airtable rec* IDs are not valid UUIDs — gracefully no-op so legacy tickets don't error
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(recordId);
+        if (!isUUID) return json({ id: recordId, fields: {} });
+
         const body = await request.json();
         const newFields = body.fields || {};
 
