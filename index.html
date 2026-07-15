@@ -485,6 +485,7 @@
   <div id="costCard" class="card hidden">
     <div id="iphoneSection">
       <label class="field-label" for="modelSelect1">iPhone Model</label>
+      <div id="invDebug" style="font-size:11px;color:var(--muted);margin-bottom:4px;"></div>
       <select id="modelSelect1" onchange="onModel1Change()">
         <option value="">— select model —</option>
         <optgroup label="iPhone 17 series"><option value="iPhone Air">iPhone Air</option><option value="iPhone 17 Pro Max">iPhone 17 Pro Max</option><option value="iPhone 17 Pro">iPhone 17 Pro</option><option value="iPhone 17">iPhone 17</option></optgroup>
@@ -1466,7 +1467,15 @@ function onRepairChange() {
   else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; }
 }
 
-function onModel1Change() { model1 = el('modelSelect1').value; updateFactoryScreenBadge(model1); updateTierPrices1(); selectTier1(tier1 || 'standard'); if (model1 && authd && !invLoaded) { showPendingStockBadges(); allInvRecords = []; loadInventoryPage(null, true); } }
+function onModel1Change() {
+  model1 = el('modelSelect1').value;
+  updateFactoryScreenBadge(model1);
+  if (el('invDebug')) el('invDebug').textContent = 'inv: ' + allInvRecords.length + ' records | authd: ' + authd + ' | loaded: ' + invLoaded;
+  if (model1) showPendingStockBadges();
+  updateTierPrices1();
+  selectTier1(tier1 || 'standard');
+  if (model1 && authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
+}
 function onModel2Change() { model2 = el('modelSelect2').value; updateTierPrices2(); selectTier2(tier2 || 'standard'); }
 function updateTierDisplay1() { updateTierPrices1(); }
 function updateTierDisplay2() { updateTierPrices2(); }
