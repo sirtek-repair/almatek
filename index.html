@@ -485,8 +485,7 @@
   <div id="costCard" class="card hidden">
     <div id="iphoneSection">
       <label class="field-label" for="modelSelect1">iPhone Model</label>
-      <div id="invDebug" style="font-size:11px;color:var(--muted);margin-bottom:4px;"></div>
-      <select id="modelSelect1" onchange="onModel1Change()">
+<select id="modelSelect1" onchange="onModel1Change()">
         <option value="">— select model —</option>
         <optgroup label="iPhone 17 series"><option value="iPhone Air">iPhone Air</option><option value="iPhone 17 Pro Max">iPhone 17 Pro Max</option><option value="iPhone 17 Pro">iPhone 17 Pro</option><option value="iPhone 17">iPhone 17</option></optgroup>
         <optgroup label="iPhone 16 series"><option value="iPhone 16e &amp; 17e">iPhone 16e &amp; 17e</option><option value="iPhone 16 Pro Max">iPhone 16 Pro Max</option><option value="iPhone 16 Pro">iPhone 16 Pro</option><option value="iPhone 16 Plus">iPhone 16 Plus</option><option value="iPhone 16">iPhone 16</option></optgroup>
@@ -1470,8 +1469,7 @@ function onRepairChange() {
 function onModel1Change() {
   model1 = el('modelSelect1').value;
   updateFactoryScreenBadge(model1);
-  if (el('invDebug')) el('invDebug').textContent = 'inv: ' + allInvRecords.length + ' records | authd: ' + authd + ' | loaded: ' + invLoaded;
-  if (model1) showPendingStockBadges();
+if (model1) showPendingStockBadges();
   updateTierPrices1();
   selectTier1(tier1 || 'standard');
   if (model1 && authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
@@ -2354,15 +2352,21 @@ function showStockBadge(slot, model, tier) {
   var modelLower = model.toLowerCase();
   var tierLower = (tier || '').toLowerCase();
   var rec = allInvRecords.find(function(r) {
+    // exact: model field + exact category
     var cat = selName(r.fields['fldxQhVZSYmXNK6CW']);
     return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && cat === typeStr;
   }) || allInvRecords.find(function(r) {
+    // loose: model field + tier keyword in category
     var cat = selName(r.fields['fldxQhVZSYmXNK6CW']).toLowerCase();
     return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && cat.includes(tierLower);
   }) || allInvRecords.find(function(r) {
-    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower;
+    // name-based: item name contains model AND tier keyword AND 'screen'
+    var name = (selName(r.fields['fldWzYeFcqm0qnxD8']) || '').toLowerCase();
+    return name.includes(modelLower) && name.includes(tierLower) && name.includes('screen');
   }) || allInvRecords.find(function(r) {
-    return (selName(r.fields['fldWzYeFcqm0qnxD8']) || '').toLowerCase().includes(modelLower);
+    // name-based loose: item name contains model AND 'screen' (any tier)
+    var name = (selName(r.fields['fldWzYeFcqm0qnxD8']) || '').toLowerCase();
+    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && name.includes('screen');
   });
   if (!rec) { rowEl.classList.add('hidden'); return; }
   var qty = rec.fields['fldvwFFYSxAJlcFpp'] || 0;
