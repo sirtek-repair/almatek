@@ -2351,22 +2351,25 @@ function showStockBadge(slot, model, tier) {
   var typeStr = TIER_TO_TYPE[tier];
   var modelLower = model.toLowerCase();
   var tierLower = (tier || '').toLowerCase();
+  var NON_SCREEN = ['battery', 't.g.', 'device', 'laptop', 'ipad'];
+  function isScreen(r) {
+    var cat = (selName(r.fields['fldxQhVZSYmXNK6CW']) || '').toLowerCase();
+    return !NON_SCREEN.some(function(x) { return cat === x || cat.includes(x); });
+  }
   var rec = allInvRecords.find(function(r) {
-    // exact: model field + exact category
     var cat = selName(r.fields['fldxQhVZSYmXNK6CW']);
     return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && cat === typeStr;
   }) || allInvRecords.find(function(r) {
-    // loose: model field + tier keyword in category
     var cat = selName(r.fields['fldxQhVZSYmXNK6CW']).toLowerCase();
     return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && cat.includes(tierLower);
   }) || allInvRecords.find(function(r) {
-    // name-based: item name contains model AND tier keyword AND 'screen'
     var name = (selName(r.fields['fldWzYeFcqm0qnxD8']) || '').toLowerCase();
     return name.includes(modelLower) && name.includes(tierLower) && name.includes('screen');
   }) || allInvRecords.find(function(r) {
-    // name-based loose: item name contains model AND 'screen' (any tier)
     var name = (selName(r.fields['fldWzYeFcqm0qnxD8']) || '').toLowerCase();
     return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && name.includes('screen');
+  }) || allInvRecords.find(function(r) {
+    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && isScreen(r);
   });
   if (!rec) { rowEl.classList.add('hidden'); return; }
   var qty = rec.fields['fldvwFFYSxAJlcFpp'] || 0;
