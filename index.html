@@ -1466,7 +1466,7 @@ function onRepairChange() {
   else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; }
 }
 
-function onModel1Change() { model1 = el('modelSelect1').value; updateFactoryScreenBadge(model1); updateTierPrices1(); selectTier1(tier1 || 'standard'); }
+function onModel1Change() { model1 = el('modelSelect1').value; updateFactoryScreenBadge(model1); updateTierPrices1(); selectTier1(tier1 || 'standard'); if (model1 && authd && !invLoaded) { showPendingStockBadges(); allInvRecords = []; loadInventoryPage(null, true); } }
 function onModel2Change() { model2 = el('modelSelect2').value; updateTierPrices2(); selectTier2(tier2 || 'standard'); }
 function updateTierDisplay1() { updateTierPrices1(); }
 function updateTierDisplay2() { updateTierPrices2(); }
@@ -2330,10 +2330,17 @@ function switchNeedSubTab(tab, btn) {
 }
 
 var TIER_TO_TYPE = { standard: 'Standard Screen', premium: 'Premium Screen' };
+function showPendingStockBadges() {
+  ['1Std','1Pre','2Std','2Pre'].forEach(function(slot) {
+    var rowEl = el('stockRow' + slot); if (!rowEl) return;
+    el('stockBadge' + slot).className = 'stock-badge'; el('stockBadge' + slot).textContent = '↻ checking…';
+    el('stockDetail' + slot).textContent = ''; rowEl.classList.remove('hidden');
+  });
+}
 function showStockBadge(slot, model, tier) {
   var rowEl = el('stockRow' + slot);
   if (!rowEl) return;
-  if (!authd || !allInvRecords.length) { rowEl.classList.add('hidden'); return; }
+  if (!allInvRecords.length) { return; }
   var typeStr = TIER_TO_TYPE[tier];
   var modelLower = model.toLowerCase();
   var tierLower = (tier || '').toLowerCase();
