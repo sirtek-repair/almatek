@@ -551,6 +551,13 @@
     </div>
 
     <div id="freeSection" class="hidden">
+      <div id="battSubRow1" class="hidden" style="margin-bottom:10px;">
+        <label class="field-label">Type</label>
+        <div class="model-grid">
+          <button class="model-btn" onclick="onBattSubtype1('battery', this)">Battery</button>
+          <button class="model-btn" onclick="onBattSubtype1('small_part', this)">Small Part</button>
+        </div>
+      </div>
       <label class="field-label" for="partCost" id="partCostLabel">Part Cost</label>
       <input type="number" id="partCost" placeholder="$0" min="0" step="1" oninput="onCost1Change()" />
       <p class="hint">Round up to whole dollar</p>
@@ -719,6 +726,13 @@
       </div>
 
       <div id="freeSection2" class="hidden">
+        <div id="battSubRow2" class="hidden" style="margin-bottom:10px;">
+          <label class="field-label">Type</label>
+          <div class="model-grid">
+            <button class="model-btn" onclick="onBattSubtype2('battery', this)">Battery</button>
+            <button class="model-btn" onclick="onBattSubtype2('small_part', this)">Small Part</button>
+          </div>
+        </div>
         <label class="field-label" for="partCost2" id="partCostLabel2">Part Cost</label>
         <input type="number" id="partCost2" placeholder="$0" min="0" step="1" oninput="onCost2Change()" />
         <p class="hint">Round up to whole dollar</p>
@@ -1190,25 +1204,39 @@
     </div>
 
     <div class="card hidden" id="settingsB2bSection" style="margin-top:16px;">
-      <div class="staff-section-title">🤝 B2B Repair Pricing</div>
-      <p style="font-size:12px;color:var(--muted);margin:0 0 14px;">Formula: cost × (1 + markup%) + labor + transit</p>
-      <div style="margin-bottom:12px;">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.05em;margin-bottom:8px;">KIMI SOHO</div>
-        <div style="display:flex;gap:8px;">
-          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Markup %</div><input type="number" id="b2bKimiMarkup" min="0" max="200" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
-          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Labor $</div><input type="number" id="b2bKimiLabor" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
-          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Tech/Runner $</div><input type="number" id="b2bKimiTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
-        </div>
+      <div class="staff-section-title">💰 Repair Pricing</div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.05em;margin-bottom:8px;">STANDARD REPAIRS</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="font-size:13px;flex:1;">Part Markup %</span>
+        <input type="number" id="rpMarkup" min="0" max="200" step="1" style="width:68px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;text-align:right;" />
       </div>
-      <div style="padding-top:12px;border-top:1px solid var(--border);margin-bottom:14px;">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.05em;margin-bottom:8px;">SKYMOBILE</div>
-        <div style="display:flex;gap:8px;">
-          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Markup %</div><input type="number" id="b2bSkyMarkup" min="0" max="200" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
-          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Labor $</div><input type="number" id="b2bSkyLabor" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
-          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Tech/Runner $</div><input type="number" id="b2bSkyTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
-        </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Labor $</div>
+      <div style="display:grid;grid-template-columns:1fr 68px;gap:7px 8px;align-items:center;margin-bottom:14px;">
+        <span style="font-size:13px;">iPhone Screen</span><input type="number" id="rpLaborIphone"     min="0" step="1" style="padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;text-align:right;" />
+        <span style="font-size:13px;">Frame Swap</span>   <input type="number" id="rpLaborSwap"       min="0" step="1" style="padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;text-align:right;" />
+        <span style="font-size:13px;">Battery</span>      <input type="number" id="rpLaborBattery"    min="0" step="1" style="padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;text-align:right;" />
+        <span style="font-size:13px;">Small Part</span>   <input type="number" id="rpLaborSmallPart"  min="0" step="1" style="padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;text-align:right;" />
+        <span style="font-size:13px;">iPad</span>         <input type="number" id="rpLaborIpad"       min="0" step="1" style="padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;text-align:right;" />
+        <span style="font-size:13px;">Android</span>      <input type="number" id="rpLaborAndroid"    min="0" step="1" style="padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;text-align:right;" />
+        <span style="font-size:13px;">Laptop</span>       <input type="number" id="rpLaborLaptop"     min="0" step="1" style="padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;text-align:right;" />
       </div>
-      <button onclick="saveB2bPricing()" style="width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save B2B Pricing</button>
+
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.05em;margin-bottom:8px;padding-top:14px;border-top:1px solid var(--border);">B2B CLIENTS</div>
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">Kimi Soho</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Markup %</div><input type="number" id="b2bKimiMarkup" min="0" max="200" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Labor $</div><input type="number" id="b2bKimiLabor" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Tech/Runner $</div><input type="number" id="b2bKimiTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+      </div>
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">SkyMobile</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Markup %</div><input type="number" id="b2bSkyMarkup" min="0" max="200" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Labor $</div><input type="number" id="b2bSkyLabor" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Tech/Runner $</div><input type="number" id="b2bSkyTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+      </div>
+
+      <button onclick="saveRepairPricing()" style="width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save Pricing</button>
       <div id="b2bPricingErr" class="chpass-err" style="margin-top:6px;"></div>
     </div>
 
@@ -1399,8 +1427,9 @@
 <div class="inv-toast" id="invToast"></div>
 
 <script>
-var LABOR = { iphone_screen:70, back_glass:80, back_glass_swap:100, battery:60, ipad:75, kimi:35, skymobile:75, android:85, laptop:85 };
-const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android Repair', laptop:'MacBook / Laptop' };
+var LABOR = { iphone_screen:70, back_glass:80, back_glass_swap:100, battery:60, small_part:40, ipad:75, kimi:35, skymobile:75, android:85, laptop:85 };
+const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', small_part:'Small Part', ipad:'iPad Screen', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android Repair', laptop:'MacBook / Laptop' };
+var MARKUP_PCT = 20;
 const SHARE_ICON = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
 
 const FACTORY_SCREEN_TYPE = {
@@ -1446,12 +1475,27 @@ function updateFactoryScreenBadge(model) {
 let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2='', mode1='select', mode2='select', secondOpen=false, mobileOpen=false, mobileFee=0, afterHoursFee=0, selectedTimeWindow='';
 const el = id => document.getElementById(id);
 
-function fullPrice(cost, type) { return cost * 1.2 + LABOR[type]; }
+function fullPrice(cost, type) { return cost * (1 + MARKUP_PCT / 100) + LABOR[type]; }
 var TRANSIT_FEE = { kimi: 6, skymobile: 25 };
-var B2B_MARKUP = { kimi: 20, skymobile: 0 }; // % markup on part cost per B2B client
+var B2B_MARKUP = { kimi: 20, skymobile: 0 };
 (function() {
+  var _s = JSON.parse(localStorage.getItem('almatek_repair_pricing') || 'null');
+  if (_s) {
+    if (_s.markup != null) MARKUP_PCT = _s.markup;
+    var SL = ['iphone_screen','back_glass_swap','battery','small_part','ipad','android','laptop'];
+    if (_s.labor) SL.forEach(function(k){ if (_s.labor[k] != null) LABOR[k] = _s.labor[k]; });
+    if (_s.b2b) {
+      ['kimi','skymobile'].forEach(function(c) {
+        if (!_s.b2b[c]) return;
+        if (_s.b2b[c].markup != null) B2B_MARKUP[c] = _s.b2b[c].markup;
+        if (_s.b2b[c].labor  != null) LABOR[c]      = _s.b2b[c].labor;
+        if (_s.b2b[c].runner != null) TRANSIT_FEE[c] = _s.b2b[c].runner;
+      });
+    }
+  }
+  // backward-compat: old b2b-only key
   var _p = JSON.parse(localStorage.getItem('almatek_b2b_pricing') || 'null');
-  if (_p) {
+  if (_p && !_s) {
     if (_p.kimi) { if (_p.kimi.markup != null) B2B_MARKUP.kimi = _p.kimi.markup; if (_p.kimi.labor != null) LABOR.kimi = _p.kimi.labor; if (_p.kimi.transit != null) TRANSIT_FEE.kimi = _p.kimi.transit; }
     if (_p.skymobile) { if (_p.skymobile.markup != null) B2B_MARKUP.skymobile = _p.skymobile.markup; if (_p.skymobile.labor != null) LABOR.skymobile = _p.skymobile.labor; if (_p.skymobile.transit != null) TRANSIT_FEE.skymobile = _p.skymobile.transit; }
   }
@@ -1486,6 +1530,7 @@ function onRepairChange() {
   type1 = el('repairType').value; cost1=0; model1=''; tier1=''; resetMobile(); resetSecond();
   ['costCard','quoteCard','mobileToggleRow','secondToggle'].forEach(id => el(id).classList.add('hidden'));
   ['iphoneSection','glassSection','deviceSection','freeSection'].forEach(id => el(id).classList.add('hidden'));
+  el('battSubRow1').classList.add('hidden'); clearBtns('#battSubRow1');
   if (!type1) return;
   el('costCard').classList.remove('hidden'); el('quoteCard').classList.add('hidden');
   if (type1 === 'iphone_screen') {
@@ -1495,7 +1540,10 @@ function onRepairChange() {
   }
   else if (type1 === 'back_glass') { el('glassSection').classList.remove('hidden'); clearBtns('#glassSection'); }
   else if (type1 === 'device') { el('deviceSection').classList.remove('hidden'); clearBtns('#deviceSection'); }
-  else { el('freeSection').classList.remove('hidden'); el('partCost').value = ''; }
+  else {
+    el('freeSection').classList.remove('hidden'); el('partCost').value = '';
+    if (type1 === 'battery') { el('battSubRow1').classList.remove('hidden'); }
+  }
 }
 
 function onModel1Change() {
@@ -1632,7 +1680,9 @@ function tryRenderQuote() {
 }
 function hideQuote() { el('quoteCard').classList.add('hidden'); el('quoteNotesRow').classList.add('hidden'); el('neighborhoodRow').classList.add('hidden'); el('afterHoursRow').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
 
-var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', ipad:'iPad', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android', laptop:'Laptop' };
+var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', small_part:'Small Part', ipad:'iPad', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android', laptop:'Laptop' };
+function onBattSubtype1(t, btn) { type1 = t; clearBtns('#battSubRow1'); btn.classList.add('active'); cost1 = parseFloat(el('partCost').value||'0')||0; tryRenderQuote(); }
+function onBattSubtype2(t, btn) { type2 = t; clearBtns('#battSubRow2'); btn.classList.add('active'); cost2 = parseFloat(el('partCost2').value||'0')||0; renderDeal(); }
 
 var attFlow = 'in_stock';
 function setTicketFlow(flow) {
@@ -1774,12 +1824,16 @@ function onToggle2nd() { secondOpen = !secondOpen; el('secondSw').classList.togg
 function on2ndRepairChange() {
   type2 = el('repair2Type').value; cost2=0; model2=''; tier2=''; mode2='select'; el('dealResult').classList.add('hidden');
   ['iphoneSection2','glassSection2','deviceSection2','freeSection2'].forEach(id => el(id).classList.add('hidden'));
+  el('battSubRow2').classList.add('hidden'); clearBtns('#battSubRow2');
   if (!type2) { el('cost2Wrap').classList.add('hidden'); return; }
   el('cost2Wrap').classList.remove('hidden');
   if (type2==='iphone_screen') { el('iphoneSection2').classList.remove('hidden'); el('modelSelect2').value = ''; model2 = ''; selectTier2('standard'); }
   else if (type2==='back_glass') { el('glassSection2').classList.remove('hidden'); clearBtns('#glassSection2'); }
   else if (type2==='device') { el('deviceSection2').classList.remove('hidden'); clearBtns('#deviceSection2'); }
-  else { el('freeSection2').classList.remove('hidden'); }
+  else {
+    el('freeSection2').classList.remove('hidden');
+    if (type2==='battery') { el('battSubRow2').classList.remove('hidden'); }
+  }
 }
 function renderDeal() {
   const p1=getPrice1(), p2=getPrice2(); if (p1<=0 || p2<=0) return;
@@ -4701,24 +4755,43 @@ function openSettingsTab() {
   var b2bSec = el('settingsB2bSection'); if (b2bSec) { b2bSec.classList.toggle('hidden', !isOwner); if (isOwner) loadB2bPricingInputs(); }
 }
 function loadB2bPricingInputs() {
-  el('b2bKimiMarkup').value = B2B_MARKUP.kimi;
-  el('b2bKimiLabor').value = LABOR.kimi;
-  el('b2bKimiTransit').value = TRANSIT_FEE.kimi;
-  el('b2bSkyMarkup').value = B2B_MARKUP.skymobile;
-  el('b2bSkyLabor').value = LABOR.skymobile;
-  el('b2bSkyTransit').value = TRANSIT_FEE.skymobile;
+  el('rpMarkup').value         = MARKUP_PCT;
+  el('rpLaborIphone').value    = LABOR.iphone_screen;
+  el('rpLaborSwap').value      = LABOR.back_glass_swap;
+  el('rpLaborBattery').value   = LABOR.battery;
+  el('rpLaborSmallPart').value = LABOR.small_part;
+  el('rpLaborIpad').value      = LABOR.ipad;
+  el('rpLaborAndroid').value   = LABOR.android;
+  el('rpLaborLaptop').value    = LABOR.laptop;
+  el('b2bKimiMarkup').value    = B2B_MARKUP.kimi;
+  el('b2bKimiLabor').value     = LABOR.kimi;
+  el('b2bKimiTransit').value   = TRANSIT_FEE.kimi;
+  el('b2bSkyMarkup').value     = B2B_MARKUP.skymobile;
+  el('b2bSkyLabor').value      = LABOR.skymobile;
+  el('b2bSkyTransit').value    = TRANSIT_FEE.skymobile;
 }
-function saveB2bPricing() {
+function saveRepairPricing() {
   if (!isOwner) return;
-  var km = Math.max(0, parseFloat(el('b2bKimiMarkup').value) || 0);
-  var kl = Math.max(0, parseFloat(el('b2bKimiLabor').value) || 0);
-  var kt = Math.max(0, parseFloat(el('b2bKimiTransit').value) || 0);
-  var sm = Math.max(0, parseFloat(el('b2bSkyMarkup').value) || 0);
-  var sl = Math.max(0, parseFloat(el('b2bSkyLabor').value) || 0);
-  var st = Math.max(0, parseFloat(el('b2bSkyTransit').value) || 0);
-  B2B_MARKUP.kimi = km; LABOR.kimi = kl; TRANSIT_FEE.kimi = kt;
-  B2B_MARKUP.skymobile = sm; LABOR.skymobile = sl; TRANSIT_FEE.skymobile = st;
-  localStorage.setItem('almatek_b2b_pricing', JSON.stringify({ kimi: { markup:km, labor:kl, transit:kt }, skymobile: { markup:sm, labor:sl, transit:st } }));
+  function n(id) { return Math.max(0, parseFloat(el(id).value) || 0); }
+  MARKUP_PCT            = n('rpMarkup');
+  LABOR.iphone_screen   = n('rpLaborIphone');
+  LABOR.back_glass_swap = n('rpLaborSwap');
+  LABOR.battery         = n('rpLaborBattery');
+  LABOR.small_part      = n('rpLaborSmallPart');
+  LABOR.ipad            = n('rpLaborIpad');
+  LABOR.android         = n('rpLaborAndroid');
+  LABOR.laptop          = n('rpLaborLaptop');
+  B2B_MARKUP.kimi       = n('b2bKimiMarkup');
+  LABOR.kimi            = n('b2bKimiLabor');
+  TRANSIT_FEE.kimi      = n('b2bKimiTransit');
+  B2B_MARKUP.skymobile  = n('b2bSkyMarkup');
+  LABOR.skymobile       = n('b2bSkyLabor');
+  TRANSIT_FEE.skymobile = n('b2bSkyTransit');
+  localStorage.setItem('almatek_repair_pricing', JSON.stringify({
+    markup: MARKUP_PCT,
+    labor: { iphone_screen:LABOR.iphone_screen, back_glass_swap:LABOR.back_glass_swap, battery:LABOR.battery, small_part:LABOR.small_part, ipad:LABOR.ipad, android:LABOR.android, laptop:LABOR.laptop },
+    b2b: { kimi:{markup:B2B_MARKUP.kimi,labor:LABOR.kimi,runner:TRANSIT_FEE.kimi}, skymobile:{markup:B2B_MARKUP.skymobile,labor:LABOR.skymobile,runner:TRANSIT_FEE.skymobile} }
+  }));
   var errEl = el('b2bPricingErr');
   if (errEl) { errEl.style.color = 'var(--green)'; errEl.textContent = 'Saved!'; setTimeout(function(){ errEl.textContent = ''; }, 2000); }
 }
