@@ -1189,6 +1189,29 @@
       <button onclick="resetScriptConnection()" style="width:100%;padding:9px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Reset Connection</button>
     </div>
 
+    <div class="card hidden" id="settingsB2bSection" style="margin-top:16px;">
+      <div class="staff-section-title">🤝 B2B Repair Pricing</div>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 14px;">Formula: cost × (1 + markup%) + labor + transit</p>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.05em;margin-bottom:8px;">KIMI SOHO</div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Markup %</div><input type="number" id="b2bKimiMarkup" min="0" max="200" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Labor $</div><input type="number" id="b2bKimiLabor" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Transit $</div><input type="number" id="b2bKimiTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+        </div>
+      </div>
+      <div style="padding-top:12px;border-top:1px solid var(--border);margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:0.05em;margin-bottom:8px;">SKYMOBILE</div>
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Markup %</div><input type="number" id="b2bSkyMarkup" min="0" max="200" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Labor $</div><input type="number" id="b2bSkyLabor" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+          <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Transit $</div><input type="number" id="b2bSkyTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+        </div>
+      </div>
+      <button onclick="saveB2bPricing()" style="width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save B2B Pricing</button>
+      <div id="b2bPricingErr" class="chpass-err" style="margin-top:6px;"></div>
+    </div>
+
     <div class="card" id="settingsChangePassSection" style="margin-top:16px;">
       <div class="staff-section-title">Change Password</div>
       <input type="password" id="settingsPassCurrent" placeholder="Current password" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:10px;" />
@@ -1376,7 +1399,7 @@
 <div class="inv-toast" id="invToast"></div>
 
 <script>
-const LABOR = { iphone_screen:70, back_glass:80, back_glass_swap:100, battery:60, ipad:75, kimi:35, skymobile:75, android:85, laptop:85 };
+var LABOR = { iphone_screen:70, back_glass:80, back_glass_swap:100, battery:60, ipad:75, kimi:35, skymobile:75, android:85, laptop:85 };
 const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery / Small Parts', ipad:'iPad Screen', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android Repair', laptop:'MacBook / Laptop' };
 const SHARE_ICON = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
 
@@ -1424,7 +1447,15 @@ let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2=
 const el = id => document.getElementById(id);
 
 function fullPrice(cost, type) { return cost * 1.2 + LABOR[type]; }
-const TRANSIT_FEE = { kimi: 6, skymobile: 25 };
+var TRANSIT_FEE = { kimi: 6, skymobile: 25 };
+var B2B_MARKUP = { kimi: 20, skymobile: 0 }; // % markup on part cost per B2B client
+(function() {
+  var _p = JSON.parse(localStorage.getItem('almatek_b2b_pricing') || 'null');
+  if (_p) {
+    if (_p.kimi) { if (_p.kimi.markup != null) B2B_MARKUP.kimi = _p.kimi.markup; if (_p.kimi.labor != null) LABOR.kimi = _p.kimi.labor; if (_p.kimi.transit != null) TRANSIT_FEE.kimi = _p.kimi.transit; }
+    if (_p.skymobile) { if (_p.skymobile.markup != null) B2B_MARKUP.skymobile = _p.skymobile.markup; if (_p.skymobile.labor != null) LABOR.skymobile = _p.skymobile.labor; if (_p.skymobile.transit != null) TRANSIT_FEE.skymobile = _p.skymobile.transit; }
+  }
+})();
 function withTax(price) { return Math.ceil(price * 1.12875); }
 function initGlassPriceTags() {
   var fixed = { 84: 95, 94: 107, 110: 125 };
@@ -1435,17 +1466,18 @@ function initGlassPriceTags() {
 }
 var neighborhoodSurcharge = 0;
 var selectedNeighborhood = '';
+function b2bPrice(cost, client) { return cost * (1 + B2B_MARKUP[client] / 100) + TRANSIT_FEE[client] + LABOR[client]; }
 function getPrice1() {
   var base;
   if (type1 === 'back_glass') { base = cost1 > 0 ? cost1 : 0; }
-  else if (type1 === 'skymobile') { base = cost1 > 0 ? cost1 + TRANSIT_FEE.skymobile + LABOR.skymobile : 0; }
+  else if (type1 === 'skymobile' || type1 === 'kimi') { base = cost1 > 0 ? b2bPrice(cost1, type1) : 0; }
   else { base = cost1 > 0 ? fullPrice(cost1, type1) + (TRANSIT_FEE[type1] || 0) : 0; }
   return base * (1 + neighborhoodSurcharge);
 }
 function getPrice2() {
   var base;
   if (type2 === 'back_glass') { base = cost2 > 0 ? cost2 : 0; }
-  else if (type2 === 'skymobile') { base = cost2 > 0 ? cost2 + TRANSIT_FEE.skymobile + LABOR.skymobile : 0; }
+  else if (type2 === 'skymobile' || type2 === 'kimi') { base = cost2 > 0 ? b2bPrice(cost2, type2) : 0; }
   else { base = cost2 > 0 ? fullPrice(cost2, type2) + (TRANSIT_FEE[type2] || 0) : 0; }
   return base * (1 + neighborhoodSurcharge);
 }
@@ -4666,6 +4698,29 @@ function openSettingsTab() {
   var chp = el('settingsChangePassSection'); if (chp) chp.style.display = (authd && !isOwner) ? 'block' : 'none';
   var cu = el('settingsCurrentUser'); if (cu) cu.textContent = currentUser ? (currentUser + (isOwner ? ' (Owner)' : ' (Staff)')) : (isOwner ? 'Owner' : 'Staff');
   var rtbl = el('settingsReviewTbl'); if (rtbl) rtbl.value = AT_REVIEW_TBL || '';
+  var b2bSec = el('settingsB2bSection'); if (b2bSec) { b2bSec.classList.toggle('hidden', !isOwner); if (isOwner) loadB2bPricingInputs(); }
+}
+function loadB2bPricingInputs() {
+  el('b2bKimiMarkup').value = B2B_MARKUP.kimi;
+  el('b2bKimiLabor').value = LABOR.kimi;
+  el('b2bKimiTransit').value = TRANSIT_FEE.kimi;
+  el('b2bSkyMarkup').value = B2B_MARKUP.skymobile;
+  el('b2bSkyLabor').value = LABOR.skymobile;
+  el('b2bSkyTransit').value = TRANSIT_FEE.skymobile;
+}
+function saveB2bPricing() {
+  if (!isOwner) return;
+  var km = Math.max(0, parseFloat(el('b2bKimiMarkup').value) || 0);
+  var kl = Math.max(0, parseFloat(el('b2bKimiLabor').value) || 0);
+  var kt = Math.max(0, parseFloat(el('b2bKimiTransit').value) || 0);
+  var sm = Math.max(0, parseFloat(el('b2bSkyMarkup').value) || 0);
+  var sl = Math.max(0, parseFloat(el('b2bSkyLabor').value) || 0);
+  var st = Math.max(0, parseFloat(el('b2bSkyTransit').value) || 0);
+  B2B_MARKUP.kimi = km; LABOR.kimi = kl; TRANSIT_FEE.kimi = kt;
+  B2B_MARKUP.skymobile = sm; LABOR.skymobile = sl; TRANSIT_FEE.skymobile = st;
+  localStorage.setItem('almatek_b2b_pricing', JSON.stringify({ kimi: { markup:km, labor:kl, transit:kt }, skymobile: { markup:sm, labor:sl, transit:st } }));
+  var errEl = el('b2bPricingErr');
+  if (errEl) { errEl.style.color = 'var(--green)'; errEl.textContent = 'Saved!'; setTimeout(function(){ errEl.textContent = ''; }, 2000); }
 }
 function savePricingScriptUrl() {
   var url = (el('pricingScriptUrl').value || '').trim();
