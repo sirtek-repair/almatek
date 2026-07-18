@@ -71,7 +71,7 @@ async function upsertToSupabase(sbKey, rows) {
 async function run() {
   const atKey = prompt('Paste your Airtable Personal Access Token\n(airtable.com → account → Developer Hub → Personal access tokens):');
   if (!atKey) return;
-  const sbKey = prompt('Paste your Supabase publishable key\n(sb_publishable_...):');
+  const sbKey = prompt('Paste your Supabase SERVICE ROLE key\n(Supabase dashboard → Settings → API → service_role)\nThis key bypasses Row Level Security and is required for bulk inserts:');
   if (!sbKey) return;
 
   document.getElementById('btn').disabled = true;

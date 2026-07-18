@@ -783,6 +783,7 @@
 <div id="invSubViewInventory">
 <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
     <input class="inv-search" id="invSearch" placeholder="Search inventory..." oninput="filterInventory()" style="margin-bottom:0;flex:1;" />
+    <button id="addItemBtn" onclick="showAddItemModal()" class="hidden" style="padding:8px 12px;font-size:12px;background:var(--accent);border:none;border-radius:10px;color:#fff;cursor:pointer;white-space:nowrap;font-family:inherit;font-weight:600;">+ Add</button>
     <button id="authBtnInv" onclick="onAuthBtnClick()" style="padding:8px 12px;font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;white-space:nowrap;font-family:inherit;">🔒 Log In</button>
   </div>
   <div class="filter-row">
@@ -1411,6 +1412,48 @@
       <button class="cb cb-eq"  onclick="calcPress('=')">=</button>
     </div>
     <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:8px;opacity:0.6;">keyboard: 0–9  + − * /  %  Enter  Backspace  Esc</div>
+  </div>
+</div>
+
+<!-- Add Inventory Item Modal -->
+<div id="addItemModal" class="chpass-overlay hidden" onclick="hideAddItemModal()">
+  <div class="chpass-box" onclick="event.stopPropagation()" style="max-width:380px;">
+    <h3 style="margin:0 0 14px;">+ Add Inventory Item</h3>
+    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:3px;">Item Name *</label>
+    <input type="text" id="addItemName" placeholder="e.g. iPhone 15 Pro Screen" autocomplete="off" style="width:100%;box-sizing:border-box;margin-bottom:10px;" />
+    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:3px;">Model (for stock badge matching)</label>
+    <input type="text" id="addItemModel" placeholder="e.g. iPhone 15 Pro" autocomplete="off" style="width:100%;box-sizing:border-box;margin-bottom:10px;" />
+    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:3px;">Category</label>
+    <select id="addItemCategory" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:14px;margin-bottom:10px;">
+      <option value="Standard Screen">Standard Screen</option>
+      <option value="Premium Screen">Premium Screen</option>
+      <option value="Refurb Screen">Refurb Screen</option>
+      <option value="Battery">Battery</option>
+      <option value="t.G.">t.G. (Tempered Glass)</option>
+      <option value="Device">Device</option>
+      <option value="">Other</option>
+    </select>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div>
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:3px;">Opening Qty</label>
+        <input type="number" id="addItemQty" min="0" value="0" style="width:100%;box-sizing:border-box;" />
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:3px;">Min Stock</label>
+        <input type="number" id="addItemMin" min="0" value="1" style="width:100%;box-sizing:border-box;" />
+      </div>
+    </div>
+    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:3px;">Status</label>
+    <select id="addItemStatus" style="width:100%;box-sizing:border-box;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:14px;margin-bottom:12px;">
+      <option value="In Stock">In Stock</option>
+      <option value="O.O.S.">Out of Stock</option>
+      <option value="orderSoon">Order Soon</option>
+    </select>
+    <div class="chpass-err" id="addItemErr"></div>
+    <div class="chpass-actions">
+      <button class="chpass-cancel" onclick="hideAddItemModal()">Cancel</button>
+      <button class="chpass-save" id="addItemSaveBtn" onclick="saveNewInventoryItem()">Add Item</button>
+    </div>
   </div>
 </div>
 
@@ -2092,7 +2135,12 @@ function renderInventory() {
   var search = (el('invSearch').value || '').toLowerCase();
   var list = allInvRecords.filter(r => { var name = (r.fields['fldWzYeFcqm0qnxD8'] || '').toLowerCase(); var type = selName(r.fields['fldxQhVZSYmXNK6CW']); return (activeFilter === 'all' || type === activeFilter) && (!search || name.includes(search)); });
   list.sort((a,b) => { var ord = {'O.O.S.':0,'orderSoon':1,'reOrder':1,'In Stock':2}; return (ord[selName(a.fields['fldZEvcZT2JnX5kwh'])]||1) - (ord[selName(b.fields['fldZEvcZT2JnX5kwh'])]||1); });
-  if (!list.length) { el('invList').innerHTML = '<div class="loading-msg">No screens found.</div>'; return; }
+  if (!list.length) {
+    var emptyMsg = (authd && !allInvRecords.length && activeFilter === 'all' && !search)
+      ? '<div class="loading-msg" style="padding:24px 0;">No inventory yet.<br><span style="font-size:13px;color:var(--muted);">Use <b>+ Add</b> to add your first item, or run <a href="migrate-inventory.html" target="_blank" style="color:var(--accent);">migrate-inventory.html</a> to import from Airtable.</span></div>'
+      : '<div class="loading-msg">No items found.</div>';
+    el('invList').innerHTML = emptyMsg; return;
+  }
   el('invList').innerHTML = list.map(r => {
     var id = r.id, name = r.fields['fldWzYeFcqm0qnxD8'] || '—', model = r.fields['fldV0jSP3xJuinS8t'] || '', qty = r.fields['fldvwFFYSxAJlcFpp'] != null ? r.fields['fldvwFFYSxAJlcFpp'] : 0, min = r.fields['fldB16jlPFHm11tfW'] != null ? r.fields['fldB16jlPFHm11tfW'] : 0, stockName = selName(r.fields['fldZEvcZT2JnX5kwh']), isIn = stockName === 'In Stock', isLow = isIn && min > 0 && qty <= min, cls = isLow ? 'low' : (isIn ? 'in' : 'out'), badge = isLow ? '⚠ Low Stock' : (isIn ? '✓ In Stock' : '✕ O.O.S.');
     return '<div class="inv-item" id="item-' + id + '"><div class="inv-item-top"><div><div class="inv-item-name">' + fmtBrand(name) + '</div><div class="inv-item-model">' + fmtBrand(model) + '</div></div><span class="stock-badge ' + cls + '">' + badge + '</span></div><div class="inv-item-meta">Qty: ' + qty + (min > 0 ? ' · Min: ' + min : '') + '</div><div class="inv-actions"><button class="inv-btn receive" onclick="showReceive(\'' + id + '\')">+ Receive</button><button class="inv-btn used" onclick="markUsed(\'' + id + '\',\'' + name.replace(/'/g,"\\'") + '\')">Mark Used</button><button class="inv-btn remove" onclick="removeItem(\'' + id + '\',\'' + name.replace(/'/g,"\\'") + '\')">− Remove</button></div><div class="inv-inline hidden" id="receive-' + id + '"><input type="number" min="1" placeholder="Qty" id="rqty-' + id + '"><button onclick="confirmReceive(\'' + id + '\')">Confirm</button><button class="cancel-btn" onclick="hideReceive(\'' + id + '\')">Cancel</button></div></div>';
@@ -2107,6 +2155,41 @@ function confirmReceive(id) {
 }
 function markUsed(id, name) { atFetch(AT_BASE + '/' + AT_SOLD, { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' marked used ✓'); clearCache('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
 function removeItem(id, name) { if (!confirm('Remove 1 unit?')) return; atFetch(AT_BASE + '/tblFoAyBRZ0KLuYQl', { method: 'POST', body: JSON.stringify({ fields: { 'Item': [id], 'QTY': 1, 'date sold': new Date().toISOString().split('T')[0] } }) }).then(data => { if (data.error) { showToast('Error'); return; } showToast(name + ' removed ✓'); clearCache('almatek_inv_cache'); invLoaded = false; allInvRecords = []; loadInventory(); }); }
+
+function showAddItemModal() {
+  if (!authd) { showToast('Log in to add items'); return; }
+  el('addItemName').value = ''; el('addItemModel').value = '';
+  el('addItemCategory').value = 'Standard Screen'; el('addItemQty').value = '0';
+  el('addItemMin').value = '1'; el('addItemStatus').value = 'In Stock';
+  el('addItemErr').textContent = '';
+  el('addItemModal').classList.remove('hidden');
+  setTimeout(function() { el('addItemName').focus(); }, 50);
+}
+function hideAddItemModal() { el('addItemModal').classList.add('hidden'); }
+function saveNewInventoryItem() {
+  var name = (el('addItemName').value || '').trim();
+  if (!name) { el('addItemErr').textContent = 'Name is required.'; return; }
+  var fields = {
+    name:         name,
+    model:        (el('addItemModel').value || '').trim(),
+    category:     el('addItemCategory').value,
+    opening_qty:  parseInt(el('addItemQty').value || '0') || 0,
+    min_stock:    parseInt(el('addItemMin').value || '0') || 0,
+    stock_status: el('addItemStatus').value,
+  };
+  el('addItemSaveBtn').disabled = true; el('addItemSaveBtn').textContent = 'Saving…';
+  atFetch(AT_BASE + '/' + AT_INV, { method: 'POST', body: JSON.stringify({ fields: fields }) }).then(function(data) {
+    el('addItemSaveBtn').disabled = false; el('addItemSaveBtn').textContent = 'Add Item';
+    if (data.error) { el('addItemErr').textContent = typeof data.error === 'string' ? data.error : JSON.stringify(data.error); return; }
+    hideAddItemModal();
+    clearCache('almatek_inv_cache'); invLoaded = false; allInvRecords = [];
+    loadInventory();
+    showToast(name + ' added ✓');
+  }).catch(function(err) {
+    el('addItemSaveBtn').disabled = false; el('addItemSaveBtn').textContent = 'Add Item';
+    el('addItemErr').textContent = err.message;
+  });
+}
 
 var ordersLoaded = false, DEMO_ORDERS = [{ id:'o1', fields:{ 'fldF0TJARgHugOh83':'Order: iPhone 16 Pro Max Screen', 'fldbKVKkNgZtShHwh':3, 'fldVq43gyw9HVLYNI':'Mobilink', 'fldeHBNhXCrqAJrjp':'2026-03-28', 'fldwGKyfgOuue1eyE':true } }];
 var DEMO_LEADS = [
@@ -2728,6 +2811,7 @@ function updateAuthBtn() {
   if (el('suppliersDropdown2')) el('suppliersDropdown2').style.display = authd ? 'block' : 'none';
   el('supplierDemo').style.display = authd ? 'none' : 'inline';
   document.body.classList.toggle('demo-mode', !authd);
+  var addBtn = el('addItemBtn'); if (addBtn) addBtn.classList.toggle('hidden', !authd);
   updateFollowUpBadge();
   updateCartTabBadge();
 }

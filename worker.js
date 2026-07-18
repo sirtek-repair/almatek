@@ -87,12 +87,10 @@ export default {
     const limit = Math.min(parseInt(qs.get('pageSize') || '1000', 10), 2000);
 
     // ══════════════════════════════════════════════════════════════════════
-    // INVENTORY (read-only from app; qty computed by inventory_current view)
+    // INVENTORY (qty computed by inventory_current view)
     // ══════════════════════════════════════════════════════════════════════
     if (table === 'inventory') {
-      if (method !== 'GET') return json({ error: 'Method not allowed' }, 405);
-
-      // Airtable field ID → Supabase column (for response mapping)
+      // Airtable field ID ↔ Supabase column maps
       const FLD = {
         'fldWzYeFcqm0qnxD8': 'name',
         'fldZEvcZT2JnX5kwh': 'stock_status',
@@ -103,25 +101,89 @@ export default {
       };
       const REV = Object.fromEntries(Object.entries(FLD).map(([k, v]) => [v, k]));
 
-      // Read from the view so qty is auto-computed (mirrors Airtable formula fields)
-      const { ok, data } = await sb(
-        `inventory_current?select=id,name,stock_status,qty,category,min_stock,model&limit=${limit}`
-      );
-      if (!ok) return json({ error: data }, 500);
+      if (method === 'GET') {
+        // Read from the view so qty is auto-computed
+        const { ok, data } = await sb(
+          `inventory_current?select=id,name,stock_status,qty,category,min_stock,model&limit=${limit}`
+        );
+        if (!ok) return json({ error: data }, 500);
+        return json({
+          records: (data || []).map(r => ({
+            id: r.id,
+            fields: {
+              [REV.name]:         r.name         || '',
+              [REV.stock_status]: r.stock_status  || '',
+              [REV.qty]:          r.qty           || 0,
+              [REV.category]:     r.category      || '',
+              [REV.min_stock]:    r.min_stock     || 0,
+              [REV.model]:        r.model         || '',
+            },
+          })),
+        });
+      }
 
-      return json({
-        records: (data || []).map(r => ({
+      if (method === 'POST') {
+        const body = await request.json();
+        const f = body.fields || {};
+        const row = {
+          id:           crypto.randomUUID(),
+          name:         f.name         || f['fldWzYeFcqm0qnxD8'] || '',
+          model:        f.model        || f['fldV0jSP3xJuinS8t']  || '',
+          category:     f.category     || f['fldxQhVZSYmXNK6CW']  || '',
+          min_stock:    parseInt(f.min_stock    || f['fldB16jlPFHm11tfW'] || 0) || 0,
+          opening_qty:  parseInt(f.opening_qty  || f.qty || 0) || 0,
+          stock_status: f.stock_status || f['fldZEvcZT2JnX5kwh']  || 'In Stock',
+        };
+        const { ok, data } = await sb('inventory', {
+          method: 'POST',
+          body: JSON.stringify(row),
+          headers: { 'Prefer': 'return=representation' },
+        });
+        if (!ok) return json({ error: data }, 500);
+        const r = Array.isArray(data) ? data[0] : data;
+        return json({
           id: r.id,
           fields: {
-            [REV.name]:         r.name         || '',
-            [REV.stock_status]: r.stock_status  || '',
-            [REV.qty]:          r.qty           || 0,
-            [REV.category]:     r.category      || '',
-            [REV.min_stock]:    r.min_stock     || 0,
-            [REV.model]:        r.model         || '',
+            [REV.name]:         row.name         || '',
+            [REV.stock_status]: row.stock_status || 'In Stock',
+            [REV.qty]:          row.opening_qty,
+            [REV.category]:     row.category     || '',
+            [REV.min_stock]:    row.min_stock     || 0,
+            [REV.model]:        row.model         || '',
           },
-        })),
-      });
+        });
+      }
+
+      if (method === 'PATCH' && recordId) {
+        const body = await request.json();
+        const f = body.fields || {};
+        const row = {};
+        const pick = (a, b) => (a != null ? a : b);
+        if (pick(f.name,         f['fldWzYeFcqm0qnxD8']) != null) row.name         = pick(f.name,        f['fldWzYeFcqm0qnxD8']);
+        if (pick(f.model,        f['fldV0jSP3xJuinS8t']) != null) row.model        = pick(f.model,       f['fldV0jSP3xJuinS8t']);
+        if (pick(f.category,     f['fldxQhVZSYmXNK6CW']) != null) row.category     = pick(f.category,    f['fldxQhVZSYmXNK6CW']);
+        if (pick(f.stock_status, f['fldZEvcZT2JnX5kwh']) != null) row.stock_status = pick(f.stock_status,f['fldZEvcZT2JnX5kwh']);
+        if (f.min_stock != null || f['fldB16jlPFHm11tfW'] != null)
+          row.min_stock = parseInt(pick(f.min_stock, f['fldB16jlPFHm11tfW']) || 0) || 0;
+        if (f.opening_qty != null) row.opening_qty = parseInt(f.opening_qty || 0) || 0;
+
+        const { ok, data } = await sb(`inventory?id=eq.${recordId}`, {
+          method: 'PATCH',
+          body: JSON.stringify(row),
+          headers: { 'Prefer': 'return=representation' },
+        });
+        if (!ok) return json({ error: data }, 500);
+        const r = Array.isArray(data) ? data[0] : data;
+        return json({ id: recordId, fields: r || row });
+      }
+
+      if (method === 'DELETE' && recordId) {
+        const { ok, data } = await sb(`inventory?id=eq.${recordId}`, { method: 'DELETE' });
+        if (!ok) return json({ error: data }, 500);
+        return json({ deleted: true, id: recordId });
+      }
+
+      return json({ error: 'Method not allowed' }, 405);
     }
 
     // ══════════════════════════════════════════════════════════════════════
