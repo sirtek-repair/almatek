@@ -2063,7 +2063,7 @@ function clearCache(key) { try { localStorage.removeItem(key); } catch(e) {} }
 
 function atFetch(path, opts) { opts = opts || {}; return fetch(WORKER_URL + '/v0/' + path, Object.assign({}, opts, { headers: Object.assign({ 'X-Auth': apiPass, 'Content-Type': 'application/json' }, opts.headers || {}) })).then(r => r.json()); }
 
-function initInventory() { if (!invLoaded) loadInventory(); }
+function initInventory() { if (!invLoaded) loadInventory(); else renderInventory(); }
 function loadInventory() {
   if (!authd) { allInvRecords = DEMO_INV; invLoaded = true; el('invLoading').classList.add('hidden'); renderInventory(); return; }
   var cached = getCache('almatek_inv_cache');
@@ -2433,7 +2433,7 @@ function showPendingStockBadges() {
 function showStockBadge(slot, model, tier) {
   var rowEl = el('stockRow' + slot);
   if (!rowEl) return;
-  if (!allInvRecords.length) { return; }
+  if (!allInvRecords.length) { if (invLoaded) rowEl.classList.add('hidden'); return; }
   var typeStr = TIER_TO_TYPE[tier];
   var modelLower = model.toLowerCase();
   var tierLower = (tier || '').toLowerCase();
