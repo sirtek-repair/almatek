@@ -2830,6 +2830,7 @@ function copySwan(btn) { var addr = '1048 Bedford Ave, Brooklyn NY, 11205'; navi
 
 updateAuthBtn();
 if (authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
+else if (!authd) { allInvRecords = DEMO_INV.slice(); }
 
 // ============================================
 // LEADS MANAGEMENT
