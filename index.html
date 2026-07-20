@@ -3549,10 +3549,17 @@ function renderPickedUpList() {
 // ── ReviewAskr ────────────────────────────────────────────────────────────────
 var reviewAskrStorage = [], reviewSubTab = 'pending';
 const REVIEW_LINK_URL = 'https://g.page/r/CWeLjaEk3hIiEAI/review';
+var DEMO_REVIEW_ASKR = [
+  { id:'ra_demo1', name:'Keisha L.', phone:'(917) 555-0447', device:'iPhone 14', ticketId:'dt4', addedAt:'2026-04-29T16:00:00Z', addedBy:'staff', contactCount:0, smsCount:0, emailCount:0, callCount:0, lastContactedAt:null, status:'pending', capturedAt:null },
+  { id:'ra_demo2', name:'Carlos R.', phone:'(347) 555-0174', device:'iPhone 15 Pro Max', ticketId:'dt1', addedAt:'2026-04-28T10:00:00Z', addedBy:'staff', contactCount:1, smsCount:1, emailCount:0, callCount:0, lastContactedAt:'2026-04-28T10:05:00Z', status:'pending', capturedAt:null },
+  { id:'ra_demo3', name:'Devon W.', phone:'(646) 555-0315', device:'Samsung S24', ticketId:'dt3', addedAt:'2026-04-27T14:00:00Z', addedBy:'Sir', contactCount:2, smsCount:1, emailCount:1, callCount:0, lastContactedAt:'2026-04-28T09:00:00Z', status:'pending', capturedAt:null },
+  { id:'ra_demo4', name:'Tanya B.', phone:'(718) 555-0263', device:'iPhone 13', ticketId:'dt2', addedAt:'2026-04-26T11:30:00Z', addedBy:'staff', contactCount:1, smsCount:1, emailCount:0, callCount:0, lastContactedAt:'2026-04-26T11:35:00Z', status:'captured', capturedAt:'2026-04-27T08:00:00Z' },
+];
 function loadReviewAskr() {
+  if (!authd) { reviewAskrStorage = DEMO_REVIEW_ASKR.slice(); updateReviewAskrBadge(); return; }
   try { reviewAskrStorage = JSON.parse(localStorage.getItem('almatek_reviewaskr') || '[]'); } catch(e) { reviewAskrStorage = []; }
   updateReviewAskrBadge();
-  if (authd && AT_REVIEW_TBL) fetchReviewAskrFromAT();
+  if (AT_REVIEW_TBL) fetchReviewAskrFromAT();
 }
 function saveReviewAskr() { localStorage.setItem('almatek_reviewaskr', JSON.stringify(reviewAskrStorage)); }
 function saveReviewTblId() {
