@@ -1492,6 +1492,42 @@ const FACTORY_SCREEN_TYPE = {
 };
 
 let SCREEN_PRICES = {};
+// Demo part costs — used in demo mode so the quote card shows without a pricing sheet
+var DEMO_SCREEN_PRICES = {
+  'iphone air':          { standard: 90,  premium: 130 },
+  'iphone 17 pro max':   { standard: 100, premium: 145 },
+  'iphone 17 pro':       { standard: 95,  premium: 140 },
+  'iphone 17':           { standard: 85,  premium: 125 },
+  'iphone 16 pro max':   { standard: 95,  premium: 140 },
+  'iphone 16 pro':       { standard: 90,  premium: 130 },
+  'iphone 16 plus':      { standard: 80,  premium: 115 },
+  'iphone 16':           { standard: 75,  premium: 110 },
+  'iphone 16e & 17e':    { standard: 60,  premium: 90  },
+  'iphone 15 pro max':   { standard: 85,  premium: 125 },
+  'iphone 15 pro':       { standard: 80,  premium: 115 },
+  'iphone 15 plus':      { standard: 70,  premium: 100 },
+  'iphone 15':           { standard: 65,  premium: 95  },
+  'iphone 14 pro max':   { standard: 70,  premium: 105 },
+  'iphone 14 pro':       { standard: 65,  premium: 95  },
+  'iphone 14 plus':      { standard: 60,  premium: 85  },
+  'iphone 14':           { standard: 55,  premium: 80  },
+  'iphone 13 pro max':   { standard: 55,  premium: 80  },
+  'iphone 13 pro':       { standard: 50,  premium: 75  },
+  'iphone 13 mini':      { standard: 40,  premium: 60  },
+  'iphone 13':           { standard: 45,  premium: 70  },
+  'iphone 12 pro max':   { standard: 45,  premium: 65  },
+  'iphone 12':           { standard: 35,  premium: 55  },
+  'iphone 12 mini':      { standard: 30,  premium: 50  },
+  'iphone 11 pro max':   { standard: 40,  premium: 60  },
+  'iphone 11 pro':       { standard: 38,  premium: 58  },
+  'iphone 11':           { standard: 30,  premium: 45  },
+  'iphone xs max':       { standard: 35,  premium: 52  },
+  'iphone xs':           { standard: 32,  premium: 48  },
+  'iphone xr':           { standard: 28,  premium: 42  },
+  'iphone x':            { standard: 30,  premium: 48  },
+  'iphone 8 plus':       { standard: 22,  premium: 35  },
+  'iphone 8':            { standard: 18,  premium: 28  },
+};
 const FACTORY_SCREEN = {
   'iPhone Air':'OLED','iPhone 17 Pro Max':'OLED','iPhone 17 Pro':'OLED','iPhone 17':'OLED',
   'iPhone 16e & 17e':'OLED','iPhone 16e':'OLED','iPhone 16 Pro Max':'OLED','iPhone 16 Pro':'OLED','iPhone 16 Plus':'OLED','iPhone 16':'OLED',
@@ -2694,6 +2730,7 @@ function tryAuth() {
         localStorage.setItem('almatek_pass', '_auth_'); localStorage.setItem('almatek_is_owner', 'true');
         authPass = '_auth_'; authd = true; isOwner = true; currentUser = 'Sir'; localStorage.setItem('almatek_current_user', 'Sir');
         el('authOverlay').classList.add('hidden');
+        SCREEN_PRICES = {}; loadCachedPricing();
         updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
         if (AT_REVIEW_TBL && apiPass) fetchReviewAskrFromAT();
         if (USERS_SCRIPT_URL) {
@@ -2777,6 +2814,7 @@ function onStaffLoginSuccess(pass, name, structure, data) {
   localStorage.setItem('almatek_user_structure', currentUserStructure);
   authd = true; isOwner = false; localStorage.setItem('almatek_is_owner', 'false');
   el('authOverlay').classList.add('hidden');
+  SCREEN_PRICES = {}; loadCachedPricing();
   updateAuthBtn(); if (!invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
   if (AT_REVIEW_TBL && apiPass) fetchReviewAskrFromAT();
   if (!apiPass && USERS_SCRIPT_URL) {
@@ -2829,7 +2867,7 @@ function copySwan(btn) { var addr = '1048 Bedford Ave, Brooklyn NY, 11205'; navi
 
 updateAuthBtn();
 if (authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); }
-else if (!authd) { allInvRecords = DEMO_INV.slice(); }
+else if (!authd) { allInvRecords = DEMO_INV.slice(); Object.assign(SCREEN_PRICES, DEMO_SCREEN_PRICES); }
 
 // ============================================
 // LEADS MANAGEMENT
