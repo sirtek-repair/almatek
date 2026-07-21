@@ -1331,7 +1331,7 @@
   </div>
 
   <!-- PKR / USD Converter -->
-  <div class="card" style="margin-top:4px;">
+  <div id="pkrCard" class="card" style="margin-top:4px;">
     <div class="staff-section-title">💱 PKR ↔ USD</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
       <div style="flex:1;">
@@ -2855,6 +2855,7 @@ function updateAuthBtn() {
   var b2b1 = el('b2bOptGroup'), b2b2 = el('b2bOptGroup2');
   if (b2b1) b2b1.style.display = authd ? '' : 'none';
   if (b2b2) b2b2.style.display = authd ? '' : 'none';
+  var pkrCard = el('pkrCard'); if (pkrCard) pkrCard.style.display = authd ? '' : 'none';
   updateFollowUpBadge();
   updateCartTabBadge();
 }
