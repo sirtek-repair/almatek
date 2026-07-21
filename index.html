@@ -474,7 +474,7 @@
       <option value="back_glass_swap">frame swap</option>
       <option value="battery">battery / small parts</option>
       <option value="device">iPad / Android / Laptop</option>
-      <optgroup label="B2B Repairs">
+      <optgroup id="b2bOptGroup" label="B2B Repairs">
         <option value="kimi">Kimi Repair</option>
         <option value="skymobile">SkyMobile Repair</option>
       </optgroup>
@@ -661,7 +661,7 @@
       <option value="back_glass_swap">frame swap</option>
       <option value="battery">battery / small parts</option>
       <option value="device">iPad / Android / Laptop</option>
-      <optgroup label="B2B Repairs">
+      <optgroup id="b2bOptGroup2" label="B2B Repairs">
         <option value="kimi">Kimi Repair</option>
         <option value="skymobile">SkyMobile Repair</option>
       </optgroup>
@@ -2850,6 +2850,9 @@ function updateAuthBtn() {
   el('supplierDemo').style.display = authd ? 'none' : 'inline';
   document.body.classList.toggle('demo-mode', !authd);
   var addBtn = el('addItemBtn'); if (addBtn) addBtn.classList.toggle('hidden', !authd);
+  var b2b1 = el('b2bOptGroup'), b2b2 = el('b2bOptGroup2');
+  if (b2b1) b2b1.style.display = authd ? '' : 'none';
+  if (b2b2) b2b2.style.display = authd ? '' : 'none';
   updateFollowUpBadge();
   updateCartTabBadge();
 }
