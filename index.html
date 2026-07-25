@@ -1016,6 +1016,36 @@
 </div>
 </div>
 
+<!-- B2B Intake Form Modal -->
+<div id="b2bFormModal" class="chpass-overlay hidden" onclick="closeB2BForm()">
+  <div class="chpass-box" onclick="event.stopPropagation()" style="max-width:420px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3 style="margin:0;font-size:16px;">📋 B2B Intake Form</h3>
+      <button onclick="closeB2BForm()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:16px;margin-bottom:14px;">
+      <div style="text-align:center;margin-bottom:14px;border-bottom:1px solid rgba(139,92,246,0.2);padding-bottom:12px;">
+        <div style="font-size:18px;font-weight:700;letter-spacing:0.04em;font-family:Georgia,serif;">Repaired Collective</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;">repairedcollective.com</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">DATE</div><div id="b2bFormDate" style="font-weight:600;"></div></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">VENDOR</div><div id="b2bFormVendor" style="font-weight:600;"></div></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">CUSTOMER</div><div id="b2bFormName" style="font-weight:600;"></div></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">MODEL</div><div id="b2bFormModel" style="font-weight:600;"></div></div>
+        <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">IMEI / SERIAL #</div><div id="b2bFormImei" style="font-weight:600;"></div></div>
+        <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">DEVICE ISSUE</div><div id="b2bFormIssue" style="font-weight:600;line-height:1.4;"></div></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">COLOR</div><div id="b2bFormColor" style="font-weight:600;"></div></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">PASSWORD</div><div id="b2bFormPassword" style="font-weight:600;"></div></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="shareB2BForm()" style="flex:1;padding:10px;background:#8b5cf6;border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Share / Copy</button>
+      <button onclick="closeB2BForm()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- Add to Ticket Modal -->
 <div id="addToTicketModal" class="chpass-overlay hidden" onclick="closeAddToTicketModal()">
   <div class="chpass-box" onclick="event.stopPropagation()" style="max-width:420px;">
@@ -1026,14 +1056,24 @@
     <div id="attQuoteSummary" style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;"></div>
     <div id="attFlowRow" style="margin-bottom:14px;">
       <div style="font-size:11px;color:var(--muted);letter-spacing:0.05em;margin-bottom:6px;">TICKET TYPE</div>
-      <div style="display:flex;gap:8px;">
-        <button type="button" id="attFlowInStock" onclick="setTicketFlow('in_stock')" style="flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;">✅ In-Stock Repair</button>
-        <button type="button" id="attFlowSpecial" onclick="setTicketFlow('special_order')" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;">📦 Special Order</button>
+      <div style="display:flex;gap:6px;">
+        <button type="button" id="attFlowInStock" onclick="setTicketFlow('in_stock')" style="flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;">✅ In-Stock</button>
+        <button type="button" id="attFlowSpecial" onclick="setTicketFlow('special_order')" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;">📦 Special Order</button>
+        <button type="button" id="attFlowB2B" onclick="setTicketFlow('b2b_repair')" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;">🔧 B2B</button>
       </div>
     </div>
     <input type="text" id="attName" placeholder="Customer Name *" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
     <input type="text" id="attPhone" placeholder="Phone Number *" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
     <input type="email" id="attEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
+    <div id="attB2BFields" class="hidden" style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:12px;margin-bottom:10px;">
+      <div style="font-size:11px;color:#8b5cf6;letter-spacing:0.05em;margin-bottom:8px;font-weight:600;">🔧 B2B Details</div>
+      <select id="attB2BVendor" style="width:100%;margin-bottom:8px;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:13px;"><option value="kimi">Kimi Soho</option><option value="skymobile">SkyMobile</option></select>
+      <input type="text" id="attB2BImei" placeholder="IMEI / Serial Number" style="width:100%;margin-bottom:8px;box-sizing:border-box;" />
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="attB2BColor" placeholder="Color" style="flex:1;box-sizing:border-box;" />
+        <input type="text" id="attB2BPassword" placeholder="Password (optional)" style="flex:1;box-sizing:border-box;" />
+      </div>
+    </div>
     <div style="display:flex;gap:8px;margin-bottom:10px;">
       <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Quote Total</div><input type="number" id="attManualTotal" placeholder="$0" min="0" step="1" style="width:100%;box-sizing:border-box;" /></div>
       <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Deposit Paid</div><input type="number" id="attDeposit" placeholder="$0" min="0" step="1" style="width:100%;box-sizing:border-box;" /></div>
@@ -1770,11 +1810,14 @@ function onBattSubtype2(t, btn) { type2 = t; clearBtns('#battSubRow2'); btn.clas
 var attFlow = 'in_stock';
 function setTicketFlow(flow) {
   attFlow = flow;
-  var inStock = flow === 'in_stock';
-  el('attFlowInStock').style.cssText = inStock ? 'flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;';
-  el('attFlowSpecial').style.cssText = inStock ? 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:8px;background:#f59e0b;border:none;color:#fff;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;';
+  var inactive = 'flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
+  el('attFlowInStock').style.cssText = flow === 'in_stock' ? 'flex:1;padding:8px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : inactive;
+  el('attFlowSpecial').style.cssText = flow === 'special_order' ? 'flex:1;padding:8px;background:#f59e0b;border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : inactive;
+  el('attFlowB2B').style.cssText = flow === 'b2b_repair' ? 'flex:1;padding:8px;background:#8b5cf6;border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : inactive;
+  var b2bFields = el('attB2BFields'); if (b2bFields) b2bFields.classList.toggle('hidden', flow !== 'b2b_repair');
 }
 function detectTicketFlow() {
+  if (type1 === 'kimi' || type1 === 'skymobile') return 'b2b_repair';
   if (!allInvRecords || !allInvRecords.length) return 'special_order';
   var matchModel = (model1 || '').toLowerCase();
   var matchType = TIER_TO_TYPE[tier1] || '';
@@ -1807,13 +1850,15 @@ function showAddToTicketModal() {
   var detectedFlow = detectTicketFlow();
   attFlow = detectedFlow;
   setTicketFlow(detectedFlow);
+  if (detectedFlow === 'b2b_repair') { var vEl = el('attB2BVendor'); if (vEl) vEl.value = (type1 === 'skymobile' ? 'skymobile' : 'kimi'); }
+  ['attB2BImei','attB2BColor','attB2BPassword'].forEach(function(id){ var e=el(id); if(e) e.value=''; });
   el('addToTicketModal').classList.remove('hidden');
   setTimeout(function() { var n = el('attName'); if (n) n.focus(); }, 50);
 }
 function closeAddToTicketModal() { el('addToTicketModal').classList.add('hidden'); }
 function showNewTicketManual() {
   el('attQuoteSummary').innerHTML = '<div style="color:var(--muted);font-size:13px;">Manual ticket — no quote attached</div>';
-  ['attName','attPhone','attEmail','attDeposit','attManualTotal','attNotes'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
+  ['attName','attPhone','attEmail','attDeposit','attManualTotal','attNotes','attB2BImei','attB2BColor','attB2BPassword'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
   attFlow = 'in_stock'; setTicketFlow('in_stock');
   el('addToTicketModal').classList.remove('hidden');
   setTimeout(function() { var n = el('attName'); if (n) n.focus(); }, 50);
@@ -1874,14 +1919,14 @@ function saveTicketFromQuote() {
   var issueStr = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '') + (mobileFee > 0 ? ' · Mobile' : '') + (label2 ? ' + ' + label2 : '');
   var deposit = parseFloat((el('attDeposit').value || '0')) || 0;
   var now = new Date().toISOString();
-  var initStatus = attFlow === 'in_stock' ? 'waiting_for_repair' : 'need_to_order';
+  var initStatus = attFlow === 'in_stock' ? 'waiting_for_repair' : (attFlow === 'b2b_repair' ? 'sent_to_vendor' : 'need_to_order');
   var repairLabel = typeLabel + (tier1 ? ' · ' + tier1.charAt(0).toUpperCase() + tier1.slice(1) : '');
   var initItems = price > 0 ? [{ label: repairLabel, price: withTax(price) }] : (manualTotal > 0 ? [{ label: repairLabel || 'Repair', price: manualTotal }] : []);
   if (p2 > 0) initItems.push({ label: label2 + ' (50% deal)', price: discounted2 });
   var miles = parseFloat((el('milesInput') ? el('milesInput').value : '') || 0) || 0;
   var attNotesVal = (el('attNotes') ? el('attNotes').value : '').trim();
   var initTicketNotes = attNotesVal ? [{ text: fmtNotePrefix() + '\n' + attNotesVal, createdAt: now, author: currentUser || 'staff' }] : [];
-  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, address: mobileOpen ? (el('cxAddrInput') ? el('cxAddrInput').value.trim() : '') : '', tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', supplier: '', orderRef: '', items: initItems, notes: initTicketNotes, createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
+  var newTicket = { id: 'ticket_' + Date.now(), name: name, phone: phone, email: (el('attEmail').value||'').trim(), device: deviceStr, issue: issueStr, flow: attFlow, status: initStatus, quote: total, deposit: deposit, mobileFee: mobileFee || 0, mobileFeeMiles: miles, address: mobileOpen ? (el('cxAddrInput') ? el('cxAddrInput').value.trim() : '') : '', tier: tier1 === 'premium' ? 'premium' : 'standard', repairType: type1 || '', repairModel: model1 || '', supplier: '', orderRef: '', b2bVendor: attFlow === 'b2b_repair' ? ((el('attB2BVendor')||{}).value || 'kimi') : '', b2bImei: attFlow === 'b2b_repair' ? ((el('attB2BImei')||{}).value || '').trim() : '', b2bColor: attFlow === 'b2b_repair' ? ((el('attB2BColor')||{}).value || '').trim() : '', b2bPassword: attFlow === 'b2b_repair' ? ((el('attB2BPassword')||{}).value || '').trim() : '', items: initItems, notes: initTicketNotes, createdBy: currentUser || 'staff', createdAt: now, updatedAt: now };
   ticketsStorage.push(newTicket); saveTicketsToStorage(); syncTicketCreate(newTicket);
   closeAddToTicketModal(); updateTicketsBadge(); updateFollowUpBadge();
   switchTab('leads'); switchLeadSubTab('tickets');
@@ -3086,6 +3131,9 @@ var SO_COLORS = { need_to_order:'#f59e0b', part_ordered:'#3b82f6', part_arrived:
 var REPAIR_STAGES = ['waiting_for_repair','in_repair','ready_for_pickup'];
 var REPAIR_LABELS = { waiting_for_repair:'Waiting for Repair', in_repair:'In Repair', ready_for_pickup:'Ready for Pickup' };
 var REPAIR_COLORS = { waiting_for_repair:'#f59e0b', in_repair:'#3b82f6', ready_for_pickup:'#10b981' };
+var B2B_STAGES = ['sent_to_vendor','in_repair_b2b','ready_to_collect'];
+var B2B_LABELS = { sent_to_vendor:'Sent to Vendor', in_repair_b2b:'In Repair at Vendor', ready_to_collect:'Ready to Collect' };
+var B2B_COLORS = { sent_to_vendor:'#f59e0b', in_repair_b2b:'#8b5cf6', ready_to_collect:'#10b981' };
 function hideNewLeadForm() { el('newLeadForm').classList.add('hidden'); el('newLeadBtn').style.display = 'block'; ['leadName','leadPhone','leadEmail','leadDevice','leadIssue','leadQuoteInput'].forEach(id => { var e = el(id); if (e) e.value = ''; }); var fup = el('leadFollowUp'); if (fup) fup.value = ''; toggleLeadTier('standard'); el('saveLeadBtn').textContent = 'Save Lead'; el('saveLeadBtn').setAttribute('onclick', 'createNewLead()'); }
 
 var _savingLead = false;
@@ -3114,13 +3162,14 @@ function renderLeadsList() {
     var mainBadge = '<span class="stock-badge" style="background:' + getStatusColor(l.status) + '20;color:' + getStatusColor(l.status) + '">' + getStatusLabel(l.status) + '</span>';
     var shareBtn = leadSelectMode ? '' : '<button onclick="shareLeadCard(\'' + l.id + '\',event)" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;display:flex;align-items:center;" title="Share">' + SHARE_ICON + '</button>';
     var closeBtn = leadSelectMode ? '' : '<button onclick="closeLeadInline(\'' + l.id + '\',event)" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 4px;font-size:16px;line-height:1;flex-shrink:0;" title="Close lead">✕</button>';
+    var b2bLeadBtn = leadSelectMode ? '' : '<button onclick="openB2BTicketFromLead(\'' + l.id + '\',event)" style="background:none;border:none;color:#8b5cf6;cursor:pointer;padding:2px 4px;font-size:11px;font-weight:600;line-height:1;flex-shrink:0;" title="Add to B2B form">🔧</button>';
     var _ld = new Date(l.createdAt); var dateStr = isNaN(_ld.getTime()) ? '' : _ld.toLocaleDateString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric'});
     var selClass = (leadSelectMode && selectedLeadIds.has(l.id)) ? ' sel-selected' : '';
     var checkIndicator = leadSelectMode ? '<span style="width:18px;height:18px;border-radius:4px;border:2px solid ' + (selectedLeadIds.has(l.id) ? 'var(--accent)' : 'var(--border)') + ';background:' + (selectedLeadIds.has(l.id) ? 'var(--accent)' : 'transparent') + ';display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0;margin-right:8px;">' + (selectedLeadIds.has(l.id) ? '✓' : '') + '</span>' : '';
     var onclickAttr = leadSelectMode ? 'toggleLeadSelection(\'' + l.id + '\')' : 'openLeadDetail(\'' + l.id + '\')';
     var createdByStr = ' · ' + creatorLabel(l.createdBy);
     var phoneLine = (l.phone||'') + (l.altPhone ? ' · Alt: ' + l.altPhone : '') + (l.device ? ' · ' + l.device : '');
-    return '<div class="inv-item' + selClass + '" data-lid="' + l.id + '" onclick="' + onclickAttr + '" style="cursor:pointer;"><div class="inv-item-top"><div style="display:flex;align-items:center;">' + checkIndicator + '<div><div class="inv-item-name cx-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + phoneLine + '</div></div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + closeBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + createdByStr + '</div></div>';
+    return '<div class="inv-item' + selClass + '" data-lid="' + l.id + '" onclick="' + onclickAttr + '" style="cursor:pointer;"><div class="inv-item-top"><div style="display:flex;align-items:center;">' + checkIndicator + '<div><div class="inv-item-name cx-name">' + (l.name||'Unnamed') + '</div><div class="inv-item-model">' + phoneLine + '</div></div></div><div style="display:flex;align-items:center;gap:4px;">' + mainBadge + shareBtn + b2bLeadBtn + closeBtn + '</div></div>' + (l.issue?'<div class="inv-item-meta">' + l.issue.substring(0,60) + '</div>':'') + '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + dateStr + createdByStr + '</div></div>';
   }).join('') : '<div class="orders-empty-state">No leads found</div>';
   el('leadsList').innerHTML = selectBar + cardsHtml;
   updateLeadsBadge();
@@ -4360,7 +4409,7 @@ function renderSpecialOrdersList() {
 
 function renderTicketsList() {
   var container = el('ticketsList'); if (!container) return;
-  if (!authd) { container.innerHTML = '<div class="demo-inv-note">Sample Data · Log in to see real data</div>' + DEMO_TICKETS.map(function(t) { var labels = t.flow==='in_stock' ? REPAIR_LABELS : SO_LABELS; var colors = t.flow==='in_stock' ? REPAIR_COLORS : SO_COLORS; var color = colors[t.status]||'#3b82f6'; var badge = '<span class="stock-badge" style="background:'+color+'20;color:'+color+';">'+(labels[t.status]||t.status)+'</span>'; var flowIcon = t.flow==='in_stock' ? '✅' : '📦'; var dateStr = new Date(t.createdAt).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric'}); return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name cx-name">'+t.name+' <span style="font-size:11px;color:var(--muted);">'+flowIcon+'</span></div><div class="inv-item-model">'+(t.phone||'')+' · '+t.device+'</div></div>'+badge+'</div>'+(t.issue?'<div class="inv-item-meta">'+t.issue.substring(0,60)+'</div>':'')+'<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added '+dateStr+'</div></div>'; }).join(''); return; }
+  if (!authd) { container.innerHTML = '<div class="demo-inv-note">Sample Data · Log in to see real data</div>' + DEMO_TICKETS.map(function(t) { var labels = t.flow==='in_stock' ? REPAIR_LABELS : (t.flow==='b2b_repair' ? B2B_LABELS : SO_LABELS); var colors = t.flow==='in_stock' ? REPAIR_COLORS : (t.flow==='b2b_repair' ? B2B_COLORS : SO_COLORS); var color = colors[t.status]||'#3b82f6'; var badge = '<span class="stock-badge" style="background:'+color+'20;color:'+color+';">'+(labels[t.status]||t.status)+'</span>'; var flowIcon = t.flow==='in_stock' ? '✅' : (t.flow==='b2b_repair' ? '🔧' : '📦'); var dateStr = new Date(t.createdAt).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric'}); return '<div class="inv-item"><div class="inv-item-top"><div><div class="inv-item-name cx-name">'+t.name+' <span style="font-size:11px;color:var(--muted);">'+flowIcon+'</span></div><div class="inv-item-model">'+(t.phone||'')+' · '+t.device+'</div></div>'+badge+'</div>'+(t.issue?'<div class="inv-item-meta">'+t.issue.substring(0,60)+'</div>':'')+'<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added '+dateStr+'</div></div>'; }).join(''); return; }
   var active = ticketsStorage.filter(function(t) { return t.status !== 'completed' && t.status !== 'cancelled'; });
   if (ticketSearchQuery) {
     var sq = ticketSearchQuery;
@@ -4373,11 +4422,11 @@ function renderTicketsList() {
   var selectModeBtn = el('ticketSelectModeBtn');
   if (selectModeBtn) selectModeBtn.textContent = ticketSelectMode ? '✕ Cancel Select' : '☐ Select';
   container.innerHTML = sorted.map(function(t) {
-    var stages = t.flow === 'in_stock' ? REPAIR_STAGES : SO_STAGES;
-    var labels = t.flow === 'in_stock' ? REPAIR_LABELS : SO_LABELS;
-    var colors = t.flow === 'in_stock' ? REPAIR_COLORS : SO_COLORS;
+    var stages = t.flow === 'in_stock' ? REPAIR_STAGES : (t.flow === 'b2b_repair' ? B2B_STAGES : SO_STAGES);
+    var labels = t.flow === 'in_stock' ? REPAIR_LABELS : (t.flow === 'b2b_repair' ? B2B_LABELS : SO_LABELS);
+    var colors = t.flow === 'in_stock' ? REPAIR_COLORS : (t.flow === 'b2b_repair' ? B2B_COLORS : SO_COLORS);
     var color = colors[t.status] || '#3b82f6';
-    var flowIcon = t.flow === 'in_stock' ? '✅' : '📦';
+    var flowIcon = t.flow === 'in_stock' ? '✅' : (t.flow === 'b2b_repair' ? '🔧' : '📦');
     var badge = '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[t.status] || t.status) + '</span>';
     var tierPip = t.tier === 'premium' ? '<span style="font-size:11px;margin-left:4px;">⭐</span>' : '';
     var shareBtn = ticketSelectMode ? '' : '<button onclick="shareTicketCard(\'' + t.id + '\',event)" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 6px;line-height:1;flex-shrink:0;display:flex;align-items:center;" title="Share">' + SHARE_ICON + '</button>';
@@ -4385,7 +4434,8 @@ function renderTicketsList() {
     var selClass = (ticketSelectMode && selectedTicketIds.has(t.id)) ? ' sel-selected' : '';
     var checkIndicator = ticketSelectMode ? '<span style="width:18px;height:18px;border-radius:4px;border:2px solid ' + (selectedTicketIds.has(t.id) ? 'var(--accent)' : 'var(--border)') + ';background:' + (selectedTicketIds.has(t.id) ? 'var(--accent)' : 'transparent') + ';display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0;margin-right:8px;">' + (selectedTicketIds.has(t.id) ? '✓' : '') + '</span>' : '';
     var onclickAttr = ticketSelectMode ? 'toggleTicketSelection(\'' + t.id + '\')' : 'openTicketDetail(\'' + t.id + '\')';
-    var actionRow = ticketSelectMode ? '' : '<div style="display:flex;gap:6px;margin-top:7px;" onclick="event.stopPropagation()"><button onclick="closeTicketInline(\'' + t.id + '\',event)" style="flex:1;padding:6px 0;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.35);color:#10b981;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">✓ Close</button><button onclick="cancelTicketInline(\'' + t.id + '\',event)" style="flex:1;padding:6px 0;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.3);color:#ef4444;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">✕ Cancel</button></div>';
+    var b2bFormBtn = t.flow === 'b2b_repair' ? '<button onclick="openB2BForm(\'' + t.id + '\',event)" style="flex:1;padding:6px 0;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.35);color:#8b5cf6;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">📋 B2B Form</button>' : '';
+    var actionRow = ticketSelectMode ? '' : '<div style="display:flex;gap:6px;margin-top:7px;" onclick="event.stopPropagation()">' + b2bFormBtn + '<button onclick="closeTicketInline(\'' + t.id + '\',event)" style="flex:1;padding:6px 0;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.35);color:#10b981;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">✓ Close</button><button onclick="cancelTicketInline(\'' + t.id + '\',event)" style="flex:1;padding:6px 0;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.3);color:#ef4444;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">✕ Cancel</button></div>';
     return '<div class="inv-item' + selClass + '" data-tid="' + t.id + '" onclick="' + onclickAttr + '" style="cursor:pointer;">' +
       '<div class="inv-item-top"><div style="display:flex;align-items:center;">' + checkIndicator + '<div><div class="inv-item-name cx-name">' + (t.name||'Unnamed') + tierPip + ' <span style="font-size:11px;color:var(--muted);">' + flowIcon + '</span></div>' +
       '<div class="inv-item-model">' + (t.phone||'') + (t.device?' · '+t.device:'') + '</div></div></div><div style="display:flex;align-items:center;gap:4px;">' + badge + shareBtn + '</div></div>' +
@@ -4399,7 +4449,7 @@ function renderTicketsList() {
 function shareTicketCard(ticketId, e) {
   e.stopPropagation();
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
-  var stageLabels = ticket.flow === 'in_stock' ? REPAIR_LABELS : SO_LABELS;
+  var stageLabels = ticket.flow === 'in_stock' ? REPAIR_LABELS : (ticket.flow === 'b2b_repair' ? B2B_LABELS : SO_LABELS);
   var lines = [ticket.name || 'Unnamed'];
   if (ticket.phone) lines.push(ticket.phone);
   if (ticket.device) lines.push(ticket.device);
@@ -4418,26 +4468,31 @@ function openTicketDetail(ticketId) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) { syncFromSheets(); showToast('Refreshing…'); return; }
   if (!ticket.items) ticket.items = [];
   el('ticketDetailName').textContent = (ticket.name || 'Unnamed') + ' — Ticket';
-  var stages = ticket.flow === 'in_stock' ? REPAIR_STAGES : SO_STAGES;
-  var labels = ticket.flow === 'in_stock' ? REPAIR_LABELS : SO_LABELS;
-  var colors = ticket.flow === 'in_stock' ? REPAIR_COLORS : SO_COLORS;
-  var status = ticket.status;
-  var color = colors[status] || '#3b82f6';
-  var stageIdx = stages.indexOf(status);
-  var flowLabel = ticket.flow === 'in_stock' ? '✅ In-Stock Repair' : '📦 Special Order';
-  var isPremium = ticket.tier === 'premium';
+  var isB2B = ticket.flow === 'b2b_repair';
   var isInStock = ticket.flow === 'in_stock';
+  var stages = isInStock ? REPAIR_STAGES : (isB2B ? B2B_STAGES : SO_STAGES);
+  var labels = isInStock ? REPAIR_LABELS : (isB2B ? B2B_LABELS : SO_LABELS);
+  var colors = isInStock ? REPAIR_COLORS : (isB2B ? B2B_COLORS : SO_COLORS);
+  var status = ticket.status;
+  var color = colors[status] || (status === 'cancelled' ? '#ef4444' : '#3b82f6');
+  var stageIdx = stages.indexOf(status);
+  var flowLabel = isInStock ? '✅ In-Stock Repair' : (isB2B ? '🔧 B2B Repair' : '📦 Special Order');
+  var isPremium = ticket.tier === 'premium';
   var html = '<div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">';
   html += '<span class="stock-badge" style="background:' + color + '20;color:' + color + ';">' + (labels[status] || status) + '</span>';
   html += '<span style="font-size:11px;color:var(--muted);">by <strong style="color:var(--text);">' + creatorLabel(ticket.createdBy) + '</strong></span>';
   html += '</div>';
   html += '<a href="https://qrr.to/207b6c1c" target="_blank" rel="noopener" style="display:block;width:100%;padding:10px 14px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);border-radius:8px;text-align:center;font-size:13px;font-weight:600;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">📅 Square Appointments</a>';
   // Flow toggle
-  var inStockFlowStyle = isInStock ? 'flex:1;padding:7px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
-  var soFlowStyle = isInStock ? 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:7px;background:#f59e0b;border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
-  html += '<div style="margin-bottom:8px;"><div style="font-size:10px;color:var(--muted);letter-spacing:0.05em;margin-bottom:5px;">FLOW</div><div style="display:flex;gap:8px;">';
+  var _fi = 'flex:1;padding:7px;border-radius:8px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:600;border:none;';
+  var _fIn = 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:600;';
+  var inStockFlowStyle = isInStock ? _fi+'background:var(--accent);color:#fff;' : _fIn;
+  var soFlowStyle = (!isInStock && !isB2B) ? _fi+'background:#f59e0b;color:#fff;' : _fIn;
+  var b2bFlowStyle = isB2B ? _fi+'background:#8b5cf6;color:#fff;' : _fIn;
+  html += '<div style="margin-bottom:8px;"><div style="font-size:10px;color:var(--muted);letter-spacing:0.05em;margin-bottom:5px;">FLOW</div><div style="display:flex;gap:6px;">';
   html += '<button type="button" onclick="setTicketFlow2(\'' + ticket.id + '\',\'in_stock\')" style="' + inStockFlowStyle + '">✅ In-Stock</button>';
   html += '<button type="button" onclick="setTicketFlow2(\'' + ticket.id + '\',\'special_order\')" style="' + soFlowStyle + '">📦 Special Order</button>';
+  html += '<button type="button" onclick="setTicketFlow2(\'' + ticket.id + '\',\'b2b_repair\')" style="' + b2bFlowStyle + '">🔧 B2B</button>';
   html += '</div></div>';
   // Tier toggle
   var stdStyle = isPremium ? 'flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;' : 'flex:1;padding:7px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:600;';
@@ -4445,6 +4500,22 @@ function openTicketDetail(ticketId) {
   html += '<div style="display:flex;gap:8px;margin-bottom:12px;">';
   html += '<button type="button" onclick="setTicketTier(\'standard\',\'' + ticket.id + '\')" style="' + stdStyle + '">Standard</button>';
   html += '<button type="button" onclick="setTicketTier(\'premium\',\'' + ticket.id + '\')" style="' + premStyle + '">⭐ Premium</button></div>';
+  // B2B details section
+  if (isB2B) {
+    var vendorName = ticket.b2bVendor === 'skymobile' ? 'SkyMobile' : 'Kimi Soho';
+    html += '<div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:12px;margin-bottom:10px;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div style="font-size:10px;color:#8b5cf6;letter-spacing:0.05em;font-weight:600;">🔧 B2B REPAIR · ' + vendorName.toUpperCase() + '</div>';
+    html += '<button onclick="openB2BForm(\'' + ticket.id + '\',event)" style="padding:4px 10px;background:#8b5cf6;border:none;color:#fff;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📋 View Form</button></div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">';
+    if (ticket.b2bImei) html += '<div><div style="color:var(--muted);font-size:10px;margin-bottom:2px;">IMEI / Serial</div><div style="font-weight:600;">' + ticket.b2bImei + '</div></div>';
+    if (ticket.b2bColor) html += '<div><div style="color:var(--muted);font-size:10px;margin-bottom:2px;">Color</div><div style="font-weight:600;">' + ticket.b2bColor + '</div></div>';
+    if (ticket.b2bPassword) html += '<div><div style="color:var(--muted);font-size:10px;margin-bottom:2px;">Password</div><div style="font-weight:600;">' + ticket.b2bPassword + '</div></div>';
+    html += '</div></div>';
+  }
+  // cancelled state banner
+  if (status === 'cancelled') {
+    html += '<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:12px;margin-bottom:10px;text-align:center;color:#ef4444;font-weight:600;font-size:13px;">✕ Ticket Cancelled</div>';
+  }
   // Customer info
   var tInStyle = 'flex:1;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;font-weight:600;font-family:inherit;';
   var tSaveBtnStyle = 'padding:5px 10px;background:var(--accent);border:none;color:#fff;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;';
@@ -4455,26 +4526,28 @@ function openTicketDetail(ticketId) {
   if (ticket.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + ticket.email + '</div></div>';
   html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ISSUE</div><textarea id="ticketIssueEdit" rows="2" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;outline:none;" onfocus="this.style.borderColor=\'var(--accent)\'" onblur="this.style.borderColor=\'var(--border)\'">' + (ticket.issue||'').replace(/</g,'&lt;') + '</textarea><button onclick="saveTicketField(\'' + ticket.id + '\',\'issue\',\'ticketIssueEdit\')" style="margin-top:6px;padding:6px 14px;background:var(--accent);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Save</button></div>';
   if (ticket.address) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">📍 Address</div><div style="font-size:13px;">' + ticket.address + '</div></div>';
-  // Stepper
-  var stepperHtml = stages.map(function(s, i) {
-    var done = i < stageIdx, active = i === stageIdx;
-    var dot = done ? '✓' : (i + 1);
-    var bg = done ? '#10b981' : (active ? color : 'var(--surface2)');
-    var col = (done || active) ? '#fff' : 'var(--muted)';
-    var lbl = '<span style="font-size:9px;color:' + (active ? color : (done ? '#10b981' : 'var(--muted)')) + ';font-weight:' + (active?'700':'400') + ';margin-top:3px;display:block;text-align:center;line-height:1.2;">' + (labels[s]||s).split(' · ')[0] + '</span>';
-    return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;"><div style="width:24px;height:24px;border-radius:50%;background:' + bg + ';color:' + col + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">' + dot + '</div>' + lbl + '</div>';
-  }).join('<div style="flex:1;height:2px;background:var(--border);margin-top:11px;max-width:20px;"></div>');
-  html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
-  html += '<div style="display:flex;align-items:flex-start;margin-bottom:14px;">' + stepperHtml + '</div>';
-  var lastStage = stages[stages.length - 1];
-  if (status !== lastStage) {
-    html += '<button onclick="advanceTicketStatus(\'' + ticket.id + '\')" style="width:100%;padding:9px;background:' + color + ';border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">→ Mark: ' + (labels[stages[stageIdx + 1]] || '') + '</button>';
-  } else if (status === 'completed') {
-    html += '<div style="text-align:center;color:#10b981;font-size:13px;font-weight:600;">✓ Picked Up / Completed</div>';
-  } else {
-    html += '<button onclick="closeTicket(\'' + ticket.id + '\')" style="width:100%;padding:9px;background:#10b981;border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">✓ Mark as Picked Up</button>';
+  // Stepper (skip for cancelled tickets)
+  if (status !== 'cancelled') {
+    var stepperHtml = stages.map(function(s, i) {
+      var done = i < stageIdx, active = i === stageIdx;
+      var dot = done ? '✓' : (i + 1);
+      var bg = done ? '#10b981' : (active ? color : 'var(--surface2)');
+      var col = (done || active) ? '#fff' : 'var(--muted)';
+      var lbl = '<span style="font-size:9px;color:' + (active ? color : (done ? '#10b981' : 'var(--muted)')) + ';font-weight:' + (active?'700':'400') + ';margin-top:3px;display:block;text-align:center;line-height:1.2;">' + (labels[s]||s).split(' · ')[0] + '</span>';
+      return '<div style="display:flex;flex-direction:column;align-items:center;flex:1;"><div style="width:24px;height:24px;border-radius:50%;background:' + bg + ';color:' + col + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">' + dot + '</div>' + lbl + '</div>';
+    }).join('<div style="flex:1;height:2px;background:var(--border);margin-top:11px;max-width:20px;"></div>');
+    html += '<div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;margin-bottom:10px;">';
+    html += '<div style="display:flex;align-items:flex-start;margin-bottom:14px;">' + stepperHtml + '</div>';
+    var lastStage = stages[stages.length - 1];
+    if (stageIdx >= 0 && status !== lastStage) {
+      html += '<button onclick="advanceTicketStatus(\'' + ticket.id + '\')" style="width:100%;padding:9px;background:' + color + ';border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">→ Mark: ' + (labels[stages[stageIdx + 1]] || '') + '</button>';
+    } else if (status === 'completed') {
+      html += '<div style="text-align:center;color:#10b981;font-size:13px;font-weight:600;">✓ Picked Up / Completed</div>';
+    } else if (status === lastStage) {
+      html += '<button onclick="closeTicket(\'' + ticket.id + '\')" style="width:100%;padding:9px;background:#10b981;border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">✓ Mark as Picked Up</button>';
+    }
+    html += '</div>';
   }
-  html += '</div>';
   // Repairs & Pricing (merged items + mobile fee + financials)
   if (!ticket.items) ticket.items = [];
   var itemsSum = ticket.items.reduce(function(s, it) { return s + (parseFloat(it.price) || 0); }, 0);
@@ -4546,8 +4619,8 @@ function saveTicketField(ticketId, field, inputId) {
 
 function advanceTicketStatus(ticketId) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
-  var stages = ticket.flow === 'in_stock' ? REPAIR_STAGES : SO_STAGES;
-  var labels = ticket.flow === 'in_stock' ? REPAIR_LABELS : SO_LABELS;
+  var stages = ticket.flow === 'in_stock' ? REPAIR_STAGES : (ticket.flow === 'b2b_repair' ? B2B_STAGES : SO_STAGES);
+  var labels = ticket.flow === 'in_stock' ? REPAIR_LABELS : (ticket.flow === 'b2b_repair' ? B2B_LABELS : SO_LABELS);
   var idx = stages.indexOf(ticket.status);
   if (idx < 0 || idx >= stages.length - 1) return;
   ticket.status = stages[idx + 1];
@@ -4644,10 +4717,11 @@ function setTicketFlow2(ticketId, flow) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
   if (ticket.flow === flow) return;
   ticket.flow = flow;
-  ticket.status = flow === 'in_stock' ? REPAIR_STAGES[0] : SO_STAGES[0];
+  ticket.status = flow === 'in_stock' ? REPAIR_STAGES[0] : (flow === 'b2b_repair' ? B2B_STAGES[0] : SO_STAGES[0]);
+  if (!ticket.b2bVendor && flow === 'b2b_repair') ticket.b2bVendor = 'kimi';
   ticket.updatedAt = new Date().toISOString();
   saveTicketsToStorage(); syncTicket(ticket); renderTicketsList(); openTicketDetail(ticketId);
-  showToast(flow === 'in_stock' ? 'Switched to In-Stock flow' : 'Switched to Special Order flow');
+  showToast(flow === 'in_stock' ? 'Switched to In-Stock flow' : (flow === 'b2b_repair' ? 'Switched to B2B Repair flow' : 'Switched to Special Order flow'));
 }
 
 function addTicketItem() {
@@ -5133,6 +5207,66 @@ function shareSelectedTickets() {
   if (!text) return;
   if (navigator.share) navigator.share({ title: 'Tickets', text: text }).catch(function(){});
   else navigator.clipboard?.writeText(text).then(function() { showToast('Copied ✓'); });
+}
+
+// ============================================
+// B2B FORM
+// ============================================
+var currentB2BTicketId = null;
+function openB2BForm(ticketId, e) {
+  if (e) e.stopPropagation();
+  var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
+  currentB2BTicketId = ticketId;
+  var vendorName = ticket.b2bVendor === 'skymobile' ? 'SkyMobile' : 'Kimi Soho';
+  el('b2bFormVendor').textContent = vendorName;
+  el('b2bFormDate').textContent = new Date(ticket.createdAt).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric', timeZone:'America/New_York'});
+  el('b2bFormName').textContent = ticket.name || '—';
+  el('b2bFormModel').textContent = ticket.device || '—';
+  el('b2bFormImei').textContent = ticket.b2bImei || '—';
+  el('b2bFormIssue').textContent = ticket.issue || '—';
+  el('b2bFormColor').textContent = ticket.b2bColor || '—';
+  el('b2bFormPassword').textContent = ticket.b2bPassword || '—';
+  el('b2bFormModal').classList.remove('hidden');
+}
+function closeB2BForm() { el('b2bFormModal').classList.add('hidden'); }
+function shareB2BForm() {
+  if (!currentB2BTicketId) return;
+  var ticket = ticketsStorage.find(function(t) { return t.id === currentB2BTicketId; }); if (!ticket) return;
+  var vendor = ticket.b2bVendor === 'skymobile' ? 'SkyMobile' : 'Kimi Soho';
+  var date = new Date(ticket.createdAt).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric', timeZone:'America/New_York'});
+  var lines = [
+    'REPAIRED COLLECTIVE — B2B REPAIR FORM',
+    'repairedcollective.com',
+    '',
+    'Date: ' + date,
+    'Vendor: ' + vendor,
+    'Customer: ' + (ticket.name || '—'),
+    'Model: ' + (ticket.device || '—'),
+    'IMEI / Serial: ' + (ticket.b2bImei || '—'),
+    'Issue: ' + (ticket.issue || '—'),
+    'Color: ' + (ticket.b2bColor || '—'),
+    'Password: ' + (ticket.b2bPassword || '—')
+  ];
+  var text = lines.join('\n');
+  if (navigator.share) { navigator.share({ title: 'B2B Repair Form — ' + (ticket.name || 'Ticket'), text: text }).catch(function(){}); }
+  else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied ✓'); }); }
+  else { showToast('Share not supported'); }
+}
+function openB2BTicketFromLead(leadId, e) {
+  if (e) e.stopPropagation();
+  var lead = leadsStorage.find(function(l) { return l.id === leadId; }); if (!lead) return;
+  el('attName').value = lead.name || '';
+  el('attPhone').value = lead.phone || '';
+  el('attEmail').value = lead.email || '';
+  el('attNotes').value = lead.issue || '';
+  el('attManualTotal').value = lead.quote ? String(lead.quote) : '';
+  el('attDeposit').value = '';
+  var deviceLabel = lead.device || '';
+  var issueLabel = lead.issue || '';
+  el('attQuoteSummary').innerHTML = '<div style="font-size:13px;font-weight:600;">' + (deviceLabel || 'B2B Repair') + (issueLabel ? ' · ' + issueLabel : '') + '</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">From lead</div>';
+  ['attB2BImei','attB2BColor','attB2BPassword'].forEach(function(id){ var e=el(id); if(e) e.value=''; });
+  el('addToTicketModal').classList.remove('hidden');
+  setTicketFlow('b2b_repair');
 }
 
 // ============================================
