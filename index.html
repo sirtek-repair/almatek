@@ -1847,7 +1847,7 @@ function showAddToTicketModal() {
   el('attQuoteSummary').innerHTML = rows.join('');
   ['attName','attPhone','attEmail','attDeposit'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
   if (el('attManualTotal')) el('attManualTotal').value = total || '';
-  var qn = el('attNotes'); if (qn) qn.value = (el('quoteNotes') ? el('quoteNotes').value : '');
+  var qn = el('attNotes'); if (qn) qn.value = '';
   var detectedFlow = detectTicketFlow();
   attFlow = detectedFlow;
   setTicketFlow(detectedFlow);
@@ -1878,7 +1878,7 @@ function showAddToLeadModal() {
   rows.push('<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(59,130,246,0.2);margin-top:8px;padding-top:8px;"><span style="color:var(--muted);">Quote</span><span style="font-size:16px;font-weight:800;color:var(--accent);">$' + total + '</span></div>');
   el('atlQuoteSummary').innerHTML = rows.join('');
   ['atlName','atlPhone','atlEmail'].forEach(function(id) { var e = el(id); if (e) e.value = ''; });
-  var qnl = el('atlNotes'); if (qnl) qnl.value = (el('quoteNotes') ? el('quoteNotes').value : '');
+  var qnl = el('atlNotes'); if (qnl) qnl.value = '';
   el('addToLeadModal').classList.remove('hidden');
   setTimeout(function() { var n = el('atlName'); if (n) n.focus(); }, 50);
 }
