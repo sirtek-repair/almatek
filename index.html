@@ -459,6 +459,10 @@
     </div>
   </header>
 
+  <div id="scheduleStrip" class="auth-only" style="display:none;margin:0 0 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);padding:10px 14px;font-size:12.5px;line-height:1.4;">
+    <div id="scheduleStripContent"></div>
+  </div>
+
   <div id="quoteColumns">
   <div id="quoteLeftCol">
   <div class="card">
@@ -1178,10 +1182,10 @@
 
   <div id="profileSubViewTally">
     <div class="card">
-      <div class="gap"><label class="field-label" for="bookerName">Name</label><input type="text" id="bookerName" placeholder="Name" oninput="calcBookerPay()" /></div>
+      <div class="gap"><label class="field-label" for="bookerName">Name</label><input type="text" id="bookerName" placeholder="Name" oninput="onBookerNameChange()" /></div>
       <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerMonth">Month</label><select id="bookerMonth" onchange="calcBookerPay()"><option value="">— select month —</option><option>january</option><option>february</option><option>march</option><option>april</option><option>may</option><option>june</option><option>july</option><option>august</option><option>september</option><option>october</option><option>november</option><option>december</option></select></div>
       <div id="payStructureRow" class="gap" style="margin-top:14px;display:none;"><label class="field-label">Pay Structure</label><div style="display:flex;gap:8px;margin-top:4px;"><button id="structBtnStandard" class="need-sub-btn active" onclick="setPayStructure('standard')">Standard</button><button id="structBtnFlat" class="need-sub-btn" onclick="setPayStructure('flat')">Flat Rate</button></div></div>
-      <div id="flatRateEditRow" class="gap hidden" style="margin-top:14px;"><label class="field-label" for="flatRateAmt">Per-Repair Rate ($)</label><input type="number" id="flatRateAmt" value="25" min="0" step="1" oninput="saveFlatRate();calcBookerPay()" /><p class="hint">Amount each technician earns per completed repair</p></div>
+      <div id="flatRateEditRow" class="gap hidden" style="margin-top:14px;"><label class="field-label" for="flatRateAmt">Per-Repair Rate ($)</label><input type="number" id="flatRateAmt" value="25" min="0" step="1" oninput="saveFlatRate();calcBookerPay()" /><p class="hint">Rate for this technician — saved per person. Edit per-staff defaults in Staff tab.</p></div>
       <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerRepairs">Repairs Booked</label><input type="number" id="bookerRepairs" placeholder="0" min="0" step="1" oninput="calcBookerPay()" /></div>
     </div>
     <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total"><div class="bt-label">Total Payout</div><div class="bt-amt" id="perRepairAmt">$—</div></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">⬆ Share Results</button></div></div>
@@ -1992,7 +1996,7 @@ function switchTab(tab) {
   el('tabAdminBtn').classList.add('hidden');
   el('tabToolsBtn').classList.toggle('active', isTools);
   if (isLeads) { exitLeadSelectMode && exitLeadSelectMode(); exitTicketSelectMode && exitTicketSelectMode(); }
-  if (isQuote) { if (authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); } }
+  if (isQuote) { loadSchedule(); if (authd && !invLoaded) { allInvRecords = []; loadInventoryPage(null, true); } }
   if (isInventory) initInventory();
   else if (isReview) { switchReviewSubTab(reviewSubTab || 'pending'); }
   else if (isProfile) { loadBookerState(); setPayStructure(isOwner ? payStructure : currentUserStructure); switchProfileSubTab(profileSubTab || (isOwner ? 'tally' : 'settings')); }
@@ -2088,6 +2092,73 @@ if (!isOwner) {
 const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz7P3ixTJATVr2YbDAhYpUTAz5HAtECUwFDcESDFlHcB60TaeKMmjT9lKc17FHKPWlc/exec';
 var USERS_SCRIPT_URL = localStorage.getItem('almatek_script_url') || DEFAULT_SCRIPT_URL, USERS_SECRET = localStorage.getItem('almatek_users_secret') || '';
 if (!localStorage.getItem('almatek_script_url')) localStorage.setItem('almatek_script_url', DEFAULT_SCRIPT_URL);
+var SCHEDULE_CAL_ID = 'da5d00a37971f98d6d6a8cbda2bd5bdb311d3c06ee5bc15f5f5efcbaf683e3fe@group.calendar.google.com';
+var _schedCache = null, _schedCacheAt = 0, _schedTimer = null;
+function _fmtTime(d) { var h=d.getHours(),m=d.getMinutes(),ap=h>=12?'pm':'am'; h=h%12||12; return h+(m?':'+String(m).padStart(2,'0'):'')+ap; }
+function _fmtTZ(d,tz) { return _fmtTime(new Date(d.toLocaleString('en-US',{timeZone:tz}))); }
+function _shiftTime(s,e) {
+  return _fmtTZ(s,'America/New_York')+'&ndash;'+_fmtTZ(e,'America/New_York')
+    +' <span style="font-size:10px;color:var(--muted);">EST</span>'
+    +'&nbsp;&nbsp;'
+    +_fmtTZ(s,'Asia/Karachi')+'&ndash;'+_fmtTZ(e,'Asia/Karachi')
+    +' <span style="font-size:10px;color:var(--muted);">PKT</span>';
+}
+function renderScheduleStrip(events) {
+  var strip=el('scheduleStrip'), content=el('scheduleStripContent'); if(!strip||!content) return;
+  if(!authd){strip.style.display='none';return;}
+  var now = new Date();
+  var nyNow = new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'}));
+  var todayKey = nyNow.getFullYear()+'-'+String(nyNow.getMonth()+1).padStart(2,'0')+'-'+String(nyNow.getDate()).padStart(2,'0');
+  var nyTomorrow = new Date(nyNow); nyTomorrow.setDate(nyTomorrow.getDate()+1);
+  var tomorrowKey = nyTomorrow.getFullYear()+'-'+String(nyTomorrow.getMonth()+1).padStart(2,'0')+'-'+String(nyTomorrow.getDate()).padStart(2,'0');
+  var todayEvts = (events||[]).filter(function(ev){
+    if(ev.allDay) return false;
+    var s = new Date(ev.start);
+    var sNY = new Date(s.toLocaleString('en-US',{timeZone:'America/New_York'}));
+    var sKey = sNY.getFullYear()+'-'+String(sNY.getMonth()+1).padStart(2,'0')+'-'+String(sNY.getDate()).padStart(2,'0');
+    if (sKey === todayKey) return true;
+    if (sKey === tomorrowKey && s - now < 12 * 60 * 60 * 1000) return true;
+    return false;
+  });
+  todayEvts.sort(function(a,b){return new Date(a.start)-new Date(b.start);});
+  var dateLabel = now.toLocaleDateString('en-US',{timeZone:'America/New_York',weekday:'short',month:'short',day:'numeric'});
+  if(!todayEvts.length){
+    content.innerHTML='<span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">'+dateLabel+'</span>  <span style="color:var(--muted);">No shifts scheduled</span>';
+    strip.style.display=''; return;
+  }
+  var anyOn = todayEvts.some(function(ev){ var s=new Date(ev.start),e=new Date(ev.end); return s<=now&&e>now; });
+  var html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">'
+    +'<span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">'+dateLabel+'</span>'
+    +'<span style="font-size:10px;color:'+(anyOn?'#10b981':'var(--muted)')+';">'+(anyOn?'● on shift':'○ no one on shift')+'</span>'
+    +'</div>';
+  todayEvts.forEach(function(ev){
+    var s=new Date(ev.start), e=new Date(ev.end);
+    var isOn=s<=now&&e>now, isPast=e<=now;
+    var dotColor=isOn?'#10b981':(isPast?'var(--border)':'var(--accent)');
+    var nameStyle='font-weight:'+(isOn?'700':'500')+';color:'+(isOn?'#10b981':(isPast?'var(--muted)':'var(--text)'))+';';
+    var timeStyle='font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;';
+    var onTag=isOn?'<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;border-radius:4px;padding:1px 5px;font-weight:700;margin-left:5px;">ON</span>':'';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;'+(isPast?'opacity:0.38;':'')+'">'
+      +'<span style="'+nameStyle+'"><span style="color:'+dotColor+';">'+(isOn?'●':isPast?'–':'○')+'</span>  '+ev.name+onTag+'</span>'
+      +'<span style="'+timeStyle+'">'+_shiftTime(s,e)+'</span>'
+      +'</div>';
+  });
+  content.innerHTML=html; strip.style.display='';
+}
+function loadSchedule(force) {
+  if(!authd||!USERS_SCRIPT_URL) return;
+  var now=Date.now();
+  if(!force && _schedCache && now-_schedCacheAt < 15*60*1000){renderScheduleStrip(_schedCache);return;}
+  sheetsCall({action:'getSchedule',calendarId:SCHEDULE_CAL_ID}).then(function(data){
+    var evts=(data && Array.isArray(data.events))?data.events:[];
+    _schedCache=evts; _schedCacheAt=Date.now();
+    renderScheduleStrip(evts);
+  }).catch(function(){ var strip=el('scheduleStrip'); if(strip) strip.style.display='none'; });
+}
+function startScheduleRefresh() {
+  if(_schedTimer) return;
+  _schedTimer=setInterval(function(){if(authd) loadSchedule(true);},15*60*1000);
+}
 function sheetsCall(payload) {
   if (!USERS_SCRIPT_URL) return Promise.resolve({});
   var url = USERS_SCRIPT_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
@@ -2711,10 +2782,10 @@ function tryAuth() {
           sheetsCall({ action: 'getConfig' }).then(function(cfg) {
             if (cfg && cfg.ok) applyLoginConfig(cfg);
             if (!apiPass) showApiPassModal();
-            syncFromSheets(); refreshPricingIfStale();
-          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); refreshPricingIfStale(); });
+            syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh();
+          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh(); });
         } else {
-          syncFromSheets(); refreshPricingIfStale();
+          syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh();
           if (!apiPass) setTimeout(showApiPassModal, 400);
         }
         return;
@@ -4155,7 +4226,7 @@ fetchWeather();
 setInterval(fetchWeather, WX_CACHE_MS);
 
 // Sync from Sheets on startup if already authenticated (skips login flow)
-if (authd) { setTimeout(syncFromSheets, 500); setTimeout(refreshPricingIfStale, 1000); }
+if (authd) { setTimeout(syncFromSheets, 500); setTimeout(refreshPricingIfStale, 1000); setTimeout(loadSchedule, 1500); startScheduleRefresh(); }
 
 
 // Auto-sync every 90 seconds while the app is open
@@ -4740,7 +4811,7 @@ function loadBookerState() {
     if (!el('bookerName').value) el('bookerName').value = currentUser || '';
     if (!el('bookerMonth').value) el('bookerMonth').value = curMonth;
   }
-  var rateEl = el('flatRateAmt'); if (rateEl) rateEl.value = getFlatRate();
+  var rateEl = el('flatRateAmt'); if (rateEl) { var n=(el('bookerName')||{}).value?el('bookerName').value.trim():''; rateEl.value = getStaffRate(n); }
 }
 
 function setPayStructure(type) {
@@ -4755,14 +4826,21 @@ function setPayStructure(type) {
   calcBookerPay();
 }
 function getFlatRate() { return parseFloat(localStorage.getItem('almatek_flat_rate') || '25') || 25; }
-function saveFlatRate() { var v = parseFloat((el('flatRateAmt')||{}).value||'25')||25; localStorage.setItem('almatek_flat_rate', v); }
+function saveFlatRate() { var v = parseFloat((el('flatRateAmt')||{}).value||'25')||25; var n=(el('bookerName')||{}).value?el('bookerName').value.trim():''; if(n){saveStaffRate(n,v);}else{localStorage.setItem('almatek_flat_rate',v);} }
+function getStaffRates() { try{return JSON.parse(localStorage.getItem('almatek_staff_rates')||'{}');}catch(e){return {};} }
+function getStaffRate(name) { if(!name) return getFlatRate(); var r=getStaffRates(); return typeof r[name]==='number'?r[name]:getFlatRate(); }
+function saveStaffRate(name, rate) { if(!name) return; var r=getStaffRates(); r[name]=rate; localStorage.setItem('almatek_staff_rates',JSON.stringify(r)); }
+function onBookerNameChange() {
+  if (isOwner && payStructure === 'flat') { var rateEl=el('flatRateAmt'); if(rateEl) rateEl.value=getStaffRate((el('bookerName').value||'').trim()); }
+  calcBookerPay();
+}
 function calcBookerPay() {
   saveBookerState();
   var repairs = parseInt(el('bookerRepairs').value) || 0;
   if (repairs <= 0) { el('bookerResult').classList.add('hidden'); return; }
   var name = el('bookerName').value.trim(), month = el('bookerMonth').value;
   el('bookerModelTag').textContent = [name, month].filter(Boolean).join(' · ');
-  var rate = getFlatRate();
+  var rate = payStructure === 'flat' ? (parseFloat((el('flatRateAmt')||{}).value)||getStaffRate(name)) : getStaffRate(name);
   var total = repairs * rate;
   var rateLabel = payStructure === 'flat' ? 'flat rate' : 'per repair';
   el('bookerBreakdown').innerHTML = repairs + ' repair' + (repairs !== 1 ? 's' : '') + ' × $' + rate + ' ' + rateLabel;
@@ -4805,8 +4883,14 @@ function renderStaffTab() {
     var users = data.users || [];
     if (!users.length) { el('staffUserList').innerHTML = '<p style="color:var(--muted);font-size:13px;">No staff users yet.</p>'; return; }
     el('staffUserList').innerHTML = users.map(function(u) {
-      return '<div class="staff-user-row"><div><div class="staff-user-name">' + u.name + '</div><div style="font-size:11px;color:var(--muted);">' + (u.structure||'standard') + '</div></div>' +
-        '<button class="staff-del-btn" onclick="deleteStaffUser(\'' + u.name.replace(/'/g,"\\'") + '\')">Remove</button></div>';
+      var safeName = u.name.replace(/'/g,"\\'");
+      var isFlat = (u.structure||'standard') === 'flat';
+      var structLabel = isFlat ? 'Flat Rate' : 'Standard';
+      var rateHtml = isFlat
+        ? ' · <span style="color:var(--text);">$</span><input type="number" value="' + getStaffRate(u.name) + '" min="0" step="1" style="width:54px;padding:2px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:inherit;text-align:center;" onchange="saveStaffRate(\'' + safeName + '\',parseFloat(this.value)||25)" /><span style="font-size:11px;color:var(--muted);">/repair</span>'
+        : '';
+      return '<div class="staff-user-row"><div style="flex:1;min-width:0;"><div class="staff-user-name">' + u.name + '</div><div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;flex-wrap:wrap;">' + structLabel + rateHtml + '</div></div>'
+        + '<button class="staff-del-btn" onclick="deleteStaffUser(\'' + safeName + '\')">Remove</button></div>';
     }).join('');
   }).catch(function(err) { el('staffUserList').innerHTML = '<p style="color:#ef4444;font-size:13px;">Network error: ' + (err && err.message ? err.message : 'CORS or connection failed') + '</p>'; });
 }
