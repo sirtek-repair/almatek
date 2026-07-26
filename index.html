@@ -1185,10 +1185,10 @@
       <div class="gap"><label class="field-label" for="bookerName">Name</label><input type="text" id="bookerName" placeholder="Name" oninput="calcBookerPay()" /></div>
       <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerMonth">Month</label><select id="bookerMonth" onchange="calcBookerPay()"><option value="">— select month —</option><option>january</option><option>february</option><option>march</option><option>april</option><option>may</option><option>june</option><option>july</option><option>august</option><option>september</option><option>october</option><option>november</option><option>december</option></select></div>
       <div id="payStructureRow" class="gap" style="margin-top:14px;display:none;"><label class="field-label">Pay Structure</label><div style="display:flex;gap:8px;margin-top:4px;"><button id="structBtnStandard" class="need-sub-btn active" onclick="setPayStructure('standard')">Standard</button><button id="structBtnFlat" class="need-sub-btn" onclick="setPayStructure('flat')">Flat Rate</button></div></div>
+      <div id="flatRateEditRow" class="gap hidden" style="margin-top:14px;"><label class="field-label" for="flatRateAmt">Per-Repair Rate ($)</label><input type="number" id="flatRateAmt" value="25" min="0" step="1" oninput="saveFlatRate();calcBookerPay()" /><p class="hint">Amount each technician earns per completed repair</p></div>
       <div class="gap" style="margin-top:14px;"><label class="field-label" for="bookerRepairs">Repairs Booked</label><input type="number" id="bookerRepairs" placeholder="0" min="0" step="1" oninput="calcBookerPay()" /></div>
-      <div id="flatRevshareRow" class="gap hidden" style="margin-top:14px;"><label class="field-label" for="flatRevshare">Rev Share % (optional)</label><input type="number" id="flatRevshare" value="0" min="0" max="100" step="0.5" oninput="calcBookerPay()" /><p class="hint">Leave 0 if not applicable yet</p></div>
     </div>
-    <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total" style="margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:10px;"><div class="bt-label">Per Repair Payout</div><div class="bt-amt" id="perRepairAmt">$—</div></div><div id="revShareResultRow" class="booker-total hidden"><div class="bt-label">Rev Share Payout</div><div class="bt-amt" id="revShareAmt">$—</div></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">⬆ Share Results</button></div></div>
+    <div id="bookerResult" class="hidden"><div class="card"><div id="bookerModelTag"></div><div id="bookerBreakdown"></div><div class="booker-total"><div class="bt-label">Total Payout</div><div class="bt-amt" id="perRepairAmt">$—</div></div><button class="btn" style="margin-top:14px;width:100%;" onclick="shareBookerResults()">⬆ Share Results</button></div></div>
   </div>
 
   <div id="profileSubViewSettings" class="hidden">
@@ -4822,6 +4822,7 @@ function loadBookerState() {
     if (!el('bookerName').value) el('bookerName').value = currentUser || '';
     if (!el('bookerMonth').value) el('bookerMonth').value = curMonth;
   }
+  var rateEl = el('flatRateAmt'); if (rateEl) rateEl.value = getFlatRate();
 }
 
 function setPayStructure(type) {
@@ -4829,37 +4830,31 @@ function setPayStructure(type) {
   el('structBtnStandard').classList.toggle('active', type === 'standard');
   el('structBtnFlat').classList.toggle('active', type === 'flat');
   el('payStructureRow').style.display = 'none';
-  el('flatRevshareRow').classList.toggle('hidden', !isOwner || type !== 'flat');
-  if (isOwner) el('payStructureRow').style.display = '';
+  if (isOwner) {
+    el('payStructureRow').style.display = '';
+    el('flatRateEditRow').classList.toggle('hidden', type !== 'flat');
+  }
   calcBookerPay();
 }
+function getFlatRate() { return parseFloat(localStorage.getItem('almatek_flat_rate') || '25') || 25; }
+function saveFlatRate() { var v = parseFloat((el('flatRateAmt')||{}).value||'25')||25; localStorage.setItem('almatek_flat_rate', v); }
 function calcBookerPay() {
   saveBookerState();
   var repairs = parseInt(el('bookerRepairs').value) || 0;
   if (repairs <= 0) { el('bookerResult').classList.add('hidden'); return; }
   var name = el('bookerName').value.trim(), month = el('bookerMonth').value;
   el('bookerModelTag').textContent = [name, month].filter(Boolean).join(' · ');
-  var perRepair = 0, revShare = 0;
-  if (payStructure === 'standard') {
-    perRepair = repairs * 25;
-    revShare = 0;
-    el('bookerBreakdown').innerHTML = repairs + ' repairs × $25 per repair';
-  } else {
-    var revPct = parseFloat(el('flatRevshare').value) || 0;
-    perRepair = repairs * 25;
-    revShare = 0;
-    el('bookerBreakdown').innerHTML = repairs + ' repairs × $25 flat rate' + (revPct > 0 ? ' + ' + revPct + '% rev share' : '');
-  }
-  el('perRepairAmt').textContent = '$' + perRepair.toFixed(2).replace(/\.00$/, '');
-  el('revShareResultRow').classList.toggle('hidden', !isOwner);
-  if (isOwner) el('revShareAmt').textContent = revShare > 0 ? '$' + revShare.toFixed(2).replace(/\.00$/, '') : '$0';
+  var rate = getFlatRate();
+  var total = repairs * rate;
+  var rateLabel = payStructure === 'flat' ? 'flat rate' : 'per repair';
+  el('bookerBreakdown').innerHTML = repairs + ' repair' + (repairs !== 1 ? 's' : '') + ' × $' + rate + ' ' + rateLabel;
+  el('perRepairAmt').textContent = '$' + total.toFixed(2).replace(/\.00$/, '');
   el('bookerResult').classList.remove('hidden');
 }
 function shareBookerResults() {
   var name = el('bookerName').value.trim(), month = el('bookerMonth').value, repairs = el('bookerRepairs').value;
-  var perR = el('perRepairAmt').textContent;
-  var text = (name ? name + ' — ' : '') + (month ? month + ' · ' : '') + repairs + ' repairs\nPer Repair: ' + perR;
-  if (isOwner) text += '\nRev Share: ' + el('revShareAmt').textContent;
+  var total = el('perRepairAmt').textContent;
+  var text = (name ? name + ' — ' : '') + (month ? month + ' · ' : '') + repairs + ' repair' + (parseInt(repairs) !== 1 ? 's' : '') + '\nTotal Payout: ' + total;
   function resetRepairs() {
     el('bookerRepairs').value = '';
     saveBookerState();
