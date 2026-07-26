@@ -3954,7 +3954,7 @@ function renderReviewAskrPending() {
     var callBtnLabel  = '📞 Call'  + (call  > 0 ? ' ×' + call  : '');
     return '<div class="inv-item">' +
       '<div class="inv-item-top"><div><div class="inv-item-name cx-name">' + (r.name||'Unnamed') + '</div>' +
-      '<div class="inv-item-model">' + (r.phone||'') + (r.device ? ' · ' + r.device : '') + '</div></div>' +
+      '<div class="inv-item-model" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">' + (r.phone ? '<button onclick="navigator.clipboard.writeText(\'' + (r.phone||'').replace(/'/g,"\\'") + '\').then(function(){showToast(\'Phone copied ✓\')}).catch(function(){showToast(r.phone)})" style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);color:var(--accent);border-radius:6px;padding:2px 7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">' + (r.phone||'') + ' 📋</button>' : '') + (r.device ? '<span>' + (r.phone ? '· ' : '') + r.device + '</span>' : '') + '</div></div>' +
       '<span style="font-size:11px;font-weight:600;color:' + tallyColor + ';text-align:right;line-height:1.4;">' + tallyStr + '</span></div>' +
       '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + addedStr + '</div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">' +
@@ -3986,7 +3986,7 @@ function renderReviewAskrCaptured() {
     var capturedStr = r.capturedAt ? new Date(r.capturedAt).toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric'}) : '';
     return '<div class="inv-item" style="opacity:0.85;">' +
       '<div class="inv-item-top"><div><div class="inv-item-name cx-name">' + (r.name||'Unnamed') + '</div>' +
-      '<div class="inv-item-model">' + (r.phone||'') + (r.device ? ' · ' + r.device : '') + '</div></div>' +
+      '<div class="inv-item-model" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">' + (r.phone ? '<button onclick="navigator.clipboard.writeText(\'' + (r.phone||'').replace(/'/g,"\\'") + '\').then(function(){showToast(\'Phone copied ✓\')}).catch(function(){showToast(r.phone)})" style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);color:var(--accent);border-radius:6px;padding:2px 7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">' + (r.phone||'') + ' 📋</button>' : '') + (r.device ? '<span>' + (r.phone ? '· ' : '') + r.device + '</span>' : '') + '</div></div>' +
       '<span style="font-size:22px;line-height:1;">⭐</span></div>' +
       (r.contactCount ? '<div class="inv-item-meta">Contacted ' + r.contactCount + 'x before capture' + ((r.smsCount||r.emailCount||r.callCount) ? ' · 📱×' + (r.smsCount||0) + ' 📧×' + (r.emailCount||0) + ' 📞×' + (r.callCount||0) : '') + '</div>' : '') +
       '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Captured ' + capturedStr + '</div>' +
