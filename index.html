@@ -631,7 +631,7 @@
     <textarea id="quoteNotes" placeholder="Add a message to include in the quote sent to the customer..." rows="2" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-family:inherit;resize:vertical;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
   </div>
 
-  <div id="mobileToggleRow" class="toggle-row hidden" onclick="onToggleMobile()">
+  <div id="mobileToggleRow" class="toggle-row" onclick="onToggleMobile()">
     <div class="toggle-text"><div class="tl" id="mobileToggleLabel">Mobile repair service?</div></div>
     <div class="switch" id="mobileSw"></div>
   </div>
@@ -1648,7 +1648,7 @@ function getPrice2() {
 
 function onRepairChange() {
   type1 = el('repairType').value; cost1=0; model1=''; tier1=''; resetMobile(); resetSecond();
-  ['costCard','quoteCard','mobileToggleRow','secondToggle'].forEach(id => el(id).classList.add('hidden'));
+  ['costCard','quoteCard','secondToggle'].forEach(id => el(id).classList.add('hidden'));
   ['iphoneSection','glassSection','deviceSection','freeSection'].forEach(id => el(id).classList.add('hidden'));
   el('battSubRow1').classList.add('hidden'); clearBtns('#battSubRow1');
   if (!type1) return;
@@ -1800,7 +1800,7 @@ function tryRenderQuote() {
   else { el('neighborhoodRow').classList.add('hidden'); el('afterHoursRow').classList.add('hidden'); }
   if (secondOpen) renderDeal();
 }
-function hideQuote() { el('quoteCard').classList.add('hidden'); el('quoteNotesRow').classList.add('hidden'); el('neighborhoodRow').classList.add('hidden'); el('afterHoursRow').classList.add('hidden'); el('mobileToggleRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
+function hideQuote() { el('quoteCard').classList.add('hidden'); el('quoteNotesRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
 function resetQuote() { var rt = el('repairType'); if (rt) rt.value = ''; onRepairChange(); var notes = el('quoteNotes'); if (notes) notes.value = ''; }
 
 var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', small_part:'Small Part', ipad:'iPad', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android', laptop:'Laptop' };
@@ -2690,6 +2690,7 @@ function haversineMiles(lat1, lon1, lat2, lon2) {
 
 function isAuth() { return authd; }
 var authd = !!(authPass || isOwner);
+if (authd) { ['neighborhoodRow','afterHoursRow'].forEach(function(id){ var e=el(id); if(e) e.classList.remove('hidden'); }); }
 
 function onAuthBtnClick() {
   if (authd) {
