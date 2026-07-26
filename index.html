@@ -4884,12 +4884,9 @@ function renderStaffTab() {
     if (!users.length) { el('staffUserList').innerHTML = '<p style="color:var(--muted);font-size:13px;">No staff users yet.</p>'; return; }
     el('staffUserList').innerHTML = users.map(function(u) {
       var safeName = u.name.replace(/'/g,"\\'");
-      var isFlat = (u.structure||'standard') === 'flat';
-      var structLabel = isFlat ? 'Flat Rate' : 'Standard';
-      var rateHtml = isFlat
-        ? ' · <span style="color:var(--text);">$</span><input type="number" value="' + getStaffRate(u.name) + '" min="0" step="1" style="width:54px;padding:2px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:inherit;text-align:center;" onchange="saveStaffRate(\'' + safeName + '\',parseFloat(this.value)||25)" /><span style="font-size:11px;color:var(--muted);">/repair</span>'
-        : '';
-      return '<div class="staff-user-row"><div style="flex:1;min-width:0;"><div class="staff-user-name">' + u.name + '</div><div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;flex-wrap:wrap;">' + structLabel + rateHtml + '</div></div>'
+      var structLabel = (u.structure||'standard') === 'flat' ? 'Flat Rate' : 'Standard';
+      var rateHtml = ' · <span style="color:var(--muted);">$</span><input type="number" value="' + getStaffRate(u.name) + '" min="0" step="1" style="width:54px;padding:2px 6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:inherit;text-align:center;" onchange="saveStaffRate(\'' + safeName + '\',parseFloat(this.value)||25)" /><span style="font-size:11px;color:var(--muted);">/repair</span>';
+      return '<div class="staff-user-row"><div style="flex:1;min-width:0;"><div class="staff-user-name">' + u.name + '</div><div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:2px;">' + structLabel + rateHtml + '</div></div>'
         + '<button class="staff-del-btn" onclick="deleteStaffUser(\'' + safeName + '\')">Remove</button></div>';
     }).join('');
   }).catch(function(err) { el('staffUserList').innerHTML = '<p style="color:#ef4444;font-size:13px;">Network error: ' + (err && err.message ? err.message : 'CORS or connection failed') + '</p>'; });
