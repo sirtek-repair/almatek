@@ -2743,10 +2743,37 @@ function saveAuthSetup() {
   setTimeout(function() { el('authError').textContent = ''; el('authError').style.color = ''; }, 3000);
 }
 
+var AUTH_MAX_ATTEMPTS = 5, AUTH_LOCKOUT_MS = 5 * 60 * 1000;
+function _authLockoutKey() { return 'almatek_auth_lock'; }
+function _getAuthLock() { try { return JSON.parse(localStorage.getItem(_authLockoutKey()) || 'null'); } catch(e) { return null; } }
+function _setAuthLock(data) { localStorage.setItem(_authLockoutKey(), JSON.stringify(data)); }
+function _checkAuthLock() {
+  var lock = _getAuthLock();
+  if (!lock) return null;
+  if (lock.lockedUntil && Date.now() < lock.lockedUntil) {
+    var secs = Math.ceil((lock.lockedUntil - Date.now()) / 1000);
+    var mins = Math.floor(secs / 60), rem = secs % 60;
+    return 'Too many failed attempts. Try again in ' + (mins > 0 ? mins + 'm ' : '') + rem + 's.';
+  }
+  if (lock.lockedUntil && Date.now() >= lock.lockedUntil) { localStorage.removeItem(_authLockoutKey()); }
+  return null;
+}
+function _recordAuthFailure() {
+  var lock = _getAuthLock() || { attempts: 0 };
+  if (lock.lockedUntil && Date.now() >= lock.lockedUntil) lock = { attempts: 0 };
+  lock.attempts = (lock.attempts || 0) + 1;
+  lock.lastAttempt = Date.now();
+  if (lock.attempts >= AUTH_MAX_ATTEMPTS) lock.lockedUntil = Date.now() + AUTH_LOCKOUT_MS;
+  _setAuthLock(lock);
+  return lock;
+}
+function _clearAuthLock() { localStorage.removeItem(_authLockoutKey()); }
 function tryAuth() {
   var input = el('authInput').value.trim();
   if (!input) return;
-  el('authError').textContent = 'Checking…';
+  var lockMsg = _checkAuthLock();
+  if (lockMsg) { el('authError').textContent = lockMsg; el('authError').style.color = '#ef4444'; el('authInput').disabled = true; setTimeout(function(){ el('authInput').disabled = false; el('authError').textContent = ''; el('authError').style.color = ''; }, Math.min(AUTH_LOCKOUT_MS, 5000)); return; }
+  el('authError').textContent = 'Checking…'; el('authError').style.color = '';
   function doStaffCheck() {
     if (!USERS_SCRIPT_URL) {
       el('authError').textContent = 'Connection not set up — tap ⚙ below to configure';
@@ -2756,11 +2783,22 @@ function tryAuth() {
     }
     sheetsCall({ action: 'login', pass: input }).then(function(data) {
       if (data && data.ok) {
+        _clearAuthLock();
         onStaffLoginSuccess(input, data.name, data.structure, data);
       } else if (data && data._httpError) {
         el('authError').textContent = 'Server error (' + data._httpError + ') — check with owner';
       } else {
-        el('authError').textContent = 'Wrong code — try again';
+        var lock = _recordAuthFailure();
+        var remaining = AUTH_MAX_ATTEMPTS - lock.attempts;
+        if (lock.lockedUntil) {
+          el('authError').textContent = 'Too many failed attempts. Locked for 5 minutes.';
+          el('authError').style.color = '#ef4444';
+          el('authInput').disabled = true;
+          setTimeout(function(){ el('authInput').disabled = false; el('authInput').value = ''; el('authError').textContent = ''; el('authError').style.color = ''; }, AUTH_LOCKOUT_MS);
+        } else {
+          el('authError').textContent = 'Wrong code — ' + remaining + ' attempt' + (remaining !== 1 ? 's' : '') + ' left';
+          el('authError').style.color = remaining <= 2 ? '#ef4444' : '';
+        }
       }
     }).catch(function() { el('authError').textContent = 'Connection error — check network'; });
   }
@@ -2768,6 +2806,7 @@ function tryAuth() {
     crypto.subtle.digest('SHA-256', new TextEncoder().encode(input)).then(function(buf) {
       var hash = Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
       if (hash === OWNER_PASS_HASH) {
+        _clearAuthLock();
         localStorage.setItem('almatek_pass', '_auth_'); localStorage.setItem('almatek_is_owner', 'true');
         authPass = '_auth_'; authd = true; isOwner = true; currentUser = 'Sir'; localStorage.setItem('almatek_current_user', 'Sir');
         el('authOverlay').classList.add('hidden');
