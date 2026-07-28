@@ -3001,7 +3001,7 @@ function atLeadFields(l) {
   return f;
 }
 function atTicketFields(t) {
-  var f = { name: _s(t.name), id: _s(t.id), phone: _s(t.phone), email: _s(t.email), device: _s(t.device), issue: _s(t.issue), flow: _s(t.flow)||'in_stock', status: _s(t.status)||'waiting_for_repair', tier: _s(t.tier)||'standard', repairType: _s(t.repairType), repairModel: _s(t.repairModel), quote: Number(t.quote)||0, deposit: Number(t.deposit)||0, mobileFee: Number(t.mobileFee)||0, mobileFeeMiles: Number(t.mobileFeeMiles)||0, address: _s(t.address), supplier: _s(t.supplier), orderRef: _s(t.orderRef), items: JSON.stringify(t.items||[]), notes: JSON.stringify(t.notes||[]), createdBy: _s(t.createdBy), fromLeadId: _s(t.fromLeadId) };
+  var f = { name: _s(t.name), id: _s(t.id), phone: _s(t.phone), email: _s(t.email), device: _s(t.device), issue: _s(t.issue), flow: _s(t.flow)||'in_stock', status: _s(t.status)||'waiting_for_repair', tier: _s(t.tier)||'standard', repairType: _s(t.repairType), repairModel: _s(t.repairModel), quote: Number(t.quote)||0, deposit: Number(t.deposit)||0, mobileFee: Number(t.mobileFee)||0, mobileFeeMiles: Number(t.mobileFeeMiles)||0, address: _s(t.address), supplier: _s(t.supplier), orderRef: _s(t.orderRef), items: JSON.stringify(t.items||[]), notes: JSON.stringify(t.notes||[]), createdBy: _s(t.createdBy), fromLeadId: _s(t.fromLeadId), b2bVendor: _s(t.b2bVendor), b2bImei: _s(t.b2bImei), b2bColor: _s(t.b2bColor), b2bPassword: _s(t.b2bPassword) };
   ['createdAt','updatedAt'].forEach(function(k) { var d = _atDate(t[k]); if (d) f[k] = d; });
   return f;
 }
@@ -3017,7 +3017,7 @@ function atToTicket(rec) {
   var f = rec.fields || {};
   var existingId = (f.id || '').trim();
   if (!existingId) { var cached = ticketsStorage.find(function(x) { return x._atId === rec.id; }); if (cached) existingId = cached.id; }
-  var t = { _atId: rec.id, id: existingId || ('ticket_at_'+rec.id), name: f.name||'', phone: f.phone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', flow: f.flow||'in_stock', status: f.status||'waiting_for_repair', tier: f.tier||'standard', repairType: f.repairType||'', repairModel: f.repairModel||'', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, mobileFee: Number(f.mobileFee)||0, mobileFeeMiles: Number(f.mobileFeeMiles)||0, address: f.address||'', supplier: f.supplier||'', orderRef: f.orderRef||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', fromLeadId: f.fromLeadId||'' };
+  var t = { _atId: rec.id, id: existingId || ('ticket_at_'+rec.id), name: f.name||'', phone: f.phone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', flow: f.flow||'in_stock', status: f.status||'waiting_for_repair', tier: f.tier||'standard', repairType: f.repairType||'', repairModel: f.repairModel||'', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, mobileFee: Number(f.mobileFee)||0, mobileFeeMiles: Number(f.mobileFeeMiles)||0, address: f.address||'', supplier: f.supplier||'', orderRef: f.orderRef||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', fromLeadId: f.fromLeadId||'', b2bVendor: f.b2bVendor||'', b2bImei: f.b2bImei||'', b2bColor: f.b2bColor||'', b2bPassword: f.b2bPassword||'' };
   try { t.items = JSON.parse(f.items||'[]'); } catch(e) { t.items = []; }
   try { t.notes = JSON.parse(f.notes||'[]'); } catch(e) { t.notes = []; }
   return t;
@@ -3140,6 +3140,14 @@ function syncFromSheets() {
       pending.forEach(function(t) { atSaveTicket(t); });
       var preserved = ticketsStorage.filter(function(t) { return t._atId && !atAtIdSet.has(t._atId); });
       atTickets.forEach(function(t) {
+        // Preserve B2B fields from local storage if Airtable record predates this field
+        var local = ticketsStorage.find(function(l) { return (l._atId && l._atId === t._atId) || l.id === t.id; });
+        if (local) {
+          if (!t.b2bImei && local.b2bImei) t.b2bImei = local.b2bImei;
+          if (!t.b2bVendor && local.b2bVendor) t.b2bVendor = local.b2bVendor;
+          if (!t.b2bColor && local.b2bColor) t.b2bColor = local.b2bColor;
+          if (!t.b2bPassword && local.b2bPassword) t.b2bPassword = local.b2bPassword;
+        }
         if (!safeDisplayName(t.createdBy)) {
           var inf = inferCreatorFromNotes(t.notes);
           if (inf) { t.createdBy = inf; atSaveTicket(t); }
@@ -5291,7 +5299,7 @@ function saveB2BForm() {
   ticket.b2bColor    = el('b2bFormColor').value.trim();
   ticket.b2bPassword = el('b2bFormPassword').value.trim();
   ticket.updatedAt   = new Date().toISOString();
-  saveTicketsToStorage(); syncTicketToSheet(ticket);
+  saveTicketsToStorage(); syncTicket(ticket);
   showToast('B2B form saved ✓');
   renderTicketsList();
 }
