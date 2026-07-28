@@ -1033,19 +1033,26 @@
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">
         <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">DATE</div><div id="b2bFormDate" style="font-weight:600;"></div></div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">VENDOR</div><div id="b2bFormVendor" style="font-weight:600;"></div></div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">CUSTOMER</div><div id="b2bFormName" style="font-weight:600;"></div></div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">MODEL</div><div id="b2bFormModel" style="font-weight:600;"></div></div>
-        <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">IMEI / SERIAL #</div><div id="b2bFormImei" style="font-weight:600;"></div></div>
-        <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">DEVICE ISSUE</div><div id="b2bFormIssue" style="font-weight:600;line-height:1.4;"></div></div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">COLOR</div><div id="b2bFormColor" style="font-weight:600;"></div></div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">PASSWORD</div><div id="b2bFormPassword" style="font-weight:600;"></div></div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">VENDOR</div>
+          <select id="b2bFormVendorSelect" onchange="b2bVendorChanged()" style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;">
+            <option value="kimi">Kimi Soho</option>
+            <option value="skymobile">SkyMobile</option>
+          </select>
+        </div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">CUSTOMER</div><input id="b2bFormName" type="text" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;" /></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">MODEL</div><input id="b2bFormModel" type="text" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;" /></div>
+        <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">IMEI / SERIAL #</div><input id="b2bFormImei" type="text" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;" /></div>
+        <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">DEVICE ISSUE</div><textarea id="b2bFormIssue" rows="2" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;resize:none;line-height:1.4;"></textarea></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">COLOR</div><input id="b2bFormColor" type="text" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;" /></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">PASSWORD</div><input id="b2bFormPassword" type="text" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;" /></div>
       </div>
     </div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="shareB2BForm()" style="flex:1;padding:10px;background:#8b5cf6;border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Share / Copy</button>
-      <button onclick="closeB2BForm()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Close</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <button onclick="saveB2BForm()" style="padding:10px;background:#10b981;border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Save</button>
+      <button onclick="shareB2BForm()" style="padding:10px;background:#8b5cf6;border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Share / Copy</button>
     </div>
+    <button onclick="closeB2BForm()" style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Close</button>
   </div>
 </div>
 
@@ -5258,37 +5265,55 @@ function openB2BForm(ticketId, e) {
   if (e) e.stopPropagation();
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
   currentB2BTicketId = ticketId;
-  var vendorName = ticket.b2bVendor === 'skymobile' ? 'SkyMobile' : 'Kimi Soho';
-  el('b2bFormVendor').textContent = vendorName;
   el('b2bFormDate').textContent = new Date(ticket.createdAt).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric', timeZone:'America/New_York'});
-  el('b2bFormName').textContent = ticket.name || '—';
-  el('b2bFormModel').textContent = ticket.device || '—';
-  el('b2bFormImei').textContent = ticket.b2bImei || '—';
-  el('b2bFormIssue').textContent = ticket.issue || '—';
-  el('b2bFormColor').textContent = ticket.b2bColor || '—';
-  el('b2bFormPassword').textContent = ticket.b2bPassword || '—';
-  var sc = el('b2bStoreCode'); if (sc) sc.style.display = ticket.b2bVendor === 'skymobile' ? '' : 'none';
+  el('b2bFormVendorSelect').value = ticket.b2bVendor || 'kimi';
+  el('b2bFormName').value = ticket.name || '';
+  el('b2bFormModel').value = ticket.device || '';
+  el('b2bFormImei').value = ticket.b2bImei || '';
+  el('b2bFormIssue').value = ticket.issue || '';
+  el('b2bFormColor').value = ticket.b2bColor || '';
+  el('b2bFormPassword').value = ticket.b2bPassword || '';
+  var sc = el('b2bStoreCode'); if (sc) sc.style.display = (ticket.b2bVendor === 'skymobile') ? '' : 'none';
   el('b2bFormModal').classList.remove('hidden');
+}
+function b2bVendorChanged() {
+  var sc = el('b2bStoreCode'); if (sc) sc.style.display = el('b2bFormVendorSelect').value === 'skymobile' ? '' : 'none';
+}
+function saveB2BForm() {
+  if (!currentB2BTicketId) return;
+  var ticket = ticketsStorage.find(function(t) { return t.id === currentB2BTicketId; }); if (!ticket) return;
+  ticket.b2bVendor   = el('b2bFormVendorSelect').value;
+  ticket.name        = el('b2bFormName').value.trim() || ticket.name;
+  ticket.device      = el('b2bFormModel').value.trim() || ticket.device;
+  ticket.b2bImei     = el('b2bFormImei').value.trim();
+  ticket.issue       = el('b2bFormIssue').value.trim();
+  ticket.b2bColor    = el('b2bFormColor').value.trim();
+  ticket.b2bPassword = el('b2bFormPassword').value.trim();
+  ticket.updatedAt   = new Date().toISOString();
+  saveTicketsToStorage(); syncTicketToSheet(ticket);
+  showToast('B2B form saved ✓');
+  renderTicketsList();
 }
 function closeB2BForm() { el('b2bFormModal').classList.add('hidden'); }
 function shareB2BForm() {
   if (!currentB2BTicketId) return;
   var ticket = ticketsStorage.find(function(t) { return t.id === currentB2BTicketId; }); if (!ticket) return;
-  var vendor = ticket.b2bVendor === 'skymobile' ? 'SkyMobile' : 'Kimi Soho';
-  var date = new Date(ticket.createdAt).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric', timeZone:'America/New_York'});
-  var isSkyMobile = ticket.b2bVendor === 'skymobile';
+  var vendorVal = el('b2bFormVendorSelect').value;
+  var vendor = vendorVal === 'skymobile' ? 'SkyMobile' : 'Kimi Soho';
+  var isSkyMobile = vendorVal === 'skymobile';
+  var date = el('b2bFormDate').textContent;
   var lines = [
     'REPAIRED COLLECTIVE — B2B REPAIR FORM',
     'repairedcollective.com',
     '',
     'Date: ' + date,
     'Vendor: ' + vendor + (isSkyMobile ? '  |  Store Code: B323' : ''),
-    'Customer: ' + (ticket.name || '—'),
-    'Model: ' + (ticket.device || '—'),
-    'IMEI / Serial: ' + (ticket.b2bImei || '—'),
-    'Issue: ' + (ticket.issue || '—'),
-    'Color: ' + (ticket.b2bColor || '—'),
-    'Password: ' + (ticket.b2bPassword || '—')
+    'Customer: ' + (el('b2bFormName').value.trim() || '—'),
+    'Model: ' + (el('b2bFormModel').value.trim() || '—'),
+    'IMEI / Serial: ' + (el('b2bFormImei').value.trim() || '—'),
+    'Issue: ' + (el('b2bFormIssue').value.trim() || '—'),
+    'Color: ' + (el('b2bFormColor').value.trim() || '—'),
+    'Password: ' + (el('b2bFormPassword').value.trim() || '—')
   ];
   var text = lines.join('\n');
   if (navigator.share) { navigator.share({ title: 'B2B Repair Form — ' + (ticket.name || 'Ticket'), text: text }).catch(function(){}); }
