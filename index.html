@@ -1031,21 +1031,22 @@
         </div>
         <div id="b2bStoreCode" style="display:none;font-size:11px;font-weight:700;color:#8b5cf6;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);border-radius:6px;padding:3px 8px;white-space:nowrap;line-height:1.6;">B323</div>
       </div>
+      <div style="font-size:10px;color:#8b5cf6;text-align:right;margin-bottom:8px;letter-spacing:0.03em;">✏ All fields editable</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">DATE</div><div id="b2bFormDate" style="font-weight:600;"></div></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">DATE</div><div id="b2bFormDate" style="font-weight:600;font-size:13px;"></div></div>
         <div>
-          <div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">VENDOR</div>
-          <select id="b2bFormVendorSelect" onchange="b2bVendorChanged()" style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">VENDOR</div>
+          <select id="b2bFormVendorSelect" onchange="b2bVendorChanged()" style="width:100%;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;">
             <option value="kimi">Kimi Soho</option>
             <option value="skymobile">SkyMobile</option>
           </select>
         </div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">CUSTOMER</div><input id="b2bFormName" type="text" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;" /></div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">MODEL</div><input id="b2bFormModel" type="text" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;" /></div>
-        <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">IMEI / SERIAL #</div><input id="b2bFormImei" type="text" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;" /></div>
-        <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">DEVICE ISSUE</div><textarea id="b2bFormIssue" rows="2" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;resize:none;line-height:1.4;"></textarea></div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">COLOR</div><input id="b2bFormColor" type="text" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;" /></div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">PASSWORD</div><input id="b2bFormPassword" type="text" style="width:100%;box-sizing:border-box;background:transparent;border:none;border-bottom:1px solid rgba(139,92,246,0.35);color:var(--text);font-size:13px;font-weight:600;font-family:inherit;padding:2px 0;outline:none;" /></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">CUSTOMER</div><input id="b2bFormName" type="text" autocomplete="off" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;" /></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">MODEL</div><input id="b2bFormModel" type="text" autocomplete="off" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;" /></div>
+        <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">IMEI / SERIAL #</div><input id="b2bFormImei" type="text" autocomplete="off" inputmode="numeric" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;" /></div>
+        <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">DEVICE ISSUE</div><textarea id="b2bFormIssue" rows="2" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;resize:none;line-height:1.4;"></textarea></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">COLOR</div><input id="b2bFormColor" type="text" autocomplete="off" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;" /></div>
+        <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">PASSWORD</div><input id="b2bFormPassword" type="text" autocomplete="off" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;" /></div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
@@ -5297,28 +5298,158 @@ function saveB2BForm() {
 function closeB2BForm() { el('b2bFormModal').classList.add('hidden'); }
 function shareB2BForm() {
   if (!currentB2BTicketId) return;
-  var ticket = ticketsStorage.find(function(t) { return t.id === currentB2BTicketId; }); if (!ticket) return;
-  var vendorVal = el('b2bFormVendorSelect').value;
-  var vendor = vendorVal === 'skymobile' ? 'SkyMobile' : 'Kimi Soho';
+  var ticket = ticketsStorage.find(function(t){ return t.id === currentB2BTicketId; });
+  if (!ticket) return;
+
+  var vendorVal  = el('b2bFormVendorSelect').value;
+  var vendor     = vendorVal === 'skymobile' ? 'SkyMobile' : 'Kimi Soho';
   var isSkyMobile = vendorVal === 'skymobile';
-  var date = el('b2bFormDate').textContent;
-  var lines = [
-    'REPAIRED COLLECTIVE — B2B REPAIR FORM',
-    'repairedcollective.com',
-    '',
-    'Date: ' + date,
-    'Vendor: ' + vendor + (isSkyMobile ? '  |  Store Code: B323' : ''),
-    'Customer: ' + (el('b2bFormName').value.trim() || '—'),
-    'Model: ' + (el('b2bFormModel').value.trim() || '—'),
-    'IMEI / Serial: ' + (el('b2bFormImei').value.trim() || '—'),
-    'Issue: ' + (el('b2bFormIssue').value.trim() || '—'),
-    'Color: ' + (el('b2bFormColor').value.trim() || '—'),
-    'Password: ' + (el('b2bFormPassword').value.trim() || '—')
-  ];
-  var text = lines.join('\n');
-  if (navigator.share) { navigator.share({ title: 'B2B Repair Form — ' + (ticket.name || 'Ticket'), text: text }).catch(function(){}); }
-  else if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function() { showToast('Copied ✓'); }); }
-  else { showToast('Share not supported'); }
+  var date       = el('b2bFormDate').textContent;
+  var cname      = el('b2bFormName').value.trim()     || '—';
+  var model      = el('b2bFormModel').value.trim()    || '—';
+  var imei       = el('b2bFormImei').value.trim()     || '—';
+  var issue      = el('b2bFormIssue').value.trim()    || '—';
+  var color      = el('b2bFormColor').value.trim()    || '—';
+  var password   = el('b2bFormPassword').value.trim() || '—';
+
+  // Measure actual issue line count using a temp canvas
+  var DPR = 2, CW = 400, PAD = 18, CP = 14;
+  var IW = CW - PAD*2 - CP*2; // inner field width
+  var tmpCtx = document.createElement('canvas').getContext('2d');
+  tmpCtx.font = '600 13px system-ui, sans-serif';
+  var issueWords = issue.split(' '), issueLines = [], cur = '';
+  for (var wi = 0; wi < issueWords.length; wi++) {
+    var tl = cur ? cur + ' ' + issueWords[wi] : issueWords[wi];
+    if (tmpCtx.measureText(tl).width > IW && cur) { issueLines.push(cur); cur = issueWords[wi]; }
+    else cur = tl;
+  }
+  if (cur) issueLines.push(cur);
+  var nIssueLines = Math.max(1, issueLines.length);
+
+  // Canvas height: header(54) + divider(12) + 3 two-col rows(42*3) + issue(13+nLines*18+12) + 1 two-col row(42) + footer(32) + padding
+  var CH = PAD*2 + CP*2 + 54 + 12 + 42*3 + 13 + nIssueLines*18 + 12 + 42 + 36;
+
+  var canvas = document.createElement('canvas');
+  canvas.width  = CW * DPR;
+  canvas.height = CH * DPR;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+
+  // White background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, CW, CH);
+
+  // Card rounded rect
+  var cx = PAD, cy = PAD, cw = CW - PAD*2, ch = CH - PAD*2;
+  _b2bRRect(ctx, cx, cy, cw, ch, 12);
+  ctx.fillStyle = '#faf5ff'; ctx.fill();
+  ctx.strokeStyle = 'rgba(139,92,246,0.4)'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  var ix = cx + CP, iw = cw - CP*2;
+
+  // Header
+  ctx.fillStyle = '#7c3aed';
+  ctx.font = 'bold 18px Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Repaired Collective', cx + cw/2, cy + CP + 20);
+  ctx.fillStyle = '#6b7280';
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.fillText('repairedcollective.com', cx + cw/2, cy + CP + 38);
+
+  // B323 badge
+  if (isSkyMobile) {
+    var bx = ix + iw - 52, by = cy + CP + 4;
+    _b2bRRect(ctx, bx, by, 52, 20, 5);
+    ctx.fillStyle = 'rgba(139,92,246,0.12)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(139,92,246,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#8b5cf6'; ctx.font = 'bold 10.5px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('B323', bx + 26, by + 14);
+  }
+
+  // Header divider
+  var divY = cy + CP + 52;
+  ctx.strokeStyle = 'rgba(139,92,246,0.2)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(ix, divY); ctx.lineTo(ix + iw, divY); ctx.stroke();
+
+  // Field helpers
+  var half = iw/2 - 6;
+  function flabel(text, x, y) {
+    ctx.fillStyle = '#9ca3af'; ctx.font = '9px system-ui, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(text, x, y);
+  }
+  function fval(text, x, y, maxW) {
+    ctx.fillStyle = '#0f172a'; ctx.font = '600 13px system-ui, sans-serif'; ctx.textAlign = 'left';
+    var t = text || '—';
+    if (ctx.measureText(t).width > maxW) {
+      while (t.length > 0 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+      t += '…';
+    }
+    ctx.fillText(t, x, y);
+  }
+  function fvalML(text, x, y, maxW) {
+    ctx.fillStyle = '#0f172a'; ctx.font = '600 13px system-ui, sans-serif'; ctx.textAlign = 'left';
+    var words = (text||'—').split(' '), lines2 = [], c2 = '';
+    for (var i=0; i<words.length; i++) {
+      var tl2 = c2 ? c2+' '+words[i] : words[i];
+      if (ctx.measureText(tl2).width > maxW && c2) { lines2.push(c2); c2 = words[i]; } else c2 = tl2;
+    }
+    if (c2) lines2.push(c2);
+    if (!lines2.length) lines2 = ['—'];
+    for (var j=0; j<lines2.length; j++) ctx.fillText(lines2[j], x, y + j*18);
+    return lines2.length;
+  }
+
+  // Fields
+  var fy = divY + 14;
+  // Row 1: Date | Vendor
+  flabel('DATE', ix, fy); fval(date, ix, fy+14, half);
+  flabel('VENDOR', ix+half+12, fy); fval(vendor+(isSkyMobile?' · B323':''), ix+half+12, fy+14, half);
+  fy += 42;
+  // Row 2: Customer | Model
+  flabel('CUSTOMER', ix, fy); fval(cname, ix, fy+14, half);
+  flabel('MODEL', ix+half+12, fy); fval(model, ix+half+12, fy+14, half);
+  fy += 42;
+  // Row 3: IMEI (full width)
+  flabel('IMEI / SERIAL #', ix, fy); fval(imei, ix, fy+14, iw);
+  fy += 42;
+  // Row 4: Issue (full width, multiline)
+  flabel('ISSUE / REPAIR', ix, fy); fy += 13;
+  var drawnLines = fvalML(issue, ix, fy, iw);
+  fy += drawnLines*18 + 14;
+  // Row 5: Color | Password
+  flabel('COLOR', ix, fy); fval(color, ix, fy+14, half);
+  flabel('PASSWORD', ix+half+12, fy); fval(password, ix+half+12, fy+14, half);
+  fy += 42;
+
+  // Footer
+  ctx.strokeStyle = 'rgba(139,92,246,0.2)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(ix, fy+4); ctx.lineTo(ix+iw, fy+4); ctx.stroke();
+  ctx.fillStyle = '#a78bfa'; ctx.font = '10px system-ui, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('AlmaTek · B2B Repair Form', cx+cw/2, fy+20);
+
+  // Export as image
+  canvas.toBlob(function(blob) {
+    if (!blob) { showToast('Could not generate image'); return; }
+    var fname = 'b2b-' + (ticket.name||'form').replace(/[^a-z0-9]/gi,'-').toLowerCase() + '.png';
+    var file = new File([blob], fname, {type:'image/png'});
+    if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
+      navigator.share({files:[file], title:'B2B Repair Form'}).catch(function(){});
+    } else {
+      var url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 15000);
+    }
+  }, 'image/png');
+}
+
+function _b2bRRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
 }
 function openB2BTicketFromLead(leadId, e) {
   if (e) e.stopPropagation();
