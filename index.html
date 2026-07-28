@@ -1023,9 +1023,13 @@
       <button onclick="closeB2BForm()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
     </div>
     <div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:16px;margin-bottom:14px;">
-      <div style="text-align:center;margin-bottom:14px;border-bottom:1px solid rgba(139,92,246,0.2);padding-bottom:12px;">
-        <div style="font-size:18px;font-weight:700;letter-spacing:0.04em;font-family:Georgia,serif;">Repaired Collective</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:3px;">repairedcollective.com</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;border-bottom:1px solid rgba(139,92,246,0.2);padding-bottom:12px;">
+        <div style="width:52px;"></div>
+        <div style="text-align:center;">
+          <div style="font-size:18px;font-weight:700;letter-spacing:0.04em;font-family:Georgia,serif;">Repaired Collective</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">repairedcollective.com</div>
+        </div>
+        <div id="b2bStoreCode" style="display:none;font-size:11px;font-weight:700;color:#8b5cf6;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);border-radius:6px;padding:3px 8px;white-space:nowrap;line-height:1.6;">B323</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">
         <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px;letter-spacing:0.05em;">DATE</div><div id="b2bFormDate" style="font-weight:600;"></div></div>
@@ -1750,7 +1754,7 @@ function onDeviceSelect2(subtype, btn) {
 function onCost1Change() { const inputId = type1==='iphone_screen' ? 'partCostIphone' : 'partCost'; cost1 = parseFloat(el(inputId).value) || 0; tryRenderQuote(); }
 function onCost2Change() { const inputId = type2==='iphone_screen' ? 'partCostIphone2' : 'partCost2'; cost2 = parseFloat(el(inputId).value) || 0; renderDeal(); }
 function copyNbrAsk(btn) {
-  var text = "Hey! Quick questions before I get your quote together — what neighborhood are you in? And are you looking for someone to come to you, or would you be okay meeting at one of our spots?";
+  var text = "Hey! Two quick questions before I get your quote together 🙂\n\n1. Are you looking for someone to come to you, or would you be okay meeting at one of our spots?\n\n2. What neighborhood are you located in?";
   var orig = btn.textContent;
   function done() { btn.textContent = '✓ Copied'; setTimeout(function() { btn.textContent = orig; }, 1500); }
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -5263,6 +5267,7 @@ function openB2BForm(ticketId, e) {
   el('b2bFormIssue').textContent = ticket.issue || '—';
   el('b2bFormColor').textContent = ticket.b2bColor || '—';
   el('b2bFormPassword').textContent = ticket.b2bPassword || '—';
+  var sc = el('b2bStoreCode'); if (sc) sc.style.display = ticket.b2bVendor === 'skymobile' ? '' : 'none';
   el('b2bFormModal').classList.remove('hidden');
 }
 function closeB2BForm() { el('b2bFormModal').classList.add('hidden'); }
@@ -5271,12 +5276,13 @@ function shareB2BForm() {
   var ticket = ticketsStorage.find(function(t) { return t.id === currentB2BTicketId; }); if (!ticket) return;
   var vendor = ticket.b2bVendor === 'skymobile' ? 'SkyMobile' : 'Kimi Soho';
   var date = new Date(ticket.createdAt).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric', timeZone:'America/New_York'});
+  var isSkyMobile = ticket.b2bVendor === 'skymobile';
   var lines = [
     'REPAIRED COLLECTIVE — B2B REPAIR FORM',
     'repairedcollective.com',
     '',
     'Date: ' + date,
-    'Vendor: ' + vendor,
+    'Vendor: ' + vendor + (isSkyMobile ? '  |  Store Code: B323' : ''),
     'Customer: ' + (ticket.name || '—'),
     'Model: ' + (ticket.device || '—'),
     'IMEI / Serial: ' + (ticket.b2bImei || '—'),
