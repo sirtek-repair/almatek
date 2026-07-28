@@ -1041,8 +1041,8 @@
             <option value="skymobile">SkyMobile</option>
           </select>
         </div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">CUSTOMER</div><input id="b2bFormName" type="text" autocomplete="off" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;" /></div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">MODEL</div><input id="b2bFormModel" type="text" autocomplete="off" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;" /></div>
+        <input id="b2bFormName" type="hidden" />
+        <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">DEVICE MODEL</div><input id="b2bFormModel" type="text" autocomplete="off" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;" /></div>
         <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">IMEI / SERIAL #</div><input id="b2bFormImei" type="text" autocomplete="off" inputmode="numeric" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;" /></div>
         <div style="grid-column:1/-1;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">DEVICE ISSUE</div><textarea id="b2bFormIssue" rows="2" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;resize:none;line-height:1.4;"></textarea></div>
         <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">COLOR</div><input id="b2bFormColor" type="text" autocomplete="off" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;" /></div>
@@ -5414,9 +5414,8 @@ function shareB2BForm() {
   flabel('DATE', ix, fy); fval(date, ix, fy+14, half);
   flabel('VENDOR', ix+half+12, fy); fval(vendor+(isSkyMobile?' · B323':''), ix+half+12, fy+14, half);
   fy += 42;
-  // Row 2: Customer | Model
-  flabel('CUSTOMER', ix, fy); fval(cname, ix, fy+14, half);
-  flabel('MODEL', ix+half+12, fy); fval(model, ix+half+12, fy+14, half);
+  // Row 2: Device Model (full width)
+  flabel('DEVICE MODEL', ix, fy); fval(model, ix, fy+14, iw);
   fy += 42;
   // Row 3: IMEI (full width)
   flabel('IMEI / SERIAL #', ix, fy); fval(imei, ix, fy+14, iw);
