@@ -1214,8 +1214,8 @@
     </div>
 
     <div class="card" id="settingsAwSection" style="margin-top:16px;">
-      <div class="staff-section-title">🌤 AccuWeather API Key</div>
-      <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Used for live weather in the clock bar. Free tier: 50 calls/day. Get a key at developer.accuweather.com.</p>
+      <div class="staff-section-title">🌤 WeatherAPI.com Key</div>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Used for live weather in the clock bar. Free tier at weatherapi.com — sign up, copy your key, paste it here.</p>
       <div style="display:flex;gap:6px;">
         <input type="password" id="settingsAwKey" placeholder="API key" autocomplete="off" style="flex:1;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" />
         <button onclick="saveSettingsAwKey()" style="padding:9px 14px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save</button>
@@ -4169,7 +4169,7 @@ setInterval(updateWorldClock, 30000);
 var _wxCache = {};
 var _wxLastFetch = 0;
 var WX_CACHE_MS = 20 * 60 * 1000;
-var WX_KEY = '512bf7853c9b46e69e2213000261006';
+var WX_KEY = localStorage.getItem('almatek_aw_key') || '512bf7853c9b46e69e2213000261006';
 
 function _wapiEmoji(code, isDay, precip, cloud) {
   var day = isDay !== 0;
@@ -5107,6 +5107,7 @@ function saveSettingsAwKey() {
   var err = el('settingsAwErr');
   if (!val) { err.textContent = 'Enter the API key.'; err.style.color = '#ef4444'; return; }
   localStorage.setItem('almatek_aw_key', val);
+  WX_KEY = val;
   el('settingsAwKey').value = '';
   err.textContent = 'Saved ✓'; err.style.color = 'var(--green)';
   setTimeout(function() { err.textContent = ''; }, 2000);
