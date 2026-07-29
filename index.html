@@ -3320,6 +3320,9 @@ function buildQuoteText() {
     }
     lines.push('');
     lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
+  } else if (type1 === 'kimi' || type1 === 'skymobile') {
+    // ── B2B repair — clean quote, no tax/warranty/mobile-service language ──
+    lines.push('Device' + model1Label + ' repair — $' + withTax(p1 + afterHoursFee + mobileFee));
   } else {
     // ── Single non-screen repair ───────────────────────────────
     lines.push(label1 + model1Label + tier1Label + ' repair — $' + withTax(p1 + afterHoursFee + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
