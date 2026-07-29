@@ -4959,7 +4959,8 @@ function saveApiPassModal() {
   apiPass = val; localStorage.setItem('almatek_api_pass', val);
   el('apiPassModal').classList.add('hidden');
   invLoaded = false; allInvRecords = [];
-  if (!el('tabInventory').classList.contains('hidden')) loadInventory();
+  loadInventoryPage(null, true);
+  syncFromSheets();
 }
 
 function pushTokenToScript() {
@@ -5098,7 +5099,8 @@ function saveSettingsToken() {
   err.textContent = 'Saved ✓'; err.style.color = 'var(--green)';
   setTimeout(function() { err.textContent = ''; }, 2000);
   invLoaded = false; allInvRecords = [];
-  if (!el('tabInventory').classList.contains('hidden') && invSubTab === 'inventory') loadInventory();
+  loadInventoryPage(null, true);
+  syncFromSheets();
 }
 function saveSettingsAwKey() {
   var val = (el('settingsAwKey').value || '').trim();
