@@ -2639,6 +2639,7 @@ function showStockBadge(slot, model, tier) {
     var cat = (selName(r.fields['fldxQhVZSYmXNK6CW']) || '').toLowerCase();
     return !NON_SCREEN.some(function(x) { return cat === x || cat.includes(x); });
   }
+  var otherTier = tierLower === 'standard' ? 'premium' : 'standard';
   var rec = allInvRecords.find(function(r) {
     var cat = selName(r.fields['fldxQhVZSYmXNK6CW']);
     return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && cat === typeStr;
@@ -2650,9 +2651,11 @@ function showStockBadge(slot, model, tier) {
     return name.includes(modelLower) && name.includes(tierLower) && name.includes('screen');
   }) || allInvRecords.find(function(r) {
     var name = (selName(r.fields['fldWzYeFcqm0qnxD8']) || '').toLowerCase();
-    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && name.includes('screen');
+    var cat = (selName(r.fields['fldxQhVZSYmXNK6CW']) || '').toLowerCase();
+    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && name.includes('screen') && !name.includes(otherTier) && !cat.includes(otherTier);
   }) || allInvRecords.find(function(r) {
-    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && isScreen(r);
+    var cat = (selName(r.fields['fldxQhVZSYmXNK6CW']) || '').toLowerCase();
+    return (r.fields['fldV0jSP3xJuinS8t'] || '').toLowerCase() === modelLower && isScreen(r) && !cat.includes(otherTier);
   });
   if (!rec) { rowEl.classList.add('hidden'); return; }
   var qty = rec.fields['fldvwFFYSxAJlcFpp'] || 0;
