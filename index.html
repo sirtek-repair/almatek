@@ -5340,6 +5340,7 @@ function saveB2BForm() {
   saveTicketsToStorage(); syncTicket(ticket);
   showToast('B2B form saved ✓');
   renderTicketsList();
+  if (currentTicketId === currentB2BTicketId) openTicketDetail(currentB2BTicketId);
 }
 function closeB2BForm() { el('b2bFormModal').classList.add('hidden'); }
 function shareB2BForm() {
