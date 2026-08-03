@@ -1141,6 +1141,26 @@
   </div>
 </div>
 
+<!-- IMEI scan hidden file input -->
+<input type="file" id="imeiPhotoInput" accept="image/*" capture="environment" class="hidden" onchange="handleImeiPhotoCapture(this)" />
+
+<!-- IMEI Image Viewer Modal -->
+<div id="imeiViewerModal" class="chpass-overlay hidden" onclick="closeImeiViewer()">
+  <div class="chpass-box" onclick="event.stopPropagation()" style="max-width:480px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;font-weight:700;">📷 Enter IMEI / Serial</span>
+      <button onclick="closeImeiViewer()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <img id="imeiViewerImg" src="" alt="" style="width:100%;border-radius:8px;max-height:55vh;object-fit:contain;background:#000;" />
+    <div style="font-size:11px;color:var(--muted);">No barcode detected — type the number from the image above.</div>
+    <input id="imeiViewerInput" type="text" inputmode="numeric" placeholder="IMEI or Serial Number" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:15px;font-family:inherit;font-weight:600;" />
+    <div style="display:flex;gap:8px;">
+      <button onclick="confirmImeiFromViewer()" style="flex:1;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Save</button>
+      <button onclick="closeImeiViewer()" style="flex:1;padding:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ReviewAskr Tab -->
 <div id="tabReview" class="tab-content hidden">
   <div class="container">
@@ -3033,7 +3053,7 @@ function atLeadFields(l) {
   return f;
 }
 function atTicketFields(t) {
-  var f = { name: _s(t.name), id: _s(t.id), phone: _s(t.phone), email: _s(t.email), device: _s(t.device), issue: _s(t.issue), flow: _s(t.flow)||'in_stock', status: _s(t.status)||'waiting_for_repair', tier: _s(t.tier)||'standard', repairType: _s(t.repairType), repairModel: _s(t.repairModel), quote: Number(t.quote)||0, deposit: Number(t.deposit)||0, mobileFee: Number(t.mobileFee)||0, mobileFeeMiles: Number(t.mobileFeeMiles)||0, address: _s(t.address), supplier: _s(t.supplier), orderRef: _s(t.orderRef), items: JSON.stringify(t.items||[]), notes: JSON.stringify(t.notes||[]), createdBy: _s(t.createdBy), fromLeadId: _s(t.fromLeadId), b2bVendor: _s(t.b2bVendor), b2bImei: _s(t.b2bImei), b2bColor: _s(t.b2bColor), b2bPassword: _s(t.b2bPassword) };
+  var f = { name: _s(t.name), id: _s(t.id), phone: _s(t.phone), email: _s(t.email), device: _s(t.device), issue: _s(t.issue), flow: _s(t.flow)||'in_stock', status: _s(t.status)||'waiting_for_repair', tier: _s(t.tier)||'standard', repairType: _s(t.repairType), repairModel: _s(t.repairModel), quote: Number(t.quote)||0, deposit: Number(t.deposit)||0, mobileFee: Number(t.mobileFee)||0, mobileFeeMiles: Number(t.mobileFeeMiles)||0, address: _s(t.address), supplier: _s(t.supplier), orderRef: _s(t.orderRef), items: JSON.stringify(t.items||[]), notes: JSON.stringify(t.notes||[]), createdBy: _s(t.createdBy), fromLeadId: _s(t.fromLeadId), b2bVendor: _s(t.b2bVendor), b2bImei: _s(t.b2bImei), b2bColor: _s(t.b2bColor), b2bPassword: _s(t.b2bPassword), deviceImei: _s(t.deviceImei) };
   ['createdAt','updatedAt'].forEach(function(k) { var d = _atDate(t[k]); if (d) f[k] = d; });
   return f;
 }
@@ -3049,7 +3069,7 @@ function atToTicket(rec) {
   var f = rec.fields || {};
   var existingId = (f.id || '').trim();
   if (!existingId) { var cached = ticketsStorage.find(function(x) { return x._atId === rec.id; }); if (cached) existingId = cached.id; }
-  var t = { _atId: rec.id, id: existingId || ('ticket_at_'+rec.id), name: f.name||'', phone: f.phone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', flow: f.flow||'in_stock', status: f.status||'waiting_for_repair', tier: f.tier||'standard', repairType: f.repairType||'', repairModel: f.repairModel||'', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, mobileFee: Number(f.mobileFee)||0, mobileFeeMiles: Number(f.mobileFeeMiles)||0, address: f.address||'', supplier: f.supplier||'', orderRef: f.orderRef||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', fromLeadId: f.fromLeadId||'', b2bVendor: f.b2bVendor||'', b2bImei: f.b2bImei||'', b2bColor: f.b2bColor||'', b2bPassword: f.b2bPassword||'' };
+  var t = { _atId: rec.id, id: existingId || ('ticket_at_'+rec.id), name: f.name||'', phone: f.phone||'', email: f.email||'', device: f.device||'', issue: f.issue||'', flow: f.flow||'in_stock', status: f.status||'waiting_for_repair', tier: f.tier||'standard', repairType: f.repairType||'', repairModel: f.repairModel||'', quote: Number(f.quote)||0, deposit: Number(f.deposit)||0, mobileFee: Number(f.mobileFee)||0, mobileFeeMiles: Number(f.mobileFeeMiles)||0, address: f.address||'', supplier: f.supplier||'', orderRef: f.orderRef||'', createdBy: f.createdBy||'', createdAt: f.createdAt||'', updatedAt: f.updatedAt||'', fromLeadId: f.fromLeadId||'', b2bVendor: f.b2bVendor||'', b2bImei: f.b2bImei||'', b2bColor: f.b2bColor||'', b2bPassword: f.b2bPassword||'', deviceImei: f.deviceImei || f.b2bImei || '' };
   try { t.items = JSON.parse(f.items||'[]'); } catch(e) { t.items = []; }
   try { t.notes = JSON.parse(f.notes||'[]'); } catch(e) { t.notes = []; }
   return t;
@@ -4611,6 +4631,16 @@ function openTicketDetail(ticketId) {
   html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">DEVICE</div><div style="display:flex;gap:6px;align-items:center;"><input type="text" id="ticketDeviceEdit" value="' + escQ(ticket.device||'') + '" style="' + tInStyle + '" /><button onclick="saveTicketField(\'' + ticket.id + '\',\'device\',\'ticketDeviceEdit\')" style="' + tSaveBtnStyle + '">Save</button></div></div>';
   html += '</div>';
   if (ticket.email) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:0.05em;">Email</div><div style="font-size:14px;">' + ticket.email + '</div></div>';
+  // IMEI / Serial row (all ticket flows)
+  html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+  html += '<div style="font-size:10px;color:var(--muted);letter-spacing:0.05em;">IMEI / SERIAL #</div>';
+  html += '<button onclick="triggerImeiScan()" style="padding:3px 10px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:#8b5cf6;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📷 Scan</button>';
+  html += '</div>';
+  html += '<div style="display:flex;gap:6px;align-items:center;">';
+  html += '<input type="text" id="ticketImeiEdit" value="' + escQ(ticket.deviceImei || '') + '" placeholder="Enter or scan…" style="' + tInStyle + '" />';
+  html += '<button onclick="saveTicketField(\'' + ticket.id + '\',\'deviceImei\',\'ticketImeiEdit\')" style="' + tSaveBtnStyle + '">Save</button>';
+  html += '</div></div>';
   html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:0.05em;">ISSUE</div><textarea id="ticketIssueEdit" rows="2" style="width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;resize:vertical;outline:none;" onfocus="this.style.borderColor=\'var(--accent)\'" onblur="this.style.borderColor=\'var(--border)\'">' + (ticket.issue||'').replace(/</g,'&lt;') + '</textarea><button onclick="saveTicketField(\'' + ticket.id + '\',\'issue\',\'ticketIssueEdit\')" style="margin-top:6px;padding:6px 14px;background:var(--accent);border:none;color:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Save</button></div>';
   if (ticket.address) html += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><div style="font-size:10px;color:var(--muted);letter-spacing:0.05em;">📍 Address</div><button onclick="openAddrInMaps(\'' + ticket.address.replace(/'/g,"\\'") + '\')" style="padding:2px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📍 Maps</button></div><div style="font-size:13px;">' + ticket.address + '</div></div>';
   // Stepper (skip for cancelled tickets)
@@ -4696,6 +4726,75 @@ function openTicketDetail(ticketId) {
 }
 
 function closeTicketDetail() { el('ticketDetailModal').classList.add('hidden'); currentTicketId = null; if (el('ticketNoteText')) el('ticketNoteText').value = ''; }
+
+function triggerImeiScan() { var inp = el('imeiPhotoInput'); if (inp) inp.click(); }
+
+function handleImeiPhotoCapture(input) {
+  if (!input.files || !input.files[0]) return;
+  var file = input.files[0];
+  input.value = '';
+  var blobUrl = URL.createObjectURL(file);
+  var img = new Image();
+  img.onload = function() {
+    function toDataUrl() {
+      var MAX = 1600;
+      var w = img.naturalWidth, h = img.naturalHeight;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      return c.toDataURL('image/jpeg', 0.82);
+    }
+    function fallback() { URL.revokeObjectURL(blobUrl); showImeiImageViewer(toDataUrl()); }
+    if (typeof BarcodeDetector !== 'undefined') {
+      BarcodeDetector.getSupportedFormats().then(function(fmts) {
+        var want = ['code_128','code_39','code_39_mod_43','code_93','codabar','data_matrix','qr_code','ean_13','ean_8','upc_a','upc_e'];
+        var use = want.filter(function(f) { return fmts.indexOf(f) !== -1; });
+        return new BarcodeDetector({ formats: use.length ? use : fmts }).detect(img);
+      }).then(function(barcodes) {
+        URL.revokeObjectURL(blobUrl);
+        var matched = null;
+        for (var i = 0; i < barcodes.length; i++) {
+          var v = (barcodes[i].rawValue || '').replace(/^IMEI[: ]*/i,'').trim();
+          if (/^\d{14,16}$/.test(v) || /^[A-Z0-9]{6,20}$/i.test(v)) { matched = v; break; }
+        }
+        if (matched) { fillImeiField(matched); }
+        else { showImeiImageViewer(toDataUrl()); }
+      }).catch(fallback);
+    } else { fallback(); }
+  };
+  img.onerror = function() { URL.revokeObjectURL(blobUrl); showToast('Could not read image'); };
+  img.src = blobUrl;
+}
+
+function fillImeiField(val) {
+  var f = el('ticketImeiEdit'); if (f) f.value = val;
+  showToast('Detected: ' + val + ' ✓');
+}
+
+function showImeiImageViewer(dataUrl) {
+  el('imeiViewerImg').src = dataUrl;
+  el('imeiViewerInput').value = el('ticketImeiEdit') ? (el('ticketImeiEdit').value || '') : '';
+  el('imeiViewerModal').classList.remove('hidden');
+  setTimeout(function() { if (el('imeiViewerInput')) el('imeiViewerInput').focus(); }, 100);
+}
+
+function confirmImeiFromViewer() {
+  var val = (el('imeiViewerInput').value || '').trim();
+  closeImeiViewer();
+  if (!val) return;
+  fillImeiField(val);
+  var ticket = ticketsStorage.find(function(t) { return t.id === currentTicketId; });
+  if (ticket) {
+    ticket.deviceImei = val; ticket.updatedAt = new Date().toISOString();
+    saveTicketsToStorage(); syncTicket(ticket); showToast('Saved ✓');
+  }
+}
+
+function closeImeiViewer() {
+  el('imeiViewerModal').classList.add('hidden');
+  el('imeiViewerImg').src = '';
+}
+
 function saveTicketField(ticketId, field, inputId) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
   var val = (el(inputId) ? el(inputId).value : '').trim();
@@ -5316,7 +5415,7 @@ function openB2BForm(ticketId, e) {
   el('b2bFormVendorSelect').value = ticket.b2bVendor || 'kimi';
   el('b2bFormName').value = ticket.name || '';
   el('b2bFormModel').value = ticket.device || '';
-  el('b2bFormImei').value = ticket.b2bImei || '';
+  el('b2bFormImei').value = ticket.b2bImei || ticket.deviceImei || '';
   el('b2bFormIssue').value = ticket.issue || '';
   el('b2bFormColor').value = ticket.b2bColor || '';
   el('b2bFormPassword').value = ticket.b2bPassword || '';
@@ -5333,6 +5432,7 @@ function saveB2BForm() {
   ticket.name        = el('b2bFormName').value.trim() || ticket.name;
   ticket.device      = el('b2bFormModel').value.trim() || ticket.device;
   ticket.b2bImei     = el('b2bFormImei').value.trim();
+  ticket.deviceImei  = ticket.b2bImei;
   ticket.issue       = el('b2bFormIssue').value.trim();
   ticket.b2bColor    = el('b2bFormColor').value.trim();
   ticket.b2bPassword = el('b2bFormPassword').value.trim();
