@@ -88,13 +88,15 @@ CREATE TABLE IF NOT EXISTS review_askr (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- ── DISABLE ROW LEVEL SECURITY ────────────────────────────────────────────
--- Auth is handled by the Cloudflare Worker (X-Auth header + service_role key).
--- These tables are only reachable through the Worker, never from the browser directly.
-ALTER TABLE inventory   DISABLE ROW LEVEL SECURITY;
-ALTER TABLE orders      DISABLE ROW LEVEL SECURITY;
-ALTER TABLE sold        DISABLE ROW LEVEL SECURITY;
-ALTER TABLE removed     DISABLE ROW LEVEL SECURITY;
-ALTER TABLE leads       DISABLE ROW LEVEL SECURITY;
-ALTER TABLE tickets     DISABLE ROW LEVEL SECURITY;
-ALTER TABLE review_askr DISABLE ROW LEVEL SECURITY;
+-- ── ROW LEVEL SECURITY ────────────────────────────────────────────────────
+-- RLS is ENABLED on all tables. No permissive policies are granted to the
+-- anon or authenticated roles, so direct public-key access is denied.
+-- The Cloudflare Worker uses the service_role key, which bypasses RLS
+-- automatically — the app works normally with no policy changes needed.
+ALTER TABLE inventory   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sold        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE removed     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leads       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tickets     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE review_askr ENABLE ROW LEVEL SECURITY;
