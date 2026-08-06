@@ -5582,6 +5582,14 @@ function shareB2BForm() {
     var file = new File([blob], fname, {type:'image/png'});
     if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
       navigator.share({files:[file], title:'B2B Repair Form'}).catch(function(){});
+    } else if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+      navigator.clipboard.write([new ClipboardItem({'image/png': blob})]).then(function() {
+        showToast('Image copied — paste anywhere ✓');
+      }).catch(function() {
+        var url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 15000);
+      });
     } else {
       var url = URL.createObjectURL(blob);
       window.open(url, '_blank');
