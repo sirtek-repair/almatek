@@ -476,6 +476,7 @@
       <optgroup id="b2bOptGroup" label="B2B Repairs">
         <option value="kimi">Kimi Repair</option>
         <option value="skymobile">SkyMobile Repair</option>
+        <option value="king">King Digital Soho</option>
       </optgroup>
     </select>
     <div id="factoryScreenBadge" class="hidden" style="margin-top:10px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.04em;"></div>
@@ -665,6 +666,7 @@
       <optgroup id="b2bOptGroup2" label="B2B Repairs">
         <option value="kimi">Kimi Repair</option>
         <option value="skymobile">SkyMobile Repair</option>
+        <option value="king">King Digital Soho</option>
       </optgroup>
     </select>
 
@@ -1039,6 +1041,7 @@
           <select id="b2bFormVendorSelect" onchange="b2bVendorChanged()" style="width:100%;background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:6px;color:var(--text);font-size:14px;font-weight:600;font-family:inherit;padding:6px 8px;outline:none;">
             <option value="kimi">Kimi Soho</option>
             <option value="skymobile">SkyMobile</option>
+            <option value="king">King Digital Soho</option>
           </select>
         </div>
         <input id="b2bFormName" type="hidden" />
@@ -1078,7 +1081,7 @@
     <input type="email" id="attEmail" placeholder="Email (optional)" style="width:100%;margin-bottom:10px;box-sizing:border-box;" />
     <div id="attB2BFields" class="hidden" style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:12px;margin-bottom:10px;">
       <div style="font-size:11px;color:#8b5cf6;letter-spacing:0.05em;margin-bottom:8px;font-weight:600;">🔧 B2B Details</div>
-      <select id="attB2BVendor" style="width:100%;margin-bottom:8px;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:13px;"><option value="kimi">Kimi Soho</option><option value="skymobile">SkyMobile</option></select>
+      <select id="attB2BVendor" style="width:100%;margin-bottom:8px;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:inherit;font-size:13px;"><option value="kimi">Kimi Soho</option><option value="skymobile">SkyMobile</option><option value="king">King Digital Soho</option></select>
       <input type="text" id="attB2BImei" placeholder="IMEI / Serial Number" style="width:100%;margin-bottom:8px;box-sizing:border-box;" />
       <div style="display:flex;gap:8px;">
         <input type="text" id="attB2BColor" placeholder="Color" style="flex:1;box-sizing:border-box;" />
@@ -1303,10 +1306,16 @@
         <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Tech/Runner $</div><input type="number" id="b2bKimiTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
       </div>
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">SkyMobile</div>
-      <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
         <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Markup %</div><input type="number" id="b2bSkyMarkup" min="0" max="200" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
         <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Labor $</div><input type="number" id="b2bSkyLabor" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
         <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Tech/Runner $</div><input type="number" id="b2bSkyTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+      </div>
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">King Digital Soho</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Markup %</div><input type="number" id="b2bKingMarkup" min="0" max="200" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Labor $</div><input type="number" id="b2bKingLabor" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Tech/Runner $</div><input type="number" id="b2bKingTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
       </div>
 
       <button onclick="saveRepairPricing()" style="width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save Pricing</button>
@@ -1542,8 +1551,8 @@
 <div class="inv-toast" id="invToast"></div>
 
 <script>
-var LABOR = { iphone_screen:70, back_glass:80, back_glass_swap:100, battery:60, small_part:40, ipad:75, kimi:35, skymobile:75, android:85, laptop:85 };
-const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', small_part:'Small Part', ipad:'iPad Screen', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android Repair', laptop:'MacBook / Laptop' };
+var LABOR = { iphone_screen:70, back_glass:80, back_glass_swap:100, battery:60, small_part:40, ipad:75, kimi:35, skymobile:75, king:35, android:85, laptop:85 };
+const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', small_part:'Small Part', ipad:'iPad Screen', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', king:'King Digital Soho', android:'Android Repair', laptop:'MacBook / Laptop' };
 var MARKUP_PCT = 20;
 const SHARE_ICON = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
 
@@ -1627,8 +1636,8 @@ let type1='', type2='', cost1=0, cost2=0, model1='', tier1='', model2='', tier2=
 const el = id => document.getElementById(id);
 
 function fullPrice(cost, type) { return cost * (1 + MARKUP_PCT / 100) + LABOR[type]; }
-var TRANSIT_FEE = { kimi: 6, skymobile: 25 };
-var B2B_MARKUP = { kimi: 20, skymobile: 0 };
+var TRANSIT_FEE = { kimi: 6, skymobile: 25, king: 6 };
+var B2B_MARKUP = { kimi: 20, skymobile: 0, king: 20 };
 (function() {
   var _s = JSON.parse(localStorage.getItem('almatek_repair_pricing') || 'null');
   if (_s) {
@@ -1649,6 +1658,7 @@ var B2B_MARKUP = { kimi: 20, skymobile: 0 };
   if (_p && !_s) {
     if (_p.kimi) { if (_p.kimi.markup != null) B2B_MARKUP.kimi = _p.kimi.markup; if (_p.kimi.labor != null) LABOR.kimi = _p.kimi.labor; if (_p.kimi.transit != null) TRANSIT_FEE.kimi = _p.kimi.transit; }
     if (_p.skymobile) { if (_p.skymobile.markup != null) B2B_MARKUP.skymobile = _p.skymobile.markup; if (_p.skymobile.labor != null) LABOR.skymobile = _p.skymobile.labor; if (_p.skymobile.transit != null) TRANSIT_FEE.skymobile = _p.skymobile.transit; }
+    if (_p.king) { if (_p.king.markup != null) B2B_MARKUP.king = _p.king.markup; if (_p.king.labor != null) LABOR.king = _p.king.labor; if (_p.king.transit != null) TRANSIT_FEE.king = _p.king.transit; }
   }
 })();
 function withTax(price) { return Math.ceil(price * 1.12875); }
@@ -1665,14 +1675,14 @@ function b2bPrice(cost, client) { return cost * (1 + B2B_MARKUP[client] / 100) +
 function getPrice1() {
   var base;
   if (type1 === 'back_glass') { base = cost1 > 0 ? cost1 : 0; }
-  else if (type1 === 'skymobile' || type1 === 'kimi') { base = cost1 > 0 ? b2bPrice(cost1, type1) : 0; }
+  else if (type1 === 'skymobile' || type1 === 'kimi' || type1 === 'king') { base = cost1 > 0 ? b2bPrice(cost1, type1) : 0; }
   else { base = cost1 > 0 ? fullPrice(cost1, type1) + (TRANSIT_FEE[type1] || 0) : 0; }
   return base * (1 + neighborhoodSurcharge);
 }
 function getPrice2() {
   var base;
   if (type2 === 'back_glass') { base = cost2 > 0 ? cost2 : 0; }
-  else if (type2 === 'skymobile' || type2 === 'kimi') { base = cost2 > 0 ? b2bPrice(cost2, type2) : 0; }
+  else if (type2 === 'skymobile' || type2 === 'kimi' || type2 === 'king') { base = cost2 > 0 ? b2bPrice(cost2, type2) : 0; }
   else { base = cost2 > 0 ? fullPrice(cost2, type2) + (TRANSIT_FEE[type2] || 0) : 0; }
   return base * (1 + neighborhoodSurcharge);
 }
@@ -1834,7 +1844,7 @@ function tryRenderQuote() {
 function hideQuote() { el('quoteCard').classList.add('hidden'); el('quoteNotesRow').classList.add('hidden'); el('secondToggle').classList.add('hidden'); var b = el('factoryScreenBadge'); if (b && !model1) b.classList.add('hidden'); }
 function resetQuote() { var rt = el('repairType'); if (rt) rt.value = ''; onRepairChange(); var notes = el('quoteNotes'); if (notes) notes.value = ''; }
 
-var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', small_part:'Small Part', ipad:'iPad', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', android:'Android', laptop:'Laptop' };
+var ATL_TYPE_LABELS = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', small_part:'Small Part', ipad:'iPad', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', king:'King Digital Soho', android:'Android', laptop:'Laptop' };
 function onBattSubtype1(t, btn) { type1 = t; clearBtns('#battSubRow1'); btn.classList.add('active'); cost1 = parseFloat(el('partCost').value||'0')||0; tryRenderQuote(); }
 function onBattSubtype2(t, btn) { type2 = t; clearBtns('#battSubRow2'); btn.classList.add('active'); cost2 = parseFloat(el('partCost2').value||'0')||0; renderDeal(); }
 
@@ -1848,7 +1858,7 @@ function setTicketFlow(flow) {
   var b2bFields = el('attB2BFields'); if (b2bFields) b2bFields.classList.toggle('hidden', flow !== 'b2b_repair');
 }
 function detectTicketFlow() {
-  if (type1 === 'kimi' || type1 === 'skymobile') return 'b2b_repair';
+  if (type1 === 'kimi' || type1 === 'skymobile' || type1 === 'king') return 'b2b_repair';
   if (!allInvRecords || !allInvRecords.length) return 'special_order';
   var matchModel = (model1 || '').toLowerCase();
   var matchType = TIER_TO_TYPE[tier1] || '';
@@ -1881,7 +1891,7 @@ function showAddToTicketModal() {
   var detectedFlow = detectTicketFlow();
   attFlow = detectedFlow;
   setTicketFlow(detectedFlow);
-  if (detectedFlow === 'b2b_repair') { var vEl = el('attB2BVendor'); if (vEl) vEl.value = (type1 === 'skymobile' ? 'skymobile' : 'kimi'); }
+  if (detectedFlow === 'b2b_repair') { var vEl = el('attB2BVendor'); if (vEl) vEl.value = (type1 === 'skymobile' ? 'skymobile' : (type1 === 'king' ? 'king' : 'kimi')); }
   ['attB2BImei','attB2BColor','attB2BPassword'].forEach(function(id){ var e=el(id); if(e) e.value=''; });
   el('addToTicketModal').classList.remove('hidden');
   setTimeout(function() { var n = el('attName'); if (n) n.focus(); }, 50);
@@ -3292,7 +3302,7 @@ function pushTicketAuditNote(ticket, msg) { ticket.notes.push({ text: fmtNotePre
 function buildQuoteText() {
   var p1 = getPrice1(), p2 = secondOpen ? getPrice2() : 0;
   var hasSecond = secondOpen && p2 > 0;
-  var label1 = (type1 === 'kimi' || type1 === 'skymobile') ? 'Device' : (ATL_TYPE_LABELS[type1] || type1);
+  var label1 = (type1 === 'kimi' || type1 === 'skymobile' || type1 === 'king') ? 'Device' : (ATL_TYPE_LABELS[type1] || type1);
   var label2 = (type2 === 'kimi' || type2 === 'skymobile') ? 'Device' : (ATL_TYPE_LABELS[type2] || type2);
   var model1Label = model1 ? ' (' + model1 + ')' : '';
   var model2Label = model2 ? ' (' + model2 + ')' : '';
@@ -3372,7 +3382,7 @@ function buildQuoteText() {
     }
     lines.push('');
     lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
-  } else if (type1 === 'kimi' || type1 === 'skymobile') {
+  } else if (type1 === 'kimi' || type1 === 'skymobile' || type1 === 'king') {
     // ── B2B repair — clean quote, no tax/warranty/mobile-service language ──
     lines.push('Device' + model1Label + ' repair — $' + withTax(p1 + afterHoursFee + mobileFee));
   } else {
@@ -4609,7 +4619,7 @@ function openTicketDetail(ticketId) {
   html += '<button type="button" onclick="setTicketTier(\'premium\',\'' + ticket.id + '\')" style="' + premStyle + '">⭐ Premium</button></div>';
   // B2B details section
   if (isB2B) {
-    var vendorName = ticket.b2bVendor === 'skymobile' ? 'SkyMobile' : 'Kimi Soho';
+    var vendorName = ticket.b2bVendor === 'skymobile' ? 'SkyMobile' : (ticket.b2bVendor === 'king' ? 'King Digital Soho' : 'Kimi Soho');
     html += '<div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:12px;margin-bottom:10px;">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><div style="font-size:10px;color:#8b5cf6;letter-spacing:0.05em;font-weight:600;">🔧 B2B REPAIR · ' + vendorName.toUpperCase() + '</div>';
     html += '<button onclick="openB2BForm(\'' + ticket.id + '\',event)" style="padding:4px 10px;background:#8b5cf6;border:none;color:#fff;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📋 View Form</button></div>';
@@ -5177,6 +5187,9 @@ function loadB2bPricingInputs() {
   el('b2bSkyMarkup').value     = B2B_MARKUP.skymobile;
   el('b2bSkyLabor').value      = LABOR.skymobile;
   el('b2bSkyTransit').value    = TRANSIT_FEE.skymobile;
+  el('b2bKingMarkup').value    = B2B_MARKUP.king;
+  el('b2bKingLabor').value     = LABOR.king;
+  el('b2bKingTransit').value   = TRANSIT_FEE.king;
 }
 function saveRepairPricing() {
   if (!isOwner) return;
@@ -5195,10 +5208,13 @@ function saveRepairPricing() {
   B2B_MARKUP.skymobile  = n('b2bSkyMarkup');
   LABOR.skymobile       = n('b2bSkyLabor');
   TRANSIT_FEE.skymobile = n('b2bSkyTransit');
+  B2B_MARKUP.king       = n('b2bKingMarkup');
+  LABOR.king            = n('b2bKingLabor');
+  TRANSIT_FEE.king      = n('b2bKingTransit');
   localStorage.setItem('almatek_repair_pricing', JSON.stringify({
     markup: MARKUP_PCT,
     labor: { iphone_screen:LABOR.iphone_screen, back_glass_swap:LABOR.back_glass_swap, battery:LABOR.battery, small_part:LABOR.small_part, ipad:LABOR.ipad, android:LABOR.android, laptop:LABOR.laptop },
-    b2b: { kimi:{markup:B2B_MARKUP.kimi,labor:LABOR.kimi,runner:TRANSIT_FEE.kimi}, skymobile:{markup:B2B_MARKUP.skymobile,labor:LABOR.skymobile,runner:TRANSIT_FEE.skymobile} }
+    b2b: { kimi:{markup:B2B_MARKUP.kimi,labor:LABOR.kimi,runner:TRANSIT_FEE.kimi}, skymobile:{markup:B2B_MARKUP.skymobile,labor:LABOR.skymobile,runner:TRANSIT_FEE.skymobile}, king:{markup:B2B_MARKUP.king,labor:LABOR.king,runner:TRANSIT_FEE.king} }
   }));
   var errEl = el('b2bPricingErr');
   if (errEl) { errEl.style.color = 'var(--green)'; errEl.textContent = 'Saved!'; setTimeout(function(){ errEl.textContent = ''; }, 2000); }
@@ -5450,7 +5466,7 @@ function shareB2BForm() {
   if (!ticket) return;
 
   var vendorVal  = el('b2bFormVendorSelect').value;
-  var vendor     = vendorVal === 'skymobile' ? 'SkyMobile' : 'Kimi Soho';
+  var vendor     = vendorVal === 'skymobile' ? 'SkyMobile' : (vendorVal === 'king' ? 'King Digital Soho' : 'Kimi Soho');
   var isSkyMobile = vendorVal === 'skymobile';
   var date       = el('b2bFormDate').textContent;
   var cname      = el('b2bFormName').value.trim()     || '—';
