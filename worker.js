@@ -79,6 +79,7 @@ export default {
       'tblDmh7FfklhbHI2s': 'leads',
       'tblrKmv6arnS9HNp6': 'tickets',
       'review_askr': 'review_askr', // after meta-create, app uses this literal string
+      'settings':    'settings',    // global key-value store (pricing, config)
     };
     const table = TABLE_MAP[tableId] || 'review_askr'; // unknown tbl* → review_askr
 
@@ -348,6 +349,33 @@ export default {
         await sb(`${table}?id=eq.${recordId}`, { method: 'DELETE' });
         return json({ deleted: true, id: recordId });
       }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // SETTINGS (global key-value store, synced across devices)
+    // ══════════════════════════════════════════════════════════════════════
+    if (table === 'settings') {
+      const key = recordId || '';
+      if (!key) return json({ error: 'key required' }, 400);
+
+      if (method === 'GET') {
+        const { ok, data } = await sb(`settings?key=eq.${encodeURIComponent(key)}&select=value`);
+        if (!ok) return json({ error: data }, 500);
+        return json({ value: (data && data[0]) ? data[0].value : null });
+      }
+
+      if (method === 'PUT') {
+        const body = await request.json();
+        const { ok, data } = await sb('settings', {
+          method: 'POST',
+          body: JSON.stringify({ key, value: body }),
+          headers: { 'Prefer': 'return=representation,resolution=merge-duplicates' },
+        });
+        if (!ok) return json({ error: data }, 500);
+        return json({ ok: true });
+      }
+
+      return json({ error: 'Method not allowed' }, 405);
     }
 
     return json({ error: 'Not found' }, 404);

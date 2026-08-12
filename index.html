@@ -1645,7 +1645,7 @@ var B2B_MARKUP = { kimi: 20, skymobile: 0, king: 20 };
     var SL = ['iphone_screen','back_glass_swap','battery','small_part','ipad','android','laptop'];
     if (_s.labor) SL.forEach(function(k){ if (_s.labor[k] != null) LABOR[k] = _s.labor[k]; });
     if (_s.b2b) {
-      ['kimi','skymobile'].forEach(function(c) {
+      ['kimi','skymobile','king'].forEach(function(c) {
         if (!_s.b2b[c]) return;
         if (_s.b2b[c].markup != null) B2B_MARKUP[c] = _s.b2b[c].markup;
         if (_s.b2b[c].labor  != null) LABOR[c]      = _s.b2b[c].labor;
@@ -2897,10 +2897,10 @@ function tryAuth() {
           sheetsCall({ action: 'getConfig' }).then(function(cfg) {
             if (cfg && cfg.ok) applyLoginConfig(cfg);
             if (!apiPass) showApiPassModal();
-            syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh();
-          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh(); });
+            syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh(); setTimeout(loadPricingFromServer, 500);
+          }).catch(function() { if (!apiPass) showApiPassModal(); syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh(); setTimeout(loadPricingFromServer, 500); });
         } else {
-          syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh();
+          syncFromSheets(); refreshPricingIfStale(); loadSchedule(); startScheduleRefresh(); setTimeout(loadPricingFromServer, 500);
           if (!apiPass) setTimeout(showApiPassModal, 400);
         }
         return;
@@ -2980,10 +2980,10 @@ function onStaffLoginSuccess(pass, name, structure, data) {
   if (!apiPass && USERS_SCRIPT_URL) {
     sheetsCall({ action: 'getConfig' }).then(function(cfg) {
       if (cfg && cfg.ok) applyLoginConfig(cfg);
-      syncFromSheets(); refreshPricingIfStale();
-    }).catch(function() { syncFromSheets(); refreshPricingIfStale(); });
+      syncFromSheets(); refreshPricingIfStale(); setTimeout(loadPricingFromServer, 500);
+    }).catch(function() { syncFromSheets(); refreshPricingIfStale(); setTimeout(loadPricingFromServer, 500); });
   } else {
-    syncFromSheets(); refreshPricingIfStale();
+    syncFromSheets(); refreshPricingIfStale(); setTimeout(loadPricingFromServer, 500);
   }
 }
 function onReviewClick(btn) {
@@ -4352,7 +4352,7 @@ fetchWeather();
 setInterval(fetchWeather, WX_CACHE_MS);
 
 // Sync from Sheets on startup if already authenticated (skips login flow)
-if (authd) { setTimeout(syncFromSheets, 500); setTimeout(refreshPricingIfStale, 1000); setTimeout(loadSchedule, 1500); startScheduleRefresh(); }
+if (authd) { setTimeout(syncFromSheets, 500); setTimeout(refreshPricingIfStale, 1000); setTimeout(loadSchedule, 1500); startScheduleRefresh(); setTimeout(loadPricingFromServer, 2000); }
 
 
 // Auto-sync every 90 seconds while the app is open
@@ -5195,6 +5195,23 @@ function loadB2bPricingInputs() {
   el('b2bKingLabor').value     = LABOR.king;
   el('b2bKingTransit').value   = TRANSIT_FEE.king;
 }
+function loadPricingFromServer() {
+  if (!authd) return;
+  atFetch(AT_BASE + '/settings/pricing').then(function(res) {
+    if (!res || res.value == null) return;
+    var s = res.value;
+    if (s.markup != null) MARKUP_PCT = s.markup;
+    var SL = ['iphone_screen','back_glass_swap','battery','small_part','ipad','android','laptop'];
+    if (s.labor) SL.forEach(function(k){ if (s.labor[k] != null) LABOR[k] = s.labor[k]; });
+    if (s.b2b) ['kimi','skymobile','king'].forEach(function(c) {
+      if (!s.b2b[c]) return;
+      if (s.b2b[c].markup != null) B2B_MARKUP[c] = s.b2b[c].markup;
+      if (s.b2b[c].labor  != null) LABOR[c]       = s.b2b[c].labor;
+      if (s.b2b[c].runner != null) TRANSIT_FEE[c]  = s.b2b[c].runner;
+    });
+    localStorage.setItem('almatek_repair_pricing', JSON.stringify(s));
+  }).catch(function(){});
+}
 function saveRepairPricing() {
   if (!isOwner) return;
   function n(id) { return Math.max(0, parseFloat(el(id).value) || 0); }
@@ -5215,11 +5232,9 @@ function saveRepairPricing() {
   B2B_MARKUP.king       = n('b2bKingMarkup');
   LABOR.king            = n('b2bKingLabor');
   TRANSIT_FEE.king      = n('b2bKingTransit');
-  localStorage.setItem('almatek_repair_pricing', JSON.stringify({
-    markup: MARKUP_PCT,
-    labor: { iphone_screen:LABOR.iphone_screen, back_glass_swap:LABOR.back_glass_swap, battery:LABOR.battery, small_part:LABOR.small_part, ipad:LABOR.ipad, android:LABOR.android, laptop:LABOR.laptop },
-    b2b: { kimi:{markup:B2B_MARKUP.kimi,labor:LABOR.kimi,runner:TRANSIT_FEE.kimi}, skymobile:{markup:B2B_MARKUP.skymobile,labor:LABOR.skymobile,runner:TRANSIT_FEE.skymobile}, king:{markup:B2B_MARKUP.king,labor:LABOR.king,runner:TRANSIT_FEE.king} }
-  }));
+  var _pd = { markup: MARKUP_PCT, labor: { iphone_screen:LABOR.iphone_screen, back_glass_swap:LABOR.back_glass_swap, battery:LABOR.battery, small_part:LABOR.small_part, ipad:LABOR.ipad, android:LABOR.android, laptop:LABOR.laptop }, b2b: { kimi:{markup:B2B_MARKUP.kimi,labor:LABOR.kimi,runner:TRANSIT_FEE.kimi}, skymobile:{markup:B2B_MARKUP.skymobile,labor:LABOR.skymobile,runner:TRANSIT_FEE.skymobile}, king:{markup:B2B_MARKUP.king,labor:LABOR.king,runner:TRANSIT_FEE.king} } };
+  localStorage.setItem('almatek_repair_pricing', JSON.stringify(_pd));
+  atFetch(AT_BASE + '/settings/pricing', { method: 'PUT', body: JSON.stringify(_pd) }).catch(function(){});
   var errEl = el('b2bPricingErr');
   if (errEl) { errEl.style.color = 'var(--green)'; errEl.textContent = 'Saved!'; setTimeout(function(){ errEl.textContent = ''; }, 2000); }
 }
