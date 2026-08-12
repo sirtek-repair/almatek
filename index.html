@@ -1303,19 +1303,19 @@
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Markup %</div><input type="number" id="b2bKimiMarkup" min="0" max="200" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
         <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Labor $</div><input type="number" id="b2bKimiLabor" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
-        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Tech/Runner $</div><input type="number" id="b2bKimiTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Uber/Courier Both Ways $</div><input type="number" id="b2bKimiTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
       </div>
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">SkyMobile</div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Markup %</div><input type="number" id="b2bSkyMarkup" min="0" max="200" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
         <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Labor $</div><input type="number" id="b2bSkyLabor" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
-        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Tech/Runner $</div><input type="number" id="b2bSkyTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Uber/Courier Both Ways $</div><input type="number" id="b2bSkyTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
       </div>
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">King Digital Soho</div>
       <div style="display:flex;gap:8px;margin-bottom:14px;">
         <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Markup %</div><input type="number" id="b2bKingMarkup" min="0" max="200" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
         <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Labor $</div><input type="number" id="b2bKingLabor" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
-        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Tech/Runner $</div><input type="number" id="b2bKingTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
+        <div style="flex:1;"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Uber/Courier Both Ways $</div><input type="number" id="b2bKingTransit" min="0" step="1" style="width:100%;box-sizing:border-box;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;" /></div>
       </div>
 
       <button onclick="saveRepairPricing()" style="width:100%;padding:10px;background:var(--accent);border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Save Pricing</button>
@@ -1703,6 +1703,8 @@ function onRepairChange() {
   else if (type1 === 'device') { el('deviceSection').classList.remove('hidden'); clearBtns('#deviceSection'); }
   else {
     el('freeSection').classList.remove('hidden'); el('partCost').value = '';
+    var _lbl = el('partCostLabel');
+    if (_lbl) _lbl.textContent = (type1 === 'kimi' || type1 === 'skymobile' || type1 === 'king') ? 'Part/B2B Cost' : 'Part Cost';
     if (type1 === 'battery') { el('battSubRow1').classList.remove('hidden'); }
   }
 }
@@ -2001,6 +2003,8 @@ function on2ndRepairChange() {
   else if (type2==='device') { el('deviceSection2').classList.remove('hidden'); clearBtns('#deviceSection2'); }
   else {
     el('freeSection2').classList.remove('hidden');
+    var _lbl2 = el('partCostLabel2');
+    if (_lbl2) _lbl2.textContent = (type2 === 'kimi' || type2 === 'skymobile' || type2 === 'king') ? 'Part/B2B Cost' : 'Part Cost';
     if (type2==='battery') { el('battSubRow2').classList.remove('hidden'); }
   }
 }
