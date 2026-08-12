@@ -88,6 +88,12 @@ CREATE TABLE IF NOT EXISTS review_askr (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- ── SETTINGS (global key-value store, synced across devices) ─────────
+CREATE TABLE IF NOT EXISTS settings (
+  key   TEXT PRIMARY KEY,
+  value JSONB NOT NULL DEFAULT '{}'
+);
+
 -- ── ROW LEVEL SECURITY ────────────────────────────────────────────────────
 -- RLS is ENABLED on all tables. No permissive policies are granted to the
 -- anon or authenticated roles, so direct public-key access is denied.
@@ -100,3 +106,4 @@ ALTER TABLE removed     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE leads       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tickets     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE review_askr ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings     ENABLE ROW LEVEL SECURITY;
