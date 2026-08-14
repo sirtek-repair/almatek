@@ -450,7 +450,8 @@
         </div>
       </div>
       <button class="hlink" id="repairedBtn" onclick="copyLink(this, 'https://repairedcollective.com', 'Repaired Collective')"><span class="brand" style="font-weight:300;">Repaired</span> <span class="brand" style="font-weight:400;">Collective</span></button><a href="https://repairedcollective.com" target="_blank" rel="noopener" class="hlink" style="font-size:13px;text-decoration:none;">↗</a>
-      <button class="hlink" id="reviewBtn" onclick="onReviewClick(this)">⭐ Your Review Link</button>
+      <button class="hlink" id="reviewBtnBedstuy" onclick="onReviewClick(this,'bedstuy')">⭐ BedStuy Review</button>
+      <button class="hlink" id="reviewBtnDumbo" onclick="onReviewClick(this,'dumbo')">⭐ Dumbo Review</button>
       <span class="hlink" id="supplierDemo" style="display:none;">your part supplier</span>
       <button class="hlink" onclick="openCalc()">🧮</button>
       <button id="authBtn" class="demo-badge" onclick="onAuthBtnClick()">🔒 Log In</button>
@@ -2986,9 +2987,13 @@ function onStaffLoginSuccess(pass, name, structure, data) {
     syncFromSheets(); refreshPricingIfStale(); setTimeout(loadPricingFromServer, 500);
   }
 }
-function onReviewClick(btn) {
+function onReviewClick(btn, loc) {
   if (!authd) { showToast('Log in to use'); return; }
-  copyLink(btn, 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D', 'Review link');
+  var REVIEW_URLS = {
+    bedstuy: 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D',
+    dumbo:   'https://www.google.com/search?q=Repaired+Collective+-+DUMBO+-+Mobile+Repair+Service&stick=H4sIAAAAAAAA_-NgU1I1qLCwTDYyTUoySzQ1MjRIMbO0MqgwMjI0Skk1Mkk0tEixSDIzX8RqHJRakJhZlJqi4Jyfk5OaXJJZlqqgq-Q7_dp5IQFILNGgjW3azxIVkq8Wex4Z_9gzHH8Juh-VT1DJQm5-KE&hl=en&mat=CeYn_7BSEvMzElcBa0lj_60tdM3OaLFL9t0eGkXY4MDwlb9G2rAVd7YdZOpm1ztMVtDT5JA0W3jI7bIpdpoDofkViJRa1SRa7CC9iAvisyy3bViycfmkTOvXH_1DJQm5-KE&authuser=1#lrd=0x89c25bb6a5210d69:0x2212de24a18d8b67,3,,,,',
+  };
+  copyLink(btn, REVIEW_URLS[loc] || REVIEW_URLS.bedstuy, 'Review link');
 }
 function updateAuthBtn() {
   var btn = el('authBtn'), btnInv = el('authBtnInv');
