@@ -1176,7 +1176,8 @@
     <button class="orders-tab-btn" id="reviewSubBtnCaptured" onclick="switchReviewSubTab('captured')">⭐ Captured</button>
     <button class="orders-tab-btn" id="reviewSubBtnStats" onclick="switchReviewSubTab('stats')">📊 Stats</button>
     <div style="margin-left:auto;display:flex;gap:6px;">
-      <button onclick="reviewCopyLink()" style="padding:5px 10px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">📋 Copy Link</button>
+      <button onclick="reviewCopyLink('bedstuy')" style="padding:5px 9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">📋 BedStuy</button>
+      <button onclick="reviewCopyLink('dumbo')" style="padding:5px 9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">📋 Dumbo</button>
       <button onclick="toggleAddReviewForm()" style="padding:5px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#10b981;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">➕ Add</button>
     </div>
   </div>
@@ -2998,7 +2999,7 @@ function onReviewClick(btn, loc) {
   if (!authd) { showToast('Log in to use'); return; }
   var REVIEW_URLS = {
     bedstuy: 'https://www.google.com/maps/place/Repaired+Collective/@40.6869713,-73.9489195,17z/data=!3m1!4b1!4m6!3m5!1s0x89dd0f5a51bcb509:0xd7304dddeed89d03!8m2!3d40.6869713!4d-73.9489195!16s%2Fg%2F11hj3rys0n?entry=ttu&g_ep=EgoyMDI2MDQxMi4wIKXMDSoASAFQAw%3D%3D',
-    dumbo:   'https://www.google.com/search?q=Repaired+Collective+-+DUMBO+-+Mobile+Repair+Service&stick=H4sIAAAAAAAA_-NgU1I1qLCwTDYyTUoySzQ1MjRIMbO0MqgwMjI0Skk1Mkk0tEixSDIzX8RqHJRakJhZlJqi4Jyfk5OaXJJZlqqgq-Q7_dp5IQFILNGgjW3azxIVkq8Wex4Z_9gzHH8Juh-VT1DJQm5-KE&hl=en&mat=CeYn_7BSEvMzElcBa0lj_60tdM3OaLFL9t0eGkXY4MDwlb9G2rAVd7YdZOpm1ztMVtDT5JA0W3jI7bIpdpoDofkViJRa1SRa7CC9iAvisyy3bViycfmkTOvXH_1DJQm5-KE&authuser=1#lrd=0x89c25bb6a5210d69:0x2212de24a18d8b67,3,,,,',
+    dumbo:   'https://g.page/r/CWeLjaEk3hIiEBM/review',
   };
   copyLink(btn, REVIEW_URLS[loc] || REVIEW_URLS.bedstuy, 'Review link');
 }
@@ -3987,8 +3988,10 @@ function reviewSetLoc(id, loc) {
   var r = reviewAskrStorage.find(function(x) { return x.id === id; }); if (!r) return;
   r.location = loc; saveReviewAskr(); syncReviewEntry(r); renderReviewAskrPending();
 }
-function reviewCopyLink() {
-  navigator.clipboard.writeText(REVIEW_LINK_URLS.bedstuy).then(function() { showToast('BedStuy review link copied! 🔗'); }).catch(function() { showToast('Copy failed — try manually'); });
+function reviewCopyLink(loc) {
+  var url = REVIEW_LINK_URLS[loc] || REVIEW_LINK_URLS.bedstuy;
+  var label = loc === 'dumbo' ? 'Dumbo' : 'BedStuy';
+  navigator.clipboard.writeText(url).then(function() { showToast(label + ' review link copied! 🔗'); }).catch(function() { showToast('Copy failed — try manually'); });
 }
 function _reviewSmsText(id) {
   var r = reviewAskrStorage.find(function(x) { return x.id === id; });
