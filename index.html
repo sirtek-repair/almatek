@@ -1176,7 +1176,8 @@
     <button class="orders-tab-btn" id="reviewSubBtnCaptured" onclick="switchReviewSubTab('captured')">⭐ Captured</button>
     <button class="orders-tab-btn" id="reviewSubBtnStats" onclick="switchReviewSubTab('stats')">📊 Stats</button>
     <div style="margin-left:auto;display:flex;gap:6px;">
-      <button onclick="reviewCopyLink()" style="padding:5px 10px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">📋 Copy Link</button>
+      <button onclick="reviewCopyLink('bedstuy')" style="padding:5px 9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">📋 BedStuy</button>
+      <button onclick="reviewCopyLink('dumbo')" style="padding:5px 9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">📋 Dumbo</button>
       <button onclick="toggleAddReviewForm()" style="padding:5px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.35);color:#10b981;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">➕ Add</button>
     </div>
   </div>
@@ -3987,8 +3988,10 @@ function reviewSetLoc(id, loc) {
   var r = reviewAskrStorage.find(function(x) { return x.id === id; }); if (!r) return;
   r.location = loc; saveReviewAskr(); syncReviewEntry(r); renderReviewAskrPending();
 }
-function reviewCopyLink() {
-  navigator.clipboard.writeText(REVIEW_LINK_URLS.bedstuy).then(function() { showToast('BedStuy review link copied! 🔗'); }).catch(function() { showToast('Copy failed — try manually'); });
+function reviewCopyLink(loc) {
+  var url = REVIEW_LINK_URLS[loc] || REVIEW_LINK_URLS.bedstuy;
+  var label = loc === 'dumbo' ? 'Dumbo' : 'BedStuy';
+  navigator.clipboard.writeText(url).then(function() { showToast(label + ' review link copied! 🔗'); }).catch(function() { showToast('Copy failed — try manually'); });
 }
 function _reviewSmsText(id) {
   var r = reviewAskrStorage.find(function(x) { return x.id === id; });
