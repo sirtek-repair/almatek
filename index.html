@@ -1136,7 +1136,10 @@
       </div>
     </div>
     <div style="padding:0 16px 8px;flex-shrink:0;">
-      <button onclick="addToReviewAskr(currentTicketId)" style="width:100%;padding:9px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);color:#f59e0b;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">⭐ Add to ReviewAskr</button>
+      <div style="display:flex;gap:6px;">
+        <button onclick="addToReviewAskr(currentTicketId,'bedstuy')" style="flex:1;padding:9px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);color:#f59e0b;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">⭐ BedStuy</button>
+        <button onclick="addToReviewAskr(currentTicketId,'dumbo')" style="flex:1;padding:9px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);color:#f59e0b;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">⭐ Dumbo</button>
+      </div>
     </div>
     <div style="display:flex;gap:8px;padding:0 16px 12px;border-top:none;flex-shrink:0;">
       <button onclick="revertTicketToLead(currentTicketId)" style="flex:1;padding:8px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">↩ Revert to Lead</button>
@@ -1182,6 +1185,10 @@
     <input type="text" id="reviewAddName" placeholder="Name *" autocomplete="off" onkeydown="if(event.key==='Enter')el('reviewAddPhone').focus()" style="width:100%;box-sizing:border-box;padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-bottom:7px;" />
     <input type="tel" id="reviewAddPhone" placeholder="Phone" autocomplete="off" onkeydown="if(event.key==='Enter')el('reviewAddDevice').focus()" style="width:100%;box-sizing:border-box;padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-bottom:7px;" />
     <input type="text" id="reviewAddDevice" placeholder="Device (optional)" autocomplete="off" onkeydown="if(event.key==='Enter')submitManualReviewEntry()" style="width:100%;box-sizing:border-box;padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-bottom:8px;" />
+    <div style="display:flex;gap:6px;margin-bottom:8px;">
+      <button id="reviewLocBtnBedstuy" onclick="setReviewAddLoc('bedstuy')" style="flex:1;padding:7px;background:rgba(245,158,11,0.18);border:1px solid rgba(245,158,11,0.5);color:#f59e0b;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📍 BedStuy</button>
+      <button id="reviewLocBtnDumbo" onclick="setReviewAddLoc('dumbo')" style="flex:1;padding:7px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📍 Dumbo</button>
+    </div>
     <div style="display:flex;gap:6px;">
       <button onclick="submitManualReviewEntry()" style="flex:1;padding:9px;background:#10b981;border:none;color:#fff;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Add to ReviewAskr</button>
       <button onclick="toggleAddReviewForm()" style="padding:9px 14px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>
@@ -3771,7 +3778,10 @@ function renderPickedUpList() {
 
 // ── ReviewAskr ────────────────────────────────────────────────────────────────
 var reviewAskrStorage = [], reviewSubTab = 'pending';
-const REVIEW_LINK_URL = 'https://g.page/r/CWeLjaEk3hIiEAI/review';
+const REVIEW_LINK_URLS = {
+  bedstuy: 'https://g.page/r/CWeLjaEk3hIiEAI/review',
+  dumbo:   'https://www.google.com/search?q=Repaired+Collective+-+DUMBO+-+Mobile+Repair+Service&stick=H4sIAAAAAAAA_-NgU1I1qLCwTDYyTUoySzQ1MjRIMbO0MqgwMjI0Skk1Mkk0tEixSDIzX8RqHJRakJhZlJqi4Jyfk5OaXJJZlqqgq-Q7_dp5IQFILNGgjW3azxIVkq8Wex4Z_9gzHH8Juh-VT1DJQm5-KE&hl=en&mat=CeYn_7BSEvMzElcBa0lj_60tdM3OaLFL9t0eGkXY4MDwlb9G2rAVd7YdZOpm1ztMVtDT5JA0W3jI7bIpdpoDofkViJRa1SRa7CC9iAvisyy3bViycfmkTOvXH_1DJQm5-KE&authuser=1#lrd=0x89c25bb6a5210d69:0x2212de24a18d8b67,3,,,,',
+};
 var DEMO_REVIEW_ASKR = [
   { id:'ra_demo1', name:'Keisha L.', phone:'(917) 555-0447', device:'iPhone 14', ticketId:'dt4', addedAt:'2026-04-29T16:00:00Z', addedBy:'staff', contactCount:0, smsCount:0, emailCount:0, callCount:0, lastContactedAt:null, status:'pending', capturedAt:null },
   { id:'ra_demo2', name:'Carlos R.', phone:'(347) 555-0174', device:'iPhone 15 Pro Max', ticketId:'dt1', addedAt:'2026-04-28T10:00:00Z', addedBy:'staff', contactCount:1, smsCount:1, emailCount:0, callCount:0, lastContactedAt:'2026-04-28T10:05:00Z', status:'pending', capturedAt:null },
@@ -3923,11 +3933,11 @@ function updateReviewAskrBadge() {
   var count = reviewAskrStorage.filter(function(r) { return r.status === 'pending'; }).length;
   var badge = el('reviewNavBadge'); if (badge) { badge.textContent = count; badge.classList.toggle('hidden', count === 0); }
 }
-function addToReviewAskr(ticketId) {
+function addToReviewAskr(ticketId, loc) {
   var ticket = ticketsStorage.find(function(t) { return t.id === ticketId; }); if (!ticket) return;
   var exists = reviewAskrStorage.find(function(r) { return r.ticketId === ticketId; });
   if (exists) { showToast('Already in ReviewAskr'); switchTab('review'); closeTicketDetail(); return; }
-  var entry = { id: 'ra_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), name: ticket.name, phone: ticket.phone, device: ticket.device, ticketId: ticket.id, addedAt: new Date().toISOString(), addedBy: currentUser || 'staff', contactCount: 0, smsCount: 0, emailCount: 0, callCount: 0, lastContactedAt: null, status: 'pending', capturedAt: null };
+  var entry = { id: 'ra_' + Date.now() + '_' + Math.random().toString(36).slice(2,6), name: ticket.name, phone: ticket.phone, device: ticket.device, ticketId: ticket.id, location: loc || 'bedstuy', addedAt: new Date().toISOString(), addedBy: currentUser || 'staff', contactCount: 0, smsCount: 0, emailCount: 0, callCount: 0, lastContactedAt: null, status: 'pending', capturedAt: null };
   reviewAskrStorage.push(entry);
   saveReviewAskr(); syncReviewEntry(entry); updateReviewAskrBadge(); closeTicketDetail(); switchTab('review'); showToast('Added to ReviewAskr ✓');
 }
@@ -3964,19 +3974,34 @@ function reviewRemove(id) {
   reviewAskrStorage = reviewAskrStorage.filter(function(x) { return x.id !== id; });
   saveReviewAskr(); updateReviewAskrBadge(); renderReviewAskrPending(); showToast('Removed');
 }
+var _reviewAddLoc = 'bedstuy';
+function setReviewAddLoc(loc) {
+  _reviewAddLoc = loc;
+  var bs = el('reviewLocBtnBedstuy'), db = el('reviewLocBtnDumbo');
+  var activeStyle = 'flex:1;padding:7px;background:rgba(245,158,11,0.18);border:1px solid rgba(245,158,11,0.5);color:#f59e0b;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;';
+  var inactiveStyle = 'flex:1;padding:7px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;';
+  if (bs) bs.style.cssText = loc === 'bedstuy' ? activeStyle : inactiveStyle;
+  if (db) db.style.cssText = loc === 'dumbo'   ? activeStyle : inactiveStyle;
+}
+function reviewSetLoc(id, loc) {
+  var r = reviewAskrStorage.find(function(x) { return x.id === id; }); if (!r) return;
+  r.location = loc; saveReviewAskr(); syncReviewEntry(r); renderReviewAskrPending();
+}
 function reviewCopyLink() {
-  navigator.clipboard.writeText(REVIEW_LINK_URL).then(function() { showToast('Review link copied! 🔗'); }).catch(function() { showToast('Copy failed — try manually'); });
+  navigator.clipboard.writeText(REVIEW_LINK_URLS.bedstuy).then(function() { showToast('BedStuy review link copied! 🔗'); }).catch(function() { showToast('Copy failed — try manually'); });
 }
 function _reviewSmsText(id) {
   var r = reviewAskrStorage.find(function(x) { return x.id === id; });
   var name = (r && r.name) ? r.name.split(' ')[0] : '';
-  return (name ? 'Hey ' + name + ',\n\n' : '') + 'Loved your repair experience? Make our day by writing a Google review here: \n' + REVIEW_LINK_URL + '\n\nhere\'s our website! repairedcollective.com';
+  var url = REVIEW_LINK_URLS[(r && r.location) || 'bedstuy'] || REVIEW_LINK_URLS.bedstuy;
+  return (name ? 'Hey ' + name + ',\n\n' : '') + 'Loved your repair experience? Make our day by writing a Google review here: \n' + url + '\n\nhere\'s our website! repairedcollective.com';
 }
 function _reviewEmailText(id) {
   var r = reviewAskrStorage.find(function(x) { return x.id === id; });
   var name = (r && r.name) ? r.name.split(' ')[0] : 'there';
   var device = (r && r.device) ? r.device : 'your device';
-  return 'Subject: About your repair…\n\nHey ' + name + ',\n\nHow\'s your ' + device + ' ?\n\nStill behaving?\n\nIf you ever have issues with your repair let us know.\n\nWe\'re here to help.\n\nAnd speaking of help, we\'d love yours.\n\nIf you have a free minute we\'d be honored if you left us a Google review.\n\nThrilled actually.\n\nBecause in doing so you\'re helping a small business reach more people like you.\n\nAnd we happen to like people… call us crazy ;)\n\nCan\'t wait to hear what you have to say.\n\n' + REVIEW_LINK_URL;
+  var url = REVIEW_LINK_URLS[(r && r.location) || 'bedstuy'] || REVIEW_LINK_URLS.bedstuy;
+  return 'Subject: About your repair…\n\nHey ' + name + ',\n\nHow\'s your ' + device + ' ?\n\nStill behaving?\n\nIf you ever have issues with your repair let us know.\n\nWe\'re here to help.\n\nAnd speaking of help, we\'d love yours.\n\nIf you have a free minute we\'d be honored if you left us a Google review.\n\nThrilled actually.\n\nBecause in doing so you\'re helping a small business reach more people like you.\n\nAnd we happen to like people… call us crazy ;)\n\nCan\'t wait to hear what you have to say.\n\n' + url;
 }
 function reviewCopySms(id) {
   navigator.clipboard.writeText(_reviewSmsText(id)).then(function() { showToast('SMS copied! 📱'); }).catch(function() { showToast('Copy failed'); });
@@ -4017,7 +4042,7 @@ function submitManualReviewEntry() {
   var name = nameEl ? nameEl.value.trim() : '';
   if (!name) { if (nameEl) { nameEl.style.borderColor = '#ef4444'; nameEl.focus(); } return; }
   if (nameEl) nameEl.style.borderColor = '';
-  var entry = { id: 'ra_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), name: name, phone: phoneEl ? phoneEl.value.trim() : '', device: deviceEl ? deviceEl.value.trim() : '', ticketId: '', addedAt: new Date().toISOString(), addedBy: currentUser||'staff', contactCount: 0, smsCount: 0, emailCount: 0, callCount: 0, lastContactedAt: null, status: 'pending', capturedAt: null };
+  var entry = { id: 'ra_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), name: name, phone: phoneEl ? phoneEl.value.trim() : '', device: deviceEl ? deviceEl.value.trim() : '', ticketId: '', location: _reviewAddLoc || 'bedstuy', addedAt: new Date().toISOString(), addedBy: currentUser||'staff', contactCount: 0, smsCount: 0, emailCount: 0, callCount: 0, lastContactedAt: null, status: 'pending', capturedAt: null };
   reviewAskrStorage.push(entry);
   saveReviewAskr(); syncReviewEntry(entry); updateReviewAskrBadge();
   if (nameEl) nameEl.value = ''; if (phoneEl) phoneEl.value = ''; if (deviceEl) deviceEl.value = '';
@@ -4091,7 +4116,7 @@ function renderReviewAskrPending() {
       '<div class="inv-item-top"><div><div class="inv-item-name cx-name">' + (r.name||'Unnamed') + '</div>' +
       '<div class="inv-item-model" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">' + (r.phone ? '<button onclick="navigator.clipboard.writeText(\'' + (r.phone||'').replace(/'/g,"\\'") + '\').then(function(){showToast(\'Phone copied ✓\')}).catch(function(){showToast(r.phone)})" style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);color:var(--accent);border-radius:6px;padding:2px 7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">' + (r.phone||'') + ' 📋</button>' : '') + (r.device ? '<span>' + (r.phone ? '· ' : '') + r.device + '</span>' : '') + '</div></div>' +
       '<span style="font-size:11px;font-weight:600;color:' + tallyColor + ';text-align:right;line-height:1.4;">' + tallyStr + '</span></div>' +
-      '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);">Added ' + addedStr + '</div>' +
+      '<div class="inv-item-meta" style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;">Added ' + addedStr + ' &nbsp;·&nbsp; <button onclick="reviewSetLoc(\'' + r.id + '\',\'' + (r.location === 'dumbo' ? 'bedstuy' : 'dumbo') + '\')" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);color:#f59e0b;border-radius:6px;padding:1px 7px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">📍 ' + (r.location === 'dumbo' ? 'Dumbo' : 'BedStuy') + '</button></div>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">' +
       '<button onclick="reviewCopySms(\'' + r.id + '\')" style="' + bNeutral + '">📱 Copy SMS</button>' +
       '<button onclick="reviewShareSms(\'' + r.id + '\')" style="' + bNeutral + '">📤 Share SMS</button>' +
