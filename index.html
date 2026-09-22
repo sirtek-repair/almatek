@@ -615,7 +615,7 @@
   <div id="quoteCard" class="quote-card hidden">
     <div class="ql">Quote to Customer</div>
     <div class="qa" id="quoteAmt">$—</div>
-    <div class="qsub hidden" id="taxIncludedLine">tax included</div>
+    <div class="qsub hidden" id="taxIncludedLine"></div>
     <div class="qsub hidden" id="mobileSubline">includes mobile service fee</div>
     <div class="qsub hidden" id="quoteStockLine"></div>
     <button onclick="showAddToTicketModal()" style="margin-top:16px;width:100%;padding:10px 0;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">🎫 Add to Ticket</button>
@@ -746,8 +746,8 @@
     <div id="dealResult" class="hidden">
       <div class="deal-header">Since you're already in the device:</div>
       <div class="deal-grid">
-        <div class="deal-box"><div class="dl">Without deal</div><div class="da" id="normalTotal">$—</div><div class="ds">both full price, tax incl.</div></div>
-        <div class="deal-box win"><div class="dl">Their deal 🎉</div><div class="da" id="dealTotal">$—</div><div class="ds">tax included</div></div>
+        <div class="deal-box"><div class="dl">Without deal</div><div class="da" id="normalTotal">$—</div><div class="ds">both full price</div></div>
+        <div class="deal-box win"><div class="dl">Their deal 🎉</div><div class="da" id="dealTotal">$—</div><div class="ds"></div></div>
       </div>
       <div class="savings-row"><span class="savings-pill" id="savingsPill">Saving $—</span></div>
     </div>
@@ -3340,11 +3340,11 @@ function buildQuoteText() {
 
     lines.push('Great news — since we\'re already in your device, we can bundle both repairs and save you money!');
     lines.push('');
-    lines.push('Repair 1 — ' + label1 + model1Label + tier1Label + ': $' + withTax(p1 + afterHoursFee + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ' · includes mobile service' : ''));
-    lines.push('Repair 2 — ' + label2 + model2Label + tier2Label + ': normally $' + full2 + ', but with the combo deal only $' + discounted2 + ' (50% off, tax included)');
+    lines.push('Repair 1 — ' + label1 + model1Label + tier1Label + ': $' + withTax(p1 + afterHoursFee + mobileFee) + (mobileFee > 0 ? ' · includes mobile service' : ''));
+    lines.push('Repair 2 — ' + label2 + model2Label + tier2Label + ': normally $' + full2 + ', but with the combo deal only $' + discounted2 + ' (50% off)');
     lines.push('');
-    lines.push('Regular price for both: $' + fullTotal + ' (tax included)');
-    lines.push('Your combo deal: $' + dealTotal + ' total (tax included)');
+    lines.push('Regular price for both: $' + fullTotal);
+    lines.push('Your combo deal: $' + dealTotal + ' total');
     lines.push('You save: $' + savings + ' 🎉');
     lines.push('');
     lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
@@ -3355,10 +3355,10 @@ function buildQuoteText() {
     if (hasStd && hasPrem) {
       lines.push('For your ' + model1 + ', we have two options available:');
       lines.push('');
-      lines.push('STANDARD — $' + withTax(fullPrice(prices.standard,'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee + mobileFee) + ' (tax included)');
+      lines.push('STANDARD — $' + withTax(fullPrice(prices.standard,'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee + mobileFee));
       lines.push('LCD screen that looks & functions just like the original. The frame is slightly thicker than stock, but most people don\'t notice. Great option if you\'re upgrading soon or keeping your phone under a year.');
       lines.push('');
-      lines.push('PREMIUM — $' + withTax(fullPrice(prices.premium,'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee + mobileFee) + ' (tax included)');
+      lines.push('PREMIUM — $' + withTax(fullPrice(prices.premium,'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee + mobileFee));
       lines.push('Soft OLED screen (OEM-quality) — same exact specs as the original Apple screen. Thinner frame, perfect fit. Best option if you\'re keeping your phone 2+ years.');
       lines.push('');
       lines.push('Both come with a warranty' + (mobileFee > 0 ? ' and include mobile service' : '') + '. Which works better for you?');
@@ -3366,7 +3366,7 @@ function buildQuoteText() {
       lines.push('We\'ll get everything fixed in one visit so you\'re back up and running.');
     } else {
       var opt = hasPrem ? 'premium' : 'standard', price = prices[opt];
-      lines.push(model1 + ' — ' + opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(fullPrice(price,'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', mobile service included' : ''));
+      lines.push(model1 + ' — ' + opt.charAt(0).toUpperCase() + opt.slice(1) + ' screen repair — $' + withTax(fullPrice(price,'iphone_screen') * (1 + neighborhoodSurcharge) + afterHoursFee + mobileFee) + (mobileFee > 0 ? ', mobile service included' : ''));
       lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
     }
   } else if (tier1 === 'manual') {
@@ -3404,7 +3404,7 @@ function buildQuoteText() {
     lines.push('Device' + model1Label + ' repair — $' + withTax(p1 + afterHoursFee + mobileFee));
   } else {
     // ── Single non-screen repair ───────────────────────────────
-    lines.push(label1 + model1Label + tier1Label + ' repair — $' + withTax(p1 + afterHoursFee + mobileFee) + ' (tax included)' + (mobileFee > 0 ? ', includes mobile service' : ''));
+    lines.push(label1 + model1Label + tier1Label + ' repair — $' + withTax(p1 + afterHoursFee + mobileFee) + (mobileFee > 0 ? ', includes mobile service' : ''));
     lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
   }
   return lines.join('\r\n');
