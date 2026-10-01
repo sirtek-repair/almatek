@@ -1032,7 +1032,7 @@
           <div style="font-size:18px;font-weight:700;letter-spacing:0.04em;font-family:Georgia,serif;">Repaired Collective</div>
           <div style="font-size:12px;color:var(--muted);margin-top:3px;">repairedcollective.com</div>
         </div>
-        <div id="b2bStoreCode" style="display:none;font-size:11px;font-weight:700;color:#8b5cf6;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);border-radius:6px;padding:3px 8px;white-space:nowrap;line-height:1.6;">B323</div>
+        <div id="b2bStoreCode" style="display:none;font-size:11px;font-weight:700;color:#8b5cf6;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);border-radius:6px;padding:3px 8px;white-space:nowrap;line-height:1.6;">225 Bay St</div>
       </div>
       <div style="font-size:10px;color:#8b5cf6;text-align:right;margin-bottom:8px;letter-spacing:0.03em;">✏ All fields editable</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;">
@@ -5572,15 +5572,15 @@ function shareB2BForm() {
   ctx.font = '11px system-ui, sans-serif';
   ctx.fillText('repairedcollective.com', cx + cw/2, cy + CP + 38);
 
-  // B323 badge
+  // address badge
   if (isSkyMobile) {
-    var bx = ix + iw - 52, by = cy + CP + 4;
-    _b2bRRect(ctx, bx, by, 52, 20, 5);
+    var bx = ix + iw - 72, by = cy + CP + 4;
+    _b2bRRect(ctx, bx, by, 72, 20, 5);
     ctx.fillStyle = 'rgba(139,92,246,0.12)'; ctx.fill();
     ctx.strokeStyle = 'rgba(139,92,246,0.3)'; ctx.lineWidth = 1; ctx.stroke();
     ctx.fillStyle = '#8b5cf6'; ctx.font = 'bold 10.5px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('B323', bx + 26, by + 14);
+    ctx.fillText('225 Bay St', bx + 36, by + 14);
   }
 
   // Header divider
@@ -5620,7 +5620,7 @@ function shareB2BForm() {
   var fy = divY + 14;
   // Row 1: Date | Vendor
   flabel('DATE', ix, fy); fval(date, ix, fy+14, half);
-  flabel('VENDOR', ix+half+12, fy); fval(vendor+(isSkyMobile?' · B323':''), ix+half+12, fy+14, half);
+  flabel('VENDOR', ix+half+12, fy); fval(vendor+(isSkyMobile?' · 225 Bay St':''), ix+half+12, fy+14, half);
   fy += 42;
   // Row 2: Device Model (full width)
   flabel('DEVICE MODEL', ix, fy); fval(model, ix, fy+14, iw);
