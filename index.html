@@ -536,9 +536,9 @@
     <div id="glassSection" class="hidden">
       <label class="field-label">iPhone Model Group — Set Price</label>
       <div class="model-grid">
-        <button class="model-btn" onclick="onGlassSelect(84, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice84">$95</strong></button>
-        <button class="model-btn" onclick="onGlassSelect(94, this)">14 · 15<strong class="quote-price-tag" id="glassPrice94">$107</strong></button>
-        <button class="model-btn" onclick="onGlassSelect(110, this)">16<strong class="quote-price-tag" id="glassPrice110">$125</strong></button>
+        <button class="model-btn" onclick="onGlassSelect(116, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice84">$131</strong></button>
+        <button class="model-btn" onclick="onGlassSelect(126, this)">14 · 15<strong class="quote-price-tag" id="glassPrice94">$143</strong></button>
+        <button class="model-btn" onclick="onGlassSelect(136, this)">16<strong class="quote-price-tag" id="glassPrice110">$154</strong></button>
       </div>
     </div>
 
@@ -714,9 +714,9 @@
       <div id="glassSection2" class="hidden">
         <label class="field-label">iPhone Model Group — Set Price</label>
         <div class="model-grid">
-          <button class="model-btn" onclick="onGlassSelect2(84, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice2_84">$95</strong></button>
-          <button class="model-btn" onclick="onGlassSelect2(94, this)">14 · 15<strong class="quote-price-tag" id="glassPrice2_94">$107</strong></button>
-          <button class="model-btn" onclick="onGlassSelect2(110, this)">16<strong class="quote-price-tag" id="glassPrice2_110">$125</strong></button>
+          <button class="model-btn" onclick="onGlassSelect2(116, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice2_84">$131</strong></button>
+          <button class="model-btn" onclick="onGlassSelect2(126, this)">14 · 15<strong class="quote-price-tag" id="glassPrice2_94">$143</strong></button>
+          <button class="model-btn" onclick="onGlassSelect2(136, this)">16<strong class="quote-price-tag" id="glassPrice2_110">$154</strong></button>
         </div>
       </div>
 
@@ -1672,7 +1672,7 @@ var B2B_MARKUP = { kimi: 20, skymobile: 0, king: 20 };
 })();
 function withTax(price) { return Math.ceil(price * 1.12875); }
 function initGlassPriceTags() {
-  var fixed = { 84: 95, 94: 107, 110: 125 };
+  var fixed = { 84: 131, 94: 143, 110: 154 };
   Object.keys(fixed).forEach(function(c) {
     var p = '$' + fixed[c];
     ['glassPrice'+c, 'glassPrice2_'+c].forEach(function(id) { var el2 = el(id); if (el2) el2.textContent = p; });
