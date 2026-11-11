@@ -3431,7 +3431,7 @@ function buildQuoteText() {
   } else {
     // ── Single non-screen repair ───────────────────────────────
     lines.push(label1 + model1Label + tier1Label + ' repair — $' + withTax(p1 + afterHoursFee + mobileFee) + (mobileFee > 0 ? ', includes mobile service' : ''));
-    lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
+    if (type1 !== 'back_glass') lines.push('Comes with a warranty. We\'ll get everything fixed in one visit so you\'re back up and running.');
   }
   return lines.join('\r\n');
 }
