@@ -534,11 +534,15 @@
     </div>
 
     <div id="glassSection" class="hidden">
-      <label class="field-label">iPhone Model Group — Set Price</label>
+      <label class="field-label">Back Glass — Set Price</label>
+      <div id="glassSupplierRow1" style="display:flex;gap:6px;margin-bottom:10px;">
+        <button class="model-btn active" onclick="setGlassSupplier1('kimi',this)" style="flex:1;font-size:12px;padding:7px 4px;">Kimi Soho</button>
+        <button class="model-btn" onclick="setGlassSupplier1('king',this)" style="flex:1;font-size:12px;padding:7px 4px;">King Digital</button>
+      </div>
       <div class="model-grid">
-        <button class="model-btn" onclick="onGlassSelect(116, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice84">$131</strong></button>
-        <button class="model-btn" onclick="onGlassSelect(126, this)">14 · 15<strong class="quote-price-tag" id="glassPrice94">$143</strong></button>
-        <button class="model-btn" onclick="onGlassSelect(136, this)">16<strong class="quote-price-tag" id="glassPrice110">$154</strong></button>
+        <button class="model-btn" onclick="onGlassSelectSlot(0,this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice84">$131</strong></button>
+        <button class="model-btn" onclick="onGlassSelectSlot(1,this)">14 · 15<strong class="quote-price-tag" id="glassPrice94">$143</strong></button>
+        <button class="model-btn" onclick="onGlassSelectSlot(2,this)">16<strong class="quote-price-tag" id="glassPrice110">$154</strong></button>
       </div>
     </div>
 
@@ -712,11 +716,15 @@
       </div>
 
       <div id="glassSection2" class="hidden">
-        <label class="field-label">iPhone Model Group — Set Price</label>
+        <label class="field-label">Back Glass — Set Price</label>
+        <div id="glassSupplierRow2" style="display:flex;gap:6px;margin-bottom:10px;">
+          <button class="model-btn active" onclick="setGlassSupplier2('kimi',this)" style="flex:1;font-size:12px;padding:7px 4px;">Kimi Soho</button>
+          <button class="model-btn" onclick="setGlassSupplier2('king',this)" style="flex:1;font-size:12px;padding:7px 4px;">King Digital</button>
+        </div>
         <div class="model-grid">
-          <button class="model-btn" onclick="onGlassSelect2(116, this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice2_84">$131</strong></button>
-          <button class="model-btn" onclick="onGlassSelect2(126, this)">14 · 15<strong class="quote-price-tag" id="glassPrice2_94">$143</strong></button>
-          <button class="model-btn" onclick="onGlassSelect2(136, this)">16<strong class="quote-price-tag" id="glassPrice2_110">$154</strong></button>
+          <button class="model-btn" onclick="onGlassSelectSlot2(0,this)">8 · SE2 · SE3<br>X · 11 · 12 · 13<strong class="quote-price-tag" id="glassPrice2_84">$131</strong></button>
+          <button class="model-btn" onclick="onGlassSelectSlot2(1,this)">14 · 15<strong class="quote-price-tag" id="glassPrice2_94">$143</strong></button>
+          <button class="model-btn" onclick="onGlassSelectSlot2(2,this)">16<strong class="quote-price-tag" id="glassPrice2_110">$154</strong></button>
         </div>
       </div>
 
@@ -1561,6 +1569,9 @@
 
 <script>
 var LABOR = { iphone_screen:70, back_glass:80, back_glass_swap:100, battery:60, small_part:40, ipad:75, kimi:35, skymobile:75, king:35, android:85, laptop:85 };
+var glassSupplier1 = 'kimi', glassSupplier2 = 'kimi';
+var GLASS_COSTS  = { kimi:[116,126,136], king:[126,136,146] };
+var GLASS_PRICES = { kimi:[131,143,154], king:[143,154,165] };
 const NAMES = { iphone_screen:'iPhone Screen', back_glass:'Back Glass', back_glass_swap:'Frame Swap', battery:'Battery', small_part:'Small Part', ipad:'iPad Screen', kimi:'Kimi Repair', skymobile:'SkyMobile Repair', king:'King Digital Soho', android:'Android Repair', laptop:'MacBook / Laptop' };
 var MARKUP_PCT = 20;
 const SHARE_ICON = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
@@ -1708,7 +1719,7 @@ function onRepairChange() {
     el('modelSelect1').value = ''; model1 = '';
     selectTier1('standard');
   }
-  else if (type1 === 'back_glass') { el('glassSection').classList.remove('hidden'); clearBtns('#glassSection'); }
+  else if (type1 === 'back_glass') { el('glassSection').classList.remove('hidden'); clearBtns('#glassSection'); glassSupplier1='kimi'; clearBtns('#glassSupplierRow1'); var _gs1=el('glassSupplierRow1'); if(_gs1) _gs1.querySelector('button').classList.add('active'); _updateGlassPriceTags('kimi',false); }
   else if (type1 === 'device') { el('deviceSection').classList.remove('hidden'); clearBtns('#deviceSection'); }
   else {
     el('freeSection').classList.remove('hidden'); el('partCost').value = '';
@@ -1782,6 +1793,21 @@ function selectTier2(t) {
 
 function onGlassSelect(cost, btn) { clearBtns('#glassSection'); btn.classList.add('active'); cost1=cost; tryRenderQuote(); }
 function onGlassSelect2(cost, btn) { clearBtns('#glassSection2'); btn.classList.add('active'); cost2=cost; renderDeal(); }
+function onGlassSelectSlot(slot, btn) { onGlassSelect(GLASS_COSTS[glassSupplier1][slot], btn); }
+function onGlassSelectSlot2(slot, btn) { onGlassSelect2(GLASS_COSTS[glassSupplier2][slot], btn); }
+function _updateGlassPriceTags(supplier, suffix) {
+  var prices = GLASS_PRICES[supplier];
+  var ids = suffix ? ['glassPrice2_84','glassPrice2_94','glassPrice2_110'] : ['glassPrice84','glassPrice94','glassPrice110'];
+  ids.forEach(function(id,i){ var e=el(id); if(e) e.textContent='$'+prices[i]; });
+}
+function setGlassSupplier1(s, btn) {
+  glassSupplier1 = s; clearBtns('#glassSupplierRow1'); btn.classList.add('active');
+  _updateGlassPriceTags(s, false); cost1=0; clearBtns('#glassSection .model-grid'); hideQuote();
+}
+function setGlassSupplier2(s, btn) {
+  glassSupplier2 = s; clearBtns('#glassSupplierRow2'); btn.classList.add('active');
+  _updateGlassPriceTags(s, true); cost2=0; clearBtns('#glassSection2 .model-grid'); el('dealResult').classList.add('hidden');
+}
 
 function onDeviceSelect1(subtype, btn) {
   clearBtns('#deviceSection'); btn.classList.add('active');
@@ -2008,7 +2034,7 @@ function on2ndRepairChange() {
   if (!type2) { el('cost2Wrap').classList.add('hidden'); return; }
   el('cost2Wrap').classList.remove('hidden');
   if (type2==='iphone_screen') { el('iphoneSection2').classList.remove('hidden'); el('modelSelect2').value = ''; model2 = ''; selectTier2('standard'); }
-  else if (type2==='back_glass') { el('glassSection2').classList.remove('hidden'); clearBtns('#glassSection2'); }
+  else if (type2==='back_glass') { el('glassSection2').classList.remove('hidden'); clearBtns('#glassSection2'); glassSupplier2='kimi'; clearBtns('#glassSupplierRow2'); var _gs2=el('glassSupplierRow2'); if(_gs2) _gs2.querySelector('button').classList.add('active'); _updateGlassPriceTags('kimi',true); }
   else if (type2==='device') { el('deviceSection2').classList.remove('hidden'); clearBtns('#deviceSection2'); }
   else {
     el('freeSection2').classList.remove('hidden');
