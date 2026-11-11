@@ -1,5 +1,5 @@
-// v4
-var CACHE = 'almatek-v4';
+// v5
+var CACHE = 'almatek-v5';
 self.addEventListener('install', function(e) { self.skipWaiting(); });
 self.addEventListener('activate', function(e) {
   e.waitUntil(
