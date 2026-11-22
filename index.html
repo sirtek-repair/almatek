@@ -359,12 +359,12 @@
   <div class="auth-box">
     <img src="line-logo.jpg" width="56" height="56" style="display:block;margin:0 auto 10px;border-radius:12px;" alt="AlmaTek" />
     <h2><span class="brand">AlmaTek</span> <em>access</em></h2>
-    <p>enter your access code to unlock features.</p>
-    <input type="password" id="authInput" placeholder="Access code" onkeydown="if(event.key==='Enter') tryAuth()" autocomplete="off" />
+    <p>enter your password to unlock features.</p>
+    <input type="password" id="authInput" placeholder="Password" onkeydown="if(event.key==='Enter') tryAuth()" autocomplete="off" />
     <button class="auth-submit" onclick="tryAuth()">Unlock</button>
     <div class="auth-error" id="authError"></div>
     <button class="auth-dismiss" onclick="el('authOverlay').classList.add('hidden')">Continue in Demo Mode</button>
-    <button class="auth-setup-toggle" onclick="toggleAuthSetup()">⚙ connection setup</button>
+    <button class="auth-setup-toggle" onclick="toggleAuthSetup()">⚙ script link</button>
     <div id="authSetupBox" class="auth-setup-box hidden">
       <input type="url" id="authSetupUrl" placeholder="Paste link" autocomplete="off" style="width:100%;box-sizing:border-box;" />
       <div style="display:flex;gap:6px;margin-top:6px;">
